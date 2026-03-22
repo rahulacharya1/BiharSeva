@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us - BiharSeva Vision & Impact{% endblock %}
+
+{% block content %}
+<div class="relative min-h-screen bg-slate-50/50 overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-emerald-50 to-transparent -z-10"></div>
+
+    <div class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="text-center max-w-3xl mx-auto mb-24 space-y-6">
+            <span class="px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold tracking-widest uppercase">Since 2024</span>
+            <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-tight">
+                Empowering Bihar Through <span class="text-emerald-600">Civic Action</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-500 font-medium leading-relaxed">
+                BiharSeva ek aisi pehal hai jo technology aur samudayik sahyog ko jod kar Bihar ke shehron ko swachh aur vyavasthit banane ka kaam karti hai.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-12 mb-32">
+            <div class="bg-white p-12 rounded-[40px] shadow-sm border border-slate-100 relative overflow-hidden group">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-8">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h2 class="text-3xl font-black text-slate-900 mb-6">Our Mission</h2>
+                <p class="text-slate-500 leading-relaxed font-medium">
+                    Humara maqsad har Bihari nagrik ko jagruk banana hai. Reporting system aur verified volunteer network ke zariye hum kachra-mukti aur behtar traffic management ko haqeeqat banate hain.
+                </p>
+            </div>
+
+            <div class="bg-slate-900 p-12 rounded-[40px] shadow-2xl text-white relative overflow-hidden group">
+                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="w-16 h-16 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center text-2xl mb-8 border border-blue-500/30">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h2 class="text-3xl font-black text-white mb-6">Our Vision</h2>
+                <p class="text-slate-400 leading-relaxed font-medium">
+                    Ek aisa Bihar jahan civic sense humari fitrat mein ho. Technology ka upyog karke hum ek transparent aur accountable system banana chahte hain jahan har yogdan ko pehchan (certificate) mile.
+                </p>
+            </div>
+        </div>
+
+        <div class="mb-32">
+            <h2 class="text-3xl font-black text-slate-900 text-center mb-16">How BiharSeva Operates</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+                <div class="p-6 text-center space-y-4">
+                    <div class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto text-emerald-600 font-black">1</div>
+                    <h4 class="font-bold text-slate-800 text-sm">Citizen Reports</h4>
+                    <p class="text-xs text-slate-500">Log samasya ki photo aur location report karte hain.</p>
+                </div>
+                <div class="p-6 text-center space-y-4">
+                    <div class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto text-blue-600 font-black">2</div>
+                    <h4 class="font-bold text-slate-800 text-sm">Admin Verify</h4>
+                    <p class="text-xs text-slate-500">Humari team report ki satyata ki jaanch karti hai.</p>
+                </div>
+                <div class="p-6 text-center space-y-4">
+                    <div class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto text-purple-600 font-black">3</div>
+                    <h4 class="font-bold text-slate-800 text-sm">Volunteer Action</h4>
+                    <p class="text-xs text-slate-500">Clean drives ke zariye samasya ka samadhan hota hai.</p>
+                </div>
+                <div class="p-6 text-center space-y-4">
+                    <div class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto text-amber-500 font-black">4</div>
+                    <h4 class="font-bold text-slate-800 text-sm">Certification</h4>
+                    <p class="text-xs text-slate-500">Bhag lene wale volunteers ko certificate milta hai.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[48px] p-12 md:p-20 shadow-xl shadow-slate-200/50 border border-slate-100 text-center">
+            <h2 class="text-3xl font-black text-slate-900 mb-16 uppercase tracking-widest">Our Real-Time Impact</h2>
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="space-y-2">
+                    <div class="text-6xl font-black text-emerald-600">{{ stats.total_volunteers|default:"0" }}</div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest italic">Verified Heroes</p>
+                </div>
+                <div class="space-y-2 border-x border-slate-100">
+                    <div class="text-6xl font-black text-blue-600">{{ stats.total_reports|default:"0" }}</div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest italic">Issues Raised</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="text-6xl font-black text-purple-600">{{ stats.total_certificates|default:"0" }}</div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest italic">Awards Issued</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-32 text-center space-y-8">
+            <h3 class="text-3xl font-black text-slate-900">Be Part of the History.</h3>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="{% url 'volunteer_form' %}" class="px-12 py-5 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-200">JOIN AS VOLUNTEER</a>
+                <a href="{% url 'contact' %}" class="px-12 py-5 bg-white border border-slate-200 text-slate-700 font-black rounded-2xl hover:bg-slate-50 transition-all">TALK TO US</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

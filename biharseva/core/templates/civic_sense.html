@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Civic Sense - BiharSeva Awareness{% endblock %}
+
+{% block content %}
+<div class="relative min-h-screen overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-emerald-50 to-transparent -z-10"></div>
+
+    <div class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="text-center max-w-3xl mx-auto mb-20 space-y-6">
+            <span class="px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold tracking-widest uppercase">Citizen Responsibility</span>
+            <h1 class="text-5xl md:text-6xl font-black text-slate-900 leading-tight">
+                Civic Sense: The <span class="text-emerald-600">Foundation</span> of a Better Bihar
+            </h1>
+            <p class="text-lg text-slate-500 leading-relaxed">
+                Civic sense ka matlab sirf safai nahi, balki dusron ke prati samman aur samajik zimmedari hai. Choti aadatein hi Bihar ko mahaan banayengi.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+            <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-2 flex flex-col items-start group">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-8 transition-all duration-500 bg-rose-50 text-rose-500 group-hover:bg-rose-500 group-hover:text-white">
+                    <i class="fas fa-trash-restore"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-4">Kachra Dustbin Mein Daalein</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">
+                    Raste par ya khuli jagah par kachra na fenkein. Agar dustbin na mile, toh kachra apne paas rakhein jab tak sahi jagah na mil jaye.
+                </p>
+                <div class="mt-6 pt-6 border-t border-slate-100 flex items-center text-xs font-bold text-rose-600">
+                    <i class="fas fa-ban mr-2"></i> NO OPEN LITTERING
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-2 flex flex-col items-start group">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-8 transition-all duration-500 bg-blue-50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white">
+                    <i class="fas fa-monument"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-4">Sarkari Sampatti ki Raksha</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">
+                    Train, Bus, aur Park humari apni sampatti hai. Inhe nuksan na pahunchayein aur na hi deewaron par thookein ya likhein.
+                </p>
+                <div class="mt-6 pt-6 border-t border-slate-100 flex items-center text-xs font-bold text-blue-600">
+                    <i class="fas fa-shield-alt mr-2"></i> PROTECT PUBLIC ASSETS
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-2 flex flex-col items-start group">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-8 transition-all duration-500 bg-amber-50 text-amber-500 group-hover:bg-amber-500 group-hover:text-white">
+                    <i class="fas fa-volume-mute"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-4">Shor Kam Karein</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">
+                    Bina wajah horn na bajayein. Raat ke samay loud speakers ka upyog kam karein taaki bimar aur buzugon ko takleef na ho.
+                </p>
+                <div class="mt-6 pt-6 border-t border-slate-100 flex items-center text-xs font-bold text-amber-600">
+                    <i class="fas fa-leaf mr-2"></i> NO UNNECESSARY HORN
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-2 flex flex-col items-start group">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-8 transition-all duration-500 bg-indigo-50 text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white">
+                    <i class="fas fa-users-line"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-4">Katar (Queue) Mein Rahein</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">
+                    Railway station ho ya ration ki dukan, hamesha apni baari ka intezaar karein. Discipline hi ek sabhya samaj ki pehchan hai.
+                </p>
+                <div class="mt-6 pt-6 border-t border-slate-100 flex items-center text-xs font-bold text-indigo-600">
+                    <i class="fas fa-check-double mr-2"></i> FOLLOW THE LINE
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-2 flex flex-col items-start group">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-8 transition-all duration-500 bg-emerald-50 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white">
+                    <i class="fas fa-traffic-light"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-4">Traffic Rules ka Palan</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">
+                    Red light na todein, helmet pehnein aur hamesha footpath ka istemal karein. Aapki suraksha hi aapke parivaar ki khushi hai.
+                </p>
+                <div class="mt-6 pt-6 border-t border-slate-100 flex items-center text-xs font-bold text-emerald-600">
+                    <i class="fas fa-road mr-2"></i> DRIVE RESPONSIBLY
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-2 flex flex-col items-start group">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-8 transition-all duration-500 bg-purple-50 text-purple-500 group-hover:bg-purple-500 group-hover:text-white">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-4">Madad ke Liye Taiyar</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">
+                    Buzugon, divyangon aur zaroorat-mando ki madad karein. Bihar ki parampara 'Atithi Devo Bhava' aur sahyog par tiki hai.
+                </p>
+                <div class="mt-6 pt-6 border-t border-slate-100 flex items-center text-xs font-bold text-purple-600">
+                    <i class="fas fa-heart mr-2"></i> HELPING COMMUNITY
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 rounded-[40px] p-12 text-white relative overflow-hidden">
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+                <div class="max-w-xl space-y-6">
+                    <h2 class="text-3xl md:text-4xl font-bold leading-tight">Civic Sense is not just a habit, it's an <span class="text-emerald-400">Investment</span> in our future.</h2>
+                    <p class="text-slate-400 italic">"Jab hum badlenge, tabhi Bihar badlega."</p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="{% url 'volunteer_form' %}" class="px-8 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-emerald-400 transition-colors">Join as Volunteer</a>
+                        <a href="{% url 'report_issue' %}" class="px-8 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 border border-slate-700 transition-colors">Report an Uncivic Act</a>
+                    </div>
+                </div>
+                <div class="hidden lg:block">
+                    <i class="fas fa-lightbulb text-[120px] text-emerald-500/20"></i>
+                </div>
+            </div>
+            <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

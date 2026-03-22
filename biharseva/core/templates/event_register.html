@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register: {{ event.title }} - BiharSeva{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] py-20 px-6 bg-slate-50/50 flex items-center justify-center relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-96 h-96 bg-emerald-100/30 rounded-full blur-[100px] -z-10 -translate-x-1/2 -translate-y-1/2"></div>
+
+    <div class="max-w-xl w-full relative z-10">
+        <a href="{% url 'events' %}" class="inline-flex items-center text-slate-400 hover:text-emerald-600 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Events
+        </a>
+
+        <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+            <div class="bg-slate-900 p-8 text-white">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-emerald-900/40">
+                        <i class="fas fa-calendar-check text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black leading-tight">{{ event.title }}</h2>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            <i class="fas fa-map-marker-alt text-emerald-500 mr-1"></i> {{ event.location }}
+                        </p>
+                    </div>
+                </div>
+                <div class="h-px bg-slate-800 w-full mb-4"></div>
+                <p class="text-xs text-slate-400 italic">"Join us on {{ event.date|date:'l, d F Y' }} to make a real difference."</p>
+            </div>
+
+            <div class="p-10 md:p-14 space-y-8">
+                <div class="space-y-2">
+                    <h3 class="text-2xl font-black text-slate-900">Confirm Registration</h3>
+                    <p class="text-sm text-slate-500">Apna registered email enter karein taaki hum aapki volunteer profile verify kar sakein.</p>
+                </div>
+
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Registered Volunteer Email</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <input type="email" name="email" 
+                                   placeholder="example@email.com" 
+                                   class="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-medium text-slate-700" 
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 space-y-4">
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-emerald-100 transition-all transform active:scale-95 flex items-center justify-center space-x-3 group">
+                            <i class="fas fa-check-circle group-hover:rotate-12 transition-transform"></i>
+                            <span>CONFIRM REGISTRATION</span>
+                        </button>
+                        
+                        <div class="flex items-center justify-center space-x-2 py-4 px-6 bg-slate-50 rounded-xl border border-slate-100">
+                            <i class="fas fa-info-circle text-blue-500 text-xs"></i>
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Only Verified Volunteers can participate.</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <p class="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-8">
+            <i class="fas fa-lock mr-1 text-emerald-500"></i> Secure One-Click Registration
+        </p>
+    </div>
+</div>
+{% endblock %}

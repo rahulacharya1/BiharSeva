@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Our Heroes - BiharSeva Verified Volunteers{% endblock %}
+
+{% block content %}
+<div class="relative min-h-screen bg-slate-50/50 pb-20 overflow-hidden">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-100/30 rounded-full blur-[100px] -z-10 translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-100/30 rounded-full blur-[100px] -z-10 -translate-x-1/2 translate-y-1/2"></div>
+
+    <div class="max-w-7xl mx-auto px-6 py-20">
+        <div class="text-center max-w-3xl mx-auto mb-20 space-y-4">
+            <span class="px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold tracking-widest uppercase inline-block">Community Impact</span>
+            <h1 class="text-4xl md:text-6xl font-black text-slate-900 tracking-tight">Meet Our <span class="text-emerald-600">Heroes</span></h1>
+            <p class="text-lg text-slate-500 font-medium leading-relaxed">
+                Ye hain BiharSeva ke wo verified sadasya jo Bihar ke vibhinn zilon mein swachta aur civic awareness ke liye din-raat mehnat kar rahe hain.
+            </p>
+        </div>
+
+        {% if volunteers %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for volunteer in volunteers %}
+            <div class="group bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-emerald-100/50 transition-all duration-500 transform hover:-translate-y-2 relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-slate-50 rounded-full group-hover:scale-150 transition-transform duration-700 -z-10"></div>
+                
+                <div class="flex flex-col h-full">
+                    <div class="flex items-center space-x-6 mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center text-white font-black text-3xl shadow-lg shadow-emerald-100 shrink-0 transform group-hover:rotate-6 transition-transform">
+                            {{ volunteer.name.0|upper }}
+                        </div>
+                        <div class="space-y-1">
+                            <h3 class="text-xl font-black text-slate-900 group-hover:text-emerald-600 transition-colors leading-tight">{{ volunteer.name }}</h3>
+                            <div class="flex items-center text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
+                                <i class="fas fa-badge-check mr-1.5"></i> Verified Member
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 mb-8 flex-grow">
+                        <div class="flex items-start space-x-4 group/item">
+                            <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xs shrink-0 mt-0.5 transition-colors group-hover/item:bg-blue-600 group-hover/item:text-white">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">College / University</p>
+                                <p class="text-sm font-bold text-slate-700 leading-snug">{{ volunteer.college }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-4 group/item">
+                            <div class="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xs shrink-0 mt-0.5 transition-colors group-hover/item:bg-orange-600 group-hover/item:text-white">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">District of Service</p>
+                                <p class="text-sm font-bold text-slate-700 leading-snug">{{ volunteer.district }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-50 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Member Since</span>
+                            <span class="text-xs font-bold text-slate-800">{{ volunteer.created_at|date:"M Y" }}</span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-colors">
+                                <i class="fas fa-share-alt text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-24 bg-white rounded-[40px] border-2 border-dashed border-slate-200">
+            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-users-slash text-3xl text-slate-300"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-900 mb-2">Abhi tak koi hero nahi hai</h3>
+            <p class="text-slate-500 mb-8 max-w-sm mx-auto">Verified volunteers ki list yahan dikhegi. Pehle volunteer aap banein!</p>
+            <a href="{% url 'volunteer_form' %}" class="inline-flex items-center px-8 py-4 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-100">
+                <i class="fas fa-plus-circle mr-2"></i> Join as Volunteer
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="mt-24 bg-slate-900 rounded-[40px] p-12 text-center text-white relative overflow-hidden shadow-2xl">
+            <div class="relative z-10 space-y-6">
+                <h2 class="text-3xl font-black">Ready to get your name on this list?</h2>
+                <p class="text-slate-400 max-w-lg mx-auto italic">Bihar ki beti ho ya beta, har koi badlav ka hissa ban sakta hai.</p>
+                <a href="{% url 'volunteer_form' %}" class="inline-block px-12 py-5 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-500 transition-all transform hover:scale-105 shadow-xl shadow-emerald-900/40">
+                    REGISTER NOW
+                </a>
+            </div>
+            <div class="absolute -top-24 -left-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px]"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
