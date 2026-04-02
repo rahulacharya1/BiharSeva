@@ -1,0 +1,105 @@
+{% extends 'includes/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Volunteer Login - BiharSeva{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] py-20 px-6 bg-slate-50/50 relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-96 h-96 bg-emerald-100/40 rounded-full blur-[100px] -z-10 -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-blue-100/40 rounded-full blur-[100px] -z-10 translate-x-1/2 translate-y-1/2"></div>
+
+    <div class="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center relative z-10">
+        <div class="space-y-8">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-xs font-black tracking-widest uppercase">
+                Verified Volunteer Access
+            </div>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight text-slate-900 leading-tight">
+                Login to your <span class="text-emerald-600">Volunteer Dashboard</span>
+            </h1>
+            <p class="text-lg text-slate-500 max-w-2xl leading-relaxed">
+                Verified volunteers can manage event registrations, check certificates, and access their own participation dashboard here.
+            </p>
+
+            <div class="grid sm:grid-cols-3 gap-4">
+                <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Access</p>
+                    <p class="text-lg font-black text-slate-900 mt-2">Dashboard</p>
+                </div>
+                <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Tools</p>
+                    <p class="text-lg font-black text-slate-900 mt-2">Events & Certificates</p>
+                </div>
+                <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Security</p>
+                    <p class="text-lg font-black text-slate-900 mt-2">Verified Only</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+            <div class="bg-slate-900 px-8 py-4 flex justify-between items-center">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Volunteer Login</span>
+                <div class="flex space-x-1">
+                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                    <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                </div>
+            </div>
+
+            <form method="post" class="p-8 md:p-12 space-y-6">
+                {% csrf_token %}
+                <div class="custom-crispy-provider">
+                    {{ form.email|as_crispy_field }}
+                </div>
+                <div class="custom-crispy-provider">
+                    {{ form.password|as_crispy_field }}
+                </div>
+
+                <div class="pt-4 space-y-4">
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-emerald-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl transition-all transform active:scale-95 flex items-center justify-center space-x-3 group">
+                        <span>LOGIN</span>
+                        <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    <div class="text-center">
+                        <a href="{% url 'volunteer_request_otp' %}" class="text-sm font-bold text-emerald-700 hover:text-emerald-600">Forgot Password?</a>
+                    </div>
+                    <div class="flex items-center justify-center space-x-2 py-4 px-6 bg-slate-50 rounded-xl border border-slate-100">
+                        <i class="fas fa-shield-check text-emerald-500 text-xs"></i>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Use your registered email and password</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    label {
+        display: block !important;
+        font-size: 0.7rem !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        color: #64748b !important;
+        margin-bottom: 0.5rem !important;
+        padding-left: 0.25rem !important;
+    }
+    .asteriskField { color: #ef4444 !important; }
+    input, select {
+        width: 100% !important;
+        padding: 1rem 1.25rem !important;
+        border-radius: 1rem !important;
+        border: 1px solid #e2e8f0 !important;
+        background-color: #f8fafc !important;
+        transition: all 0.3s ease !important;
+        outline: none !important;
+    }
+    input:focus, select:focus {
+        border-color: #10b981 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
+    }
+    .invalid-feedback { font-weight: 700; font-size: 0.7rem; color: #ef4444; }
+</style>
+{% endblock %}

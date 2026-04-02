@@ -1,0 +1,86 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Manage Volunteers | BiharSeva Admin{% endblock %}
+{% block header_title %}Manage Volunteers{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div>
+            <h2 class="text-lg font-bold text-slate-800">Registered Volunteers</h2>
+            <p class="text-sm text-slate-500">Verify citizens so they can register for events and earn certificates.</p>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Volunteer Info</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">College / District</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                {% for volunteer in volunteers %}
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold mr-3">
+                                {{ volunteer.name|slice:":1" }}
+                            </div>
+                            <div>
+                                <div class="font-medium text-slate-800">{{ volunteer.name }}</div>
+                                <div class="text-xs text-slate-400">Joined {{ volunteer.created_at|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-slate-600"><i class="fas fa-envelope mr-1.5 text-slate-400"></i>{{ volunteer.email }}</div>
+                        <div class="text-sm text-slate-600 mt-1"><i class="fas fa-phone mr-1.5 text-slate-400"></i>{{ volunteer.phone }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-slate-800 font-medium">{{ volunteer.college }}</div>
+                        <div class="text-xs text-slate-500">{{ volunteer.district }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if volunteer.is_verified %}
+                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <i class="fas fa-check-circle mr-1 text-emerald-500"></i> Verified
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                <i class="fas fa-clock mr-1 text-slate-400"></i> Pending
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <form method="POST" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="volunteer_id" value="{{ volunteer.id }}">
+                            {% if volunteer.is_verified %}
+                                <input type="hidden" name="action" value="unverify">
+                                <button type="submit" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border border-rose-200">
+                                    Revoke
+                                </button>
+                            {% else %}
+                                <input type="hidden" name="action" value="verify">
+                                <button type="submit" class="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm shadow-emerald-200">
+                                    Verify User
+                                </button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-slate-500 italic">No volunteers registered yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

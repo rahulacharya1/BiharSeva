@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 DISTRICT_CHOICES = [
     ("Purnea", "Purnea"),
@@ -35,21 +36,33 @@ class Volunteer(models.Model):
     name = models.CharField(max_length=100)
     college = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
+    password_hash = models.CharField(max_length=128, blank=True)
     phone = models.CharField(max_length=15)
     district = models.CharField(max_length=50, choices=DISTRICT_CHOICES)
     is_verified = models.BooleanField(default=False)
     has_participated = models.BooleanField(default=False)
+    otp_code = models.CharField(max_length=6, blank=True, null=True)
+    otp_expiry = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         status = "Verified" if self.is_verified else "Not Verified"
         return f"{self.name} - {status}"
 
+    def set_password(self, raw_password):
+        self.password_hash = make_password(raw_password)
+
+    def verify_password(self, raw_password):
+        if not self.password_hash:
+            return False
+        return check_password(raw_password, self.password_hash)
+
 class Event(models.Model):
     title = models.CharField(max_length=200)
     date = models.DateField()
     location = models.CharField(max_length=200)
     description = models.TextField()
+    program_coordinator_name = models.CharField(max_length=120, blank=True)
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     

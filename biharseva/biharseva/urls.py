@@ -5,7 +5,8 @@ from django.conf.urls.static import static
 from core.views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('superadmin/', admin.site.urls),
+    path('admin/', include('core.admin_urls')), # Custom Admin Panel
 
     # Static Pages
     path('', home, name='home'),
@@ -24,6 +25,13 @@ urlpatterns = [
     
     # Volunteer System
     path('volunteer/', volunteer_form, name='volunteer_form'),
+    path('volunteer-login/', volunteer_login, name='volunteer_login'),
+    path('volunteer-password-reset/', volunteer_password_reset, name='volunteer_password_reset'),
+    path('volunteer-request-otp/', volunteer_request_otp, name='volunteer_request_otp'),
+    path('volunteer-verify-otp/', volunteer_verify_otp, name='volunteer_verify_otp'),
+    path('volunteer-dashboard/', volunteer_dashboard, name='volunteer_dashboard'),
+    path('volunteer-profile/', volunteer_profile_edit, name='volunteer_profile_edit'),
+    path('volunteer-logout/', volunteer_logout, name='volunteer_logout'),
     path('volunteers/', volunteers_list, name='volunteers'),
     path('volunteer-success/', volunteer_success, name='volunteer_success'),
     
@@ -33,6 +41,8 @@ urlpatterns = [
     
     # Certificate System
     path('certificates/', certificates, name='certificates'),
+    path('certificates/<int:certificate_id>/view/', certificate_view, name='certificate_view'),
+    path('certificates/<int:certificate_id>/download/', certificate_download, name='certificate_download'),
 ]
 
 if settings.DEBUG:

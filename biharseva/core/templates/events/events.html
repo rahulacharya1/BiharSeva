@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'includes/base.html' %}
 {% load static %}
 
 {% block title %}Upcoming Events - BiharSeva Community Action{% endblock %}
@@ -66,17 +66,23 @@
 
                                 <div class="w-full sm:w-auto">
                                     {% if event.is_completed %}
-                                        <button disabled class="w-full px-10 py-4 bg-slate-100 text-slate-400 font-black rounded-2xl cursor-not-allowed flex items-center justify-center">
-                                            <i class="fas fa-lock mr-2 text-xs"></i> Event Closed
+                                        <button disabled class="w-full px-10 py-4 bg-slate-100 text-slate-500 border border-slate-200 font-black rounded-2xl cursor-not-allowed flex items-center justify-center">
+                                            <i class="fas fa-circle-check mr-2"></i>
+                                            Event Completed
                                         </button>
-
+                                    {% elif not logged_in_volunteer %}
+                                        <a href="{% url 'volunteer_login' %}" 
+                                           class="w-full px-10 py-4 bg-slate-900 hover:bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-slate-200 transition-all transform active:scale-95 flex items-center justify-center group">
+                                            <i class="fas fa-right-to-bracket mr-2 group-hover:rotate-12 transition-transform"></i>
+                                            Login to Register
+                                        </a>
                                     {% elif event.id in registered_event_ids %}
                                         <button disabled class="w-full px-10 py-4 bg-emerald-50 text-emerald-600 border border-emerald-100 font-black rounded-2xl cursor-not-allowed flex items-center justify-center">
-                                            <i class="fas fa-check-circle mr-2"></i> Already Registered
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            Already Registered
                                         </button>
-
                                     {% else %}
-                                        <a href="{% url 'event_register' event.pk %}?email={{ request.GET.email }}" 
+                                        <a href="{% url 'event_register' event.pk %}" 
                                            class="w-full px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl shadow-lg shadow-emerald-100 transition-all transform active:scale-95 flex items-center justify-center group">
                                             <i class="fas fa-calendar-plus mr-2 group-hover:rotate-12 transition-transform"></i>
                                             Register Now

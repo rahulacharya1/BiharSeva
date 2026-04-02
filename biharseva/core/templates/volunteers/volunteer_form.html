@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'includes/base.html' %}
 {% load crispy_forms_tags %}
 {% load static %}
 
@@ -52,6 +52,15 @@
                     </div>
                     <div class="custom-crispy-provider">
                         {{ form.phone|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="custom-crispy-provider">
+                        {{ form.password|as_crispy_field }}
+                    </div>
+                    <div class="custom-crispy-provider">
+                        {{ form.password_confirm|as_crispy_field }}
                     </div>
                 </div>
                 
