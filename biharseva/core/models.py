@@ -22,7 +22,7 @@ class Report(models.Model):
     district = models.CharField(max_length=50, choices=DISTRICT_CHOICES)
     location = models.CharField(max_length=200)
     description = models.TextField()
-    photo = models.ImageField(upload_to='reports/')
+    photo = models.ImageField(upload_to='reports_images/')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     

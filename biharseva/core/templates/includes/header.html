@@ -1,105 +1,154 @@
-<nav class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
+<div class="bg-emerald-600 py-2.5 px-4 text-center">
+    <p class="text-[10px] md:text-xs text-emerald-50 font-bold tracking-[0.15em] uppercase">
+        Join the movement for a cleaner Bihar • 
+        <a href="{% url 'volunteer_form' %}" class="ml-1 underline decoration-emerald-300 underline-offset-4 hover:text-white transition-colors">Register Now</a>
+    </p>
+</div>
+
+<nav class="bg-white/90 backdrop-blur-md saturate-150 shadow-sm sticky top-0 z-[100] border-b border-slate-200/60 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-20">
-            <!-- Logo Section -->
-            <div class="flex-shrink-0 flex items-center">
-                <a href="{% url 'home' %}" class="flex items-center space-x-3 group">
-                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:rotate-6 transition-transform duration-300">
-                        <i class="fas fa-leaf text-white text-2xl"></i>
+        <div class="flex justify-between items-center h-20 md:h-24">
+            
+            <div class="flex-shrink-0">
+                <a href="{% url 'home' %}" class="flex items-center gap-x-4 group">
+                    <div class="relative">
+                        <div class="w-12 h-12 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-100 group-hover:rotate-3 transition-transform duration-500">
+                            <i class="fas fa-leaf text-white text-2xl"></i>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-blue-500 border-2 border-white rounded-full animate-pulse"></div>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-2xl font-black bg-gradient-to-r from-emerald-600 to-blue-700 bg-clip-text text-transparent leading-none">
-                            BiharSeva
+                        <span class="text-2xl font-black tracking-tight text-slate-800 leading-none">
+                            Bihar<span class="text-emerald-600">Seva</span>
                         </span>
-                        <span class="text-[10px] uppercase tracking-widest font-bold text-slate-400 mt-1">Swaach Bihar, Shrestha Bihar</span>
+                        <span class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400 mt-2 leading-none">Swaach • Shrestha</span>
                     </div>
                 </a>
             </div>
             
-            <!-- Desktop Menu -->
-            <div class="hidden md:flex items-center space-x-3">
+            <div class="hidden lg:flex items-center gap-x-2">
                 <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active-nav{% endif %}">Home</a>
                 
-                <div class="relative group px-3 py-2 cursor-pointer">
-                    <span class="text-slate-600 hover:text-emerald-600 font-semibold transition-colors">Awareness <i class="fas fa-chevron-down text-[10px] ml-1"></i></span>
-                    <div class="absolute top-full left-0 w-48 bg-white shadow-xl rounded-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0">
-                        <div class="p-2 space-y-1">
-                            <a href="{% url 'civic_sense' %}" class="block px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg">Civic Sense</a>
-                            <a href="{% url 'traffic_rules' %}" class="block px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg">Traffic Rules</a>
-                            <a href="{% url 'clean_bihar' %}" class="block px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg">Clean Bihar</a>
+                <div class="relative group">
+                    <button class="nav-link flex items-center gap-x-2 outline-none">
+                        <span>Awareness</span>
+                        <i class="fas fa-chevron-down text-[9px] transition-transform group-hover:rotate-180 opacity-60"></i>
+                    </button>
+                    <div class="absolute top-[calc(100%-10px)] left-0 w-64 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                        <div class="bg-white rounded-[24px] shadow-2xl border border-slate-100 p-2.5 ring-1 ring-black/5 transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                            <a href="{% url 'civic_sense' %}" class="dropdown-item">
+                                <span class="icon-box bg-orange-50 text-orange-600"><i class="fas fa-users"></i></span>
+                                <div>
+                                    <p class="font-bold text-slate-800 text-sm">Civic Sense</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Community duty</p>
+                                </div>
+                            </a>
+                            <a href="{% url 'traffic_rules' %}" class="dropdown-item">
+                                <span class="icon-box bg-blue-50 text-blue-600"><i class="fas fa-traffic-light"></i></span>
+                                <div>
+                                    <p class="font-bold text-slate-800 text-sm">Traffic Rules</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Road safety laws</p>
+                                </div>
+                            </a>
+                            <a href="{% url 'clean_bihar' %}" class="dropdown-item">
+                                <span class="icon-box bg-emerald-50 text-emerald-600"><i class="fas fa-broom"></i></span>
+                                <div>
+                                    <p class="font-bold text-slate-800 text-sm">Clean Bihar</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Sanitation drives</p>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
 
                 <a href="{% url 'report_gallery' %}" class="nav-link {% if request.resolver_match.url_name == 'report_gallery' %}active-nav{% endif %}">Gallery</a>
-                
-                <a href="{% url 'events' %}" class="nav-link {% if request.resolver_match.url_name == 'events' %}active-nav{% endif %}">
-                    Events
-                </a>
+                <a href="{% url 'events' %}" class="nav-link {% if request.resolver_match.url_name == 'events' %}active-nav{% endif %}">Events</a>
 
                 {% if request.session.volunteer_id %}
-                    <a href="{% url 'volunteer_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'volunteer_dashboard' %}active-nav{% endif %}">
-                        Dashboard
-                    </a>
-                    <a href="{% url 'certificates' %}" class="nav-link text-blue-600 font-bold italic">
-                        <i class="fas fa-award mr-1.5"></i>My Certificates
+                    <a href="{% url 'certificates' %}" class="nav-link text-blue-600 font-black flex items-center gap-x-2">
+                        <i class="fas fa-award text-base animate-bounce"></i> Certificates
                     </a>
                 {% endif %}
+            </div>
 
-                <div class="pl-4 ml-4 border-l border-gray-200 flex items-center space-x-3">
-                    <a href="{% url 'report_issue' %}" class="text-slate-600 hover:text-emerald-600 font-semibold text-sm">Report Issue</a>
+            <div class="hidden lg:flex items-center gap-x-6 ml-4">
+                <div class="h-8 w-px bg-slate-200 opacity-60"></div>
+
+                <div class="flex items-center gap-x-5">
+                    <a href="{% url 'report_issue' %}" class="flex items-center gap-x-2.5 text-slate-500 hover:text-red-600 font-black text-[11px] uppercase tracking-widest transition-colors">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                        <span>Report Issue</span>
+                    </a>
+                    
                     {% if request.session.volunteer_id %}
-                        <a href="{% url 'volunteer_logout' %}" class="bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-slate-700 transition-all shadow-md flex items-center">
-                            <i class="fas fa-right-from-bracket mr-2"></i> Logout
-                        </a>
+                        <a href="{% url 'volunteer_logout' %}" class="bg-slate-900 text-white text-xs font-black px-6 py-3.5 rounded-2xl hover:bg-red-600 transition-all shadow-lg active:scale-95 uppercase tracking-widest">Logout</a>
                     {% else %}
-                        <a href="{% url 'volunteer_login' %}" class="bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-slate-700 transition-all shadow-md flex items-center">
-                            <i class="fas fa-right-to-bracket mr-2"></i> Volunteer Login
-                        </a>
-                        <a href="{% url 'volunteer_form' %}" class="bg-emerald-600 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-emerald-700 transition-all shadow-md hover:shadow-emerald-200 flex items-center">
-                            <i class="fas fa-hand-holding-heart mr-2"></i> Volunteer
+                        <a href="{% url 'volunteer_login' %}" class="bg-emerald-600 text-white text-xs font-black px-7 py-4 rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 active:scale-95 flex items-center gap-x-2 uppercase tracking-widest">
+                            <span>Volunteer Login</span>
+                            <i class="fas fa-arrow-right text-[10px] opacity-70"></i>
                         </a>
                     {% endif %}
                 </div>
             </div>
             
-            <!-- Mobile Menu Button -->
-            <div class="md:hidden">
-                <button id="mobile-menu-btn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 transition-colors">
+            <div class="lg:hidden">
+                <button id="mobile-menu-btn" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-900 border border-slate-200/60 active:scale-90 transition-all shadow-sm">
                     <i class="fas fa-bars-staggered text-xl" id="menu-icon"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Mobile Menu Container -->
-    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 animate-fade-in-down">
-        <div class="px-4 pt-2 pb-6 space-y-2">
-            <a href="{% url 'home' %}" class="block px-4 py-3 rounded-xl text-slate-700 font-semibold hover:bg-emerald-50">Home</a>
-            <a href="{% url 'report_gallery' %}" class="block px-4 py-3 rounded-xl text-slate-700 font-semibold hover:bg-emerald-50">Report Gallery</a>
-            <a href="{% url 'events' %}" class="block px-4 py-3 rounded-xl text-slate-700 font-semibold hover:bg-emerald-50">Events</a>
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-100 bg-white p-8 space-y-8 animate-mobile-slide">
+        <div class="grid grid-cols-2 gap-4">
+            <a href="{% url 'home' %}" class="m-nav-card bg-emerald-50 text-emerald-700 border-emerald-100"><i class="fas fa-home mb-2"></i>Home</a>
+            <a href="{% url 'report_issue' %}" class="m-nav-card bg-red-50 text-red-700 border-red-100"><i class="fas fa-exclamation-triangle mb-2"></i>Report</a>
+            <a href="{% url 'report_gallery' %}" class="m-nav-card border-slate-100"><i class="fas fa-images mb-2"></i>Gallery</a>
+            <a href="{% url 'events' %}" class="m-nav-card border-slate-100"><i class="fas fa-calendar-alt mb-2"></i>Events</a>
+        </div>
+        
+        <div class="space-y-4 pt-4 border-t border-slate-50">
             {% if request.session.volunteer_id %}
-                <a href="{% url 'volunteer_dashboard' %}" class="block px-4 py-3 rounded-xl text-slate-700 font-semibold hover:bg-emerald-50">Volunteer Dashboard</a>
-                <a href="{% url 'certificates' %}" class="block px-4 py-3 rounded-xl text-slate-700 font-semibold hover:bg-emerald-50">My Certificates</a>
-            {% endif %}
-            <hr class="border-gray-100 my-2">
-            <a href="{% url 'report_issue' %}" class="block px-4 py-3 rounded-xl bg-slate-50 text-emerald-700 font-bold tracking-wide">Report an Issue</a>
-            {% if request.session.volunteer_id %}
-                <a href="{% url 'volunteer_logout' %}" class="block px-4 py-3 rounded-xl bg-slate-900 text-white font-bold text-center shadow-lg">Logout</a>
+                <a href="{% url 'volunteer_dashboard' %}" class="block w-full py-5 px-6 rounded-3xl bg-slate-50 text-slate-800 font-black text-center text-xs uppercase tracking-widest border border-slate-100">Dashboard</a>
+                <a href="{% url 'volunteer_logout' %}" class="block w-full py-5 px-6 rounded-3xl bg-slate-900 text-white font-black text-center text-xs uppercase tracking-widest shadow-xl">Logout Account</a>
             {% else %}
-                <a href="{% url 'volunteer_login' %}" class="block px-4 py-3 rounded-xl bg-slate-900 text-white font-bold text-center shadow-lg">Volunteer Login</a>
-                <a href="{% url 'volunteer_form' %}" class="block px-4 py-3 rounded-xl bg-emerald-600 text-white font-bold text-center shadow-lg">Join as Volunteer</a>
+                <a href="{% url 'volunteer_login' %}" class="block w-full py-5 px-6 rounded-3xl bg-emerald-600 text-white font-black text-center text-xs uppercase tracking-widest shadow-2xl shadow-emerald-200">Join as Volunteer</a>
             {% endif %}
         </div>
     </div>
 </nav>
 
 <style>
+    /* Spacing logic for inner components */
     .nav-link {
-        @apply px-4 py-2 rounded-xl text-slate-600 font-semibold hover:text-emerald-600 hover:bg-emerald-50/50 transition-all duration-200;
+        @apply px-4 py-2.5 rounded-xl text-slate-500 font-bold hover:text-emerald-600 hover:bg-emerald-50/50 transition-all duration-300 text-[13.5px] uppercase tracking-wide relative;
     }
+    
     .active-nav {
-        @apply text-emerald-600 bg-emerald-50/80 shadow-sm shadow-emerald-100/50;
+        @apply text-emerald-700 bg-emerald-50/80 ring-1 ring-emerald-500/20 shadow-sm;
+    }
+
+    .dropdown-item {
+        @apply flex items-center gap-x-4 p-3.5 rounded-[20px] hover:bg-slate-50 transition-all text-sm;
+    }
+
+    .icon-box {
+        @apply w-10 h-10 shrink-0 rounded-xl flex items-center justify-center shadow-inner;
+    }
+
+    .m-nav-card {
+        @apply flex flex-col items-center justify-center p-6 rounded-[2rem] border border-slate-100 font-black text-[11px] uppercase tracking-widest text-slate-600 transition-all active:scale-95;
+    }
+
+    @keyframes mobile-slide {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-mobile-slide {
+        animation: mobile-slide 0.3s ease-out forwards;
     }
 </style>
 
@@ -109,8 +158,7 @@
     const icon = document.getElementById('menu-icon');
 
     btn.addEventListener('click', () => {
-        menu.classList.toggle('hidden');
-        icon.classList.toggle('fa-bars-staggered');
-        icon.classList.toggle('fa-times');
+        const isHidden = menu.classList.toggle('hidden');
+        icon.className = isHidden ? 'fas fa-bars-staggered text-xl' : 'fas fa-times text-xl';
     });
 </script>
