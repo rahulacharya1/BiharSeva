@@ -32,9 +32,10 @@ class ReportAdmin(admin.ModelAdmin):
 @admin.register(Volunteer)
 class VolunteerAdmin(admin.ModelAdmin):
     list_display = ['name', 'email', 'phone', 'college', 'district', 'is_verified', 'created_at']
-    list_filter = ['is_verified', 'district']
+    list_filter = ['is_verified', 'district', 'created_at']
     search_fields = ['name', 'email', 'phone', 'college']
     actions = ['verify_volunteers', 'unverify_volunteers']
+    ordering = ['is_verified', '-created_at']
 
     @admin.action(description="Verify Volunteers")
     def verify_volunteers(self, request, queryset):

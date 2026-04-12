@@ -36,6 +36,7 @@ class Volunteer(models.Model):
     name = models.CharField(max_length=100)
     college = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
+    google_sub = models.CharField(max_length=255, blank=True, null=True, unique=True)
     password_hash = models.CharField(max_length=128, blank=True)
     phone = models.CharField(max_length=15)
     district = models.CharField(max_length=50, choices=DISTRICT_CHOICES)

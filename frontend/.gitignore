@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+*.log
+.env
+.DS_Store
+coverage
+*.cache
+.vscode
+.idea
+*.sublime-project
+*.sublime-workspace
+*.tsbuildinfo
+*.eslintcache
