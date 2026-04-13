@@ -96,7 +96,21 @@ export default function App() {
   };
 
   if (loading) {
-    return <div className="centered">Loading BiharSeva...</div>;
+    return (
+      <div className="min-h-screen bg-slate-50 animate-pulse">
+        <div className="h-20 bg-white border-b border-slate-100" />
+        <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+          <div className="h-10 w-64 bg-slate-200 rounded-xl" />
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="h-36 bg-white border border-slate-100 rounded-2xl" />
+            <div className="h-36 bg-white border border-slate-100 rounded-2xl" />
+            <div className="h-36 bg-white border border-slate-100 rounded-2xl" />
+          </div>
+          <div className="h-72 bg-white border border-slate-100 rounded-3xl" />
+          <div className="h-48 bg-white border border-slate-100 rounded-3xl" />
+        </div>
+      </div>
+    );
   }
 
   return (

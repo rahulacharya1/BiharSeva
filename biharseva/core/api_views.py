@@ -3,6 +3,7 @@ import string
 import uuid
 from datetime import timedelta
 import threading
+import logging
 
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -43,6 +44,9 @@ from .serializers import (
     VolunteerRegisterSerializer,
     VolunteerSerializer,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def volunteer_auth_required(request):
@@ -118,7 +122,111 @@ BiharSeva Team
     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
 
 
-def build_certificate_pdf_response(certificate, as_attachment=True):
+def send_new_report_alert_email(recipient_email, report):
+    from django.core.mail import send_mail
+
+    subject = "BiharSeva - New Report Submitted"
+    message = f"""
+Hello Admin,
+
+A new civic report was submitted on BiharSeva.
+
+Reporter: {report.reporter_name}
+District: {report.district}
+Location: {report.location}
+Status: {report.status}
+
+Please review it in the admin panel.
+
+Regards,
+BiharSeva System
+    """
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient_email], fail_silently=False)
+
+
+def send_new_volunteer_alert_email(recipient_email, volunteer):
+    from django.core.mail import send_mail
+
+    subject = "BiharSeva - New Volunteer Registration"
+    message = f"""
+Hello Admin,
+
+A new volunteer has registered on BiharSeva.
+
+Name: {volunteer.name}
+Email: {volunteer.email}
+Phone: {volunteer.phone}
+District: {volunteer.district}
+College: {volunteer.college}
+Verified: {'Yes' if volunteer.is_verified else 'No'}
+
+Please review and verify from the admin panel.
+
+Regards,
+BiharSeva System
+    """
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient_email], fail_silently=False)
+
+
+def send_event_announcement_email(recipient_list, event):
+    from django.core.mail import send_mail
+
+    if not recipient_list:
+        return
+
+    subject = f"BiharSeva - New Event: {event.title}"
+    message = f"""
+Hello Volunteer,
+
+A new BiharSeva event has been announced.
+
+Title: {event.title}
+Date: {event.date}
+Location: {event.location}
+Coordinator: {event.program_coordinator_name or 'TBA'}
+
+Description:
+{event.description}
+
+Please login to BiharSeva and register if you wish to participate.
+
+Regards,
+BiharSeva Team
+    """
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list, fail_silently=False)
+
+
+def send_new_certificate_email(volunteer_email, volunteer_name, certificate_id, event_title, issued_date, certificate_pk):
+    from django.core.mail import EmailMessage
+
+    subject = "BiharSeva - New Certificate Awarded"
+    message = f"""
+Hello {volunteer_name},
+
+Congratulations! You have received a new certificate on BiharSeva.
+
+Certificate ID: {certificate_id}
+Event: {event_title}
+Issued Date: {issued_date}
+
+Your certificate PDF is attached with this email.
+
+Regards,
+BiharSeva Team
+    """
+
+    email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [volunteer_email])
+    try:
+        certificate = Certificate.objects.filter(id=certificate_pk).first()
+        if certificate:
+            pdf_bytes = build_certificate_pdf_bytes(certificate)
+            email.attach(f"certificate-{certificate.certificate_id}.pdf", pdf_bytes, "application/pdf")
+    except Exception:
+        logger.exception("Failed to generate/attach certificate PDF for certificate id %s", certificate_pk)
+    email.send(fail_silently=False)
+
+
+def build_certificate_pdf_bytes(certificate):
     from io import BytesIO
 
     buffer = BytesIO()
@@ -209,7 +317,13 @@ def build_certificate_pdf_response(certificate, as_attachment=True):
     pdf.save()
     buffer.seek(0)
 
-    response = HttpResponse(buffer.read(), content_type="application/pdf")
+    return buffer.read()
+
+
+def build_certificate_pdf_response(certificate, as_attachment=True):
+    pdf_bytes = build_certificate_pdf_bytes(certificate)
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
     disposition_type = "attachment" if as_attachment else "inline"
     response["Content-Disposition"] = f'{disposition_type}; filename="certificate-{certificate.certificate_id}.pdf"'
     return response
@@ -250,7 +364,18 @@ def api_about_stats(request):
 def api_report_create(request):
     serializer = ReportSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
+        report = serializer.save()
+        recipient_email = getattr(settings, "CONTACT_RECIPIENT_EMAIL", settings.DEFAULT_FROM_EMAIL)
+
+        try:
+            threading.Thread(
+                target=send_new_report_alert_email,
+                args=(recipient_email, report),
+                daemon=True,
+            ).start()
+        except Exception:
+            pass
+
         return Response({"message": "Issue reported successfully!", "report": serializer.data}, status=201)
     return Response(serializer.errors, status=400)
 
@@ -294,6 +419,17 @@ def api_volunteer_register(request):
         if signup_sub:
             volunteer.google_sub = signup_sub
             volunteer.save(update_fields=["google_sub"])
+
+        recipient_email = getattr(settings, "CONTACT_RECIPIENT_EMAIL", settings.DEFAULT_FROM_EMAIL)
+        try:
+            threading.Thread(
+                target=send_new_volunteer_alert_email,
+                args=(recipient_email, volunteer),
+                daemon=True,
+            ).start()
+        except Exception:
+            pass
+
         return Response({"message": "Registered successfully! Wait for admin verification."}, status=201)
     return Response(serializer.errors, status=400)
 
@@ -698,7 +834,21 @@ def api_admin_events(request):
 
     serializer = AdminEventCreateSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
+        event = serializer.save()
+
+        notify_verified_only = getattr(settings, "EVENT_ANNOUNCEMENT_VERIFIED_ONLY", False)
+        volunteer_qs = Volunteer.objects.filter(is_verified=True) if notify_verified_only else Volunteer.objects.all()
+        recipients = [email for email in volunteer_qs.values_list("email", flat=True) if email]
+
+        try:
+            threading.Thread(
+                target=send_event_announcement_email,
+                args=(recipients, event),
+                daemon=True,
+            ).start()
+        except Exception:
+            pass
+
         return Response({"message": "Event created successfully!"}, status=201)
     return Response(serializer.errors, status=400)
 
@@ -748,11 +898,23 @@ def api_admin_event_attendance(request, event_id, registration_id=None):
     registration.save(update_fields=["attended"])
 
     if registration.attended and registration.volunteer.is_verified:
-        Certificate.objects.get_or_create(
+        certificate, created = Certificate.objects.get_or_create(
             volunteer=registration.volunteer,
             event=event,
             defaults={"certificate_id": "BS-" + str(uuid.uuid4())[:8].upper()},
         )
+        if created:
+            try:
+                send_new_certificate_email(
+                    registration.volunteer.email,
+                    registration.volunteer.name,
+                    certificate.certificate_id,
+                    event.title,
+                    certificate.issued_date,
+                    certificate.id,
+                )
+            except Exception:
+                logger.exception("Failed to send certificate email for certificate id %s", certificate.id)
 
     return Response({"message": "Attendance updated successfully."})
 
@@ -766,7 +928,18 @@ def api_admin_certificates(request):
     if request.method == "POST":
         serializer = AdminCertificateManageSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            certificate = serializer.save()
+            try:
+                send_new_certificate_email(
+                    certificate.volunteer.email,
+                    certificate.volunteer.name,
+                    certificate.certificate_id,
+                    certificate.event.title,
+                    certificate.issued_date,
+                    certificate.id,
+                )
+            except Exception:
+                logger.exception("Failed to send certificate email for certificate id %s", certificate.id)
             return Response({"message": "Certificate created successfully."}, status=201)
         return Response(serializer.errors, status=400)
 
@@ -802,3 +975,13 @@ def api_admin_certificate_detail(request, certificate_id):
         serializer.save()
         return Response({"message": "Certificate updated successfully."})
     return Response(serializer.errors, status=400)
+
+
+@api_view(["GET"])
+def api_admin_certificate_view(request, certificate_id):
+    admin_user = require_staff_api(request)
+    if isinstance(admin_user, Response):
+        return admin_user
+
+    certificate = get_object_or_404(Certificate, id=certificate_id)
+    return build_certificate_pdf_response(certificate, as_attachment=False)

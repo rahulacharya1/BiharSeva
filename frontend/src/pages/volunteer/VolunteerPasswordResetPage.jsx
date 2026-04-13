@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiPhone, FiLock, FiShield, FiArrowRight, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { PasswordInput } from "../../components/PasswordInput";
 
 export function VolunteerPasswordResetPage() {
     const [form, setForm] = useState({ email: "", phone: "", new_password: "", confirm_password: "" });
@@ -80,14 +81,24 @@ export function VolunteerPasswordResetPage() {
                             <FiPhone className={iconClasses} />
                             <input placeholder="Registered Phone" className={inputClasses} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
                         </div>
-                        <div className="relative group">
-                            <FiLock className={iconClasses} />
-                            <input type="password" placeholder="New Password" className={inputClasses} onChange={(e) => setForm({ ...form, new_password: e.target.value })} required />
-                        </div>
-                        <div className="relative group">
-                            <FiLock className={iconClasses} />
-                            <input type="password" placeholder="Confirm New Password" className={inputClasses} onChange={(e) => setForm({ ...form, confirm_password: e.target.value })} required />
-                        </div>
+                        <PasswordInput
+                            leftIcon={<FiLock className={iconClasses} />}
+                            value={form.new_password}
+                            onChange={(e) => setForm({ ...form, new_password: e.target.value })}
+                            placeholder="New Password"
+                            required
+                            autoComplete="new-password"
+                            inputClassName={inputClasses.replace("pr-6", "pr-16")}
+                        />
+                        <PasswordInput
+                            leftIcon={<FiLock className={iconClasses} />}
+                            value={form.confirm_password}
+                            onChange={(e) => setForm({ ...form, confirm_password: e.target.value })}
+                            placeholder="Confirm New Password"
+                            required
+                            autoComplete="new-password"
+                            inputClassName={inputClasses.replace("pr-6", "pr-16")}
+                        />
 
                         <div className="pt-4 space-y-6">
                             <button 

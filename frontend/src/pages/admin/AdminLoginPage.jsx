@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiShield, FiUser, FiLock, FiArrowRight, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { PasswordInput } from "../../components/PasswordInput";
 
 export function AdminLoginPage({ onLogin }) {
     const navigate = useNavigate();
@@ -25,9 +26,12 @@ export function AdminLoginPage({ onLogin }) {
             setMessage({ type: "success", text: "Welcome to Admin Command Center." });
             navigate("/admin/panel");
         } catch (err) {
+            const isNetworkError = !err.response;
             setMessage({
                 type: "error",
-                text: err.response?.data?.detail || "Admin authentication failed."
+                text: isNetworkError
+                    ? "Cannot reach API server. Check Django is running on port 8000 and CORS is configured."
+                    : (err.response?.data?.detail || "Admin authentication failed.")
             });
         } finally {
             setLoading(false);
@@ -84,16 +88,15 @@ export function AdminLoginPage({ onLogin }) {
                                 required
                             />
                         </div>
-                        <div className="relative group">
-                            <FiLock className={iconClasses} />
-                            <input
-                                type="password"
-                                placeholder="Master Password"
-                                className={inputClasses}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                        </div>
+                        <PasswordInput
+                            leftIcon={<FiLock className={iconClasses} />}
+                            placeholder="Master Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            autoComplete="current-password"
+                            inputClassName={inputClasses.replace("pr-6", "pr-16")}
+                        />
 
                         <div className="pt-4 space-y-6">
                             <button

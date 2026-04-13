@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiUser, FiHome, FiPhone, FiMapPin, FiLock, FiCheckCircle, FiAlertCircle, FiSave } from "react-icons/fi";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { PasswordInput } from "../../components/PasswordInput";
 
 export function VolunteerProfilePage() {
     const navigate = useNavigate();
@@ -115,10 +116,15 @@ export function VolunteerProfilePage() {
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
                                 </div>
                             </div>
-                            <div className="relative group md:col-span-2">
-                                <FiLock className={iconClasses} />
-                                <input type="password" placeholder="New Password (Leave blank to keep current)" className={inputClasses} onChange={(e) => setForm({ ...form, new_password: e.target.value })} />
-                            </div>
+                            <PasswordInput
+                                leftIcon={<FiLock className={iconClasses} />}
+                                value={form.new_password}
+                                onChange={(e) => setForm({ ...form, new_password: e.target.value })}
+                                placeholder="New Password (Leave blank to keep current)"
+                                autoComplete="new-password"
+                                inputClassName={`${inputClasses} pr-16`}
+                                wrapperClassName="md:col-span-2"
+                            />
                         </div>
 
                         {/* Submit & Message */}

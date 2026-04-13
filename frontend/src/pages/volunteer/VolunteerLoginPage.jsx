@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { PasswordInput } from "../../components/PasswordInput";
 
 export function VolunteerLoginPage({ onLogin }) {
     const navigate = useNavigate();
@@ -24,9 +25,12 @@ export function VolunteerLoginPage({ onLogin }) {
             setMessage({ type: "success", text: "Welcome back! Redirecting..." });
             navigate("/dashboard");
         } catch (err) {
+            const isNetworkError = !err.response;
             setMessage({ 
                 type: "error", 
-                text: err.response?.data?.detail || "Invalid credentials. Please try again." 
+                text: isNetworkError
+                    ? "Cannot reach API server. Check Django is running on port 8000 and CORS is configured."
+                    : (err.response?.data?.detail || "Invalid credentials. Please try again.")
             });
         } finally {
             setLoading(false);
@@ -78,16 +82,15 @@ export function VolunteerLoginPage({ onLogin }) {
 
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Password</label>
-                            <div className="relative">
-                                <i className="fas fa-lock absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
-                                <input 
-                                    type="password" 
-                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-6 py-4 focus:outline-none focus:border-indigo-500/50 transition-all font-medium text-slate-900"
-                                    placeholder="••••••••"
-                                    onChange={(e) => setPassword(e.target.value)} 
-                                    required 
-                                />
-                            </div>
+                            <PasswordInput
+                                leftIcon={<i className="fas fa-lock absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                required
+                                autoComplete="current-password"
+                                inputClassName="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-16 py-4 focus:outline-none focus:border-indigo-500/50 transition-all font-medium text-slate-900"
+                            />
                         </div>
 
                         <button 

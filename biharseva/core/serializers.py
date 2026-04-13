@@ -14,6 +14,7 @@ class ReportSerializer(serializers.ModelSerializer):
             "location",
             "description",
             "photo",
+            "after_photo",
             "status",
             "created_at",
         ]
@@ -22,6 +23,11 @@ class ReportSerializer(serializers.ModelSerializer):
     def validate_photo(self, value):
         if value and value.size > 5 * 1024 * 1024:
             raise serializers.ValidationError("Image must be less than 5MB")
+        return value
+
+    def validate_after_photo(self, value):
+        if value and value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError("After image must be less than 5MB")
         return value
 
 
@@ -178,7 +184,7 @@ class AdminReportStatusSerializer(serializers.Serializer):
 class AdminReportManageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
-        fields = ["reporter_name", "district", "location", "description", "status"]
+        fields = ["reporter_name", "district", "location", "description", "status", "after_photo"]
 
 
 class AdminVolunteerActionSerializer(serializers.Serializer):

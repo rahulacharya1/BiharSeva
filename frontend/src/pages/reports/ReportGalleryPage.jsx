@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { api } from "../../api";
 
 export function ReportGalleryPage() {
@@ -17,8 +17,9 @@ export function ReportGalleryPage() {
 
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
-            case 'resolved': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-            case 'in-progress': return 'bg-blue-100 text-blue-700 border-blue-200';
+            case "cleaned": return "bg-emerald-100 text-emerald-700 border-emerald-200";
+            case "in_progress": return "bg-blue-100 text-blue-700 border-blue-200";
+            case "verified": return "bg-violet-100 text-violet-700 border-violet-200";
             default: return 'bg-amber-100 text-amber-700 border-amber-200';
         }
     };
@@ -73,18 +74,32 @@ export function ReportGalleryPage() {
                                 transition={{ delay: index * 0.05 }}
                                 className="group bg-white rounded-[1rem] border border-slate-100 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col"
                             >
-                                {/* Image Container */}
-                                <div className="relative h-64 overflow-hidden bg-slate-100">
-                                    <img 
-                                        src={report.photo || "https://images.unsplash.com/photo-1621259182978-fbf93132d53d?q=80&w=1000&auto=format&fit=crop"} 
-                                        alt={report.location}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => { e.target.src = "https://placehold.co/600x400?text=No+Image+Available" }}
-                                    />
-                                    <div className="absolute top-5 right-5">
+                                {/* Before / After Image Container */}
+                                <div className="relative p-4 bg-slate-50 border-b border-slate-100">
+                                    <div className="absolute top-5 right-5 flex flex-col items-end gap-2">
                                         <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border backdrop-blur-md ${getStatusColor(report.status)} shadow-sm`}>
                                             {report.status}
                                         </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 pt-8">
+                                        <div className="rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                                            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white border-b border-slate-200">Before</div>
+                                            <img
+                                                src={report.photo || "https://placehold.co/600x400?text=Before+Photo"}
+                                                alt={`${report.location} before cleanup`}
+                                                className="w-full h-56 object-cover"
+                                                onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Before+Photo"; }}
+                                            />
+                                        </div>
+                                        <div className="rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                                            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white border-b border-slate-200">After</div>
+                                            <img
+                                                src={report.after_photo || "https://placehold.co/600x400?text=After+Photo+Pending"}
+                                                alt={`${report.location} after cleanup`}
+                                                className="w-full h-56 object-cover"
+                                                onError={(e) => { e.target.src = "https://placehold.co/600x400?text=After+Photo+Pending"; }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 

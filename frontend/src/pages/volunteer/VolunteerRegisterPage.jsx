@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FiArrowRight, FiBriefcase, FiCheckCircle, FiLock, FiMail, FiMapPin, FiPhone, FiUser } from "react-icons/fi";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { PasswordInput } from "../../components/PasswordInput";
 
 export function VolunteerRegisterPage() {
     const [form, setForm] = useState({
@@ -174,29 +175,25 @@ export function VolunteerRegisterPage() {
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-6">
-                            <label className="relative block group">
-                                <FiLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />
-                                <input
-                                    type="password"
-                                    value={form.password}
-                                    onChange={updateField("password")}
-                                    required
-                                    placeholder="Password"
-                                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
-                                />
-                            </label>
+                            <PasswordInput
+                                leftIcon={<FiLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />}
+                                value={form.password}
+                                onChange={updateField("password")}
+                                required
+                                placeholder="Password"
+                                autoComplete="new-password"
+                                inputClassName="w-full pl-12 pr-16 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                            />
 
-                            <label className="relative block group">
-                                <FiLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />
-                                <input
-                                    type="password"
-                                    value={form.password_confirm}
-                                    onChange={updateField("password_confirm")}
-                                    required
-                                    placeholder="Confirm Password"
-                                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
-                                />
-                            </label>
+                            <PasswordInput
+                                leftIcon={<FiLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />}
+                                value={form.password_confirm}
+                                onChange={updateField("password_confirm")}
+                                required
+                                placeholder="Confirm Password"
+                                autoComplete="new-password"
+                                inputClassName="w-full pl-12 pr-16 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                            />
                         </div>
 
                         <div className="pt-4">

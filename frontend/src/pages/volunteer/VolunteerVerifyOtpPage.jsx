@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiShield, FiLock, FiHash, FiArrowRight, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { PasswordInput } from "../../components/PasswordInput";
 
 export function VolunteerVerifyOtpPage() {
   const location = useLocation();
@@ -121,26 +122,25 @@ export function VolunteerVerifyOtpPage() {
                 required
               />
             </div>
-            <div className="relative group border-t border-slate-50 pt-6">
-              <FiLock className={iconClasses} style={{ top: '75%' }} />
-              <input
-                type="password"
-                placeholder="New Secure Password"
-                className={inputClasses}
-                onChange={(e) => setForm({ ...form, new_password: e.target.value })}
-                required
-              />
-            </div>
-            <div className="relative group">
-              <FiLock className={iconClasses} />
-              <input
-                type="password"
-                placeholder="Confirm New Password"
-                className={inputClasses}
-                onChange={(e) => setForm({ ...form, confirm_password: e.target.value })}
-                required
-              />
-            </div>
+            <PasswordInput
+              leftIcon={<FiLock className={iconClasses} style={{ top: '75%' }} />}
+              value={form.new_password}
+              onChange={(e) => setForm({ ...form, new_password: e.target.value })}
+              placeholder="New Secure Password"
+              required
+              autoComplete="new-password"
+              inputClassName={`${inputClasses} pr-16`}
+              wrapperClassName="border-t border-slate-50 pt-6"
+            />
+            <PasswordInput
+              leftIcon={<FiLock className={iconClasses} />}
+              value={form.confirm_password}
+              onChange={(e) => setForm({ ...form, confirm_password: e.target.value })}
+              placeholder="Confirm New Password"
+              required
+              autoComplete="new-password"
+              inputClassName={`${inputClasses} pr-16`}
+            />
 
             <div className="pt-4 space-y-6">
               <button

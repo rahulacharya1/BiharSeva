@@ -45,4 +45,5 @@ urlpatterns = [
     ),
     path("admin/certificates/", api_views.api_admin_certificates, name="api_admin_certificates"),
     path("admin/certificates/<int:certificate_id>/", api_views.api_admin_certificate_detail, name="api_admin_certificate_detail"),
+    path("admin/certificates/<int:certificate_id>/view/", api_views.api_admin_certificate_view, name="api_admin_certificate_view"),
 ]
