@@ -15,13 +15,14 @@ import { ReportGalleryPage } from "./pages/reports/ReportGalleryPage";
 import { VolunteerRegisterPage } from "./pages/volunteer/VolunteerRegisterPage";
 import { VolunteerLoginPage } from "./pages/volunteer/VolunteerLoginPage";
 import { VolunteerProfilePage } from "./pages/volunteer/VolunteerProfilePage";
-import { VolunteerPasswordResetPage } from "./pages/volunteer/VolunteerPasswordResetPage";
 import { VolunteerRequestOtpPage } from "./pages/volunteer/VolunteerRequestOtpPage";
 import { VolunteerVerifyOtpPage } from "./pages/volunteer/VolunteerVerifyOtpPage";
 import { DashboardPage } from "./pages/volunteer/DashboardPage";
 import { EventsPage } from "./pages/events/EventsPage";
 import { CertificatesPage } from "./pages/certificates/CertificatesPage";
 import { AdminLoginPage } from "./pages/admin/AdminLoginPage";
+import { AdminRequestOtpPage } from "./pages/admin/AdminRequestOtpPage";
+import { AdminVerifyOtpPage } from "./pages/admin/AdminVerifyOtpPage";
 import { AdminPanelPage } from "./pages/admin/AdminPanelPage";
 import { AdminReportsPage } from "./pages/admin/AdminReportsPage";
 import { AdminEventsPage } from "./pages/admin/AdminEventsPage";
@@ -130,13 +131,14 @@ export default function App() {
         <Route path="/volunteer/register" element={<VolunteerRegisterPage />} />
         <Route path="/volunteer/login" element={<VolunteerLoginPage onLogin={handleVolunteerLogin} />} />
         <Route path="/volunteer/profile" element={<VolunteerProfilePage />} />
-        <Route path="/volunteer/password-reset" element={<VolunteerPasswordResetPage />} />
         <Route path="/volunteer/request-otp" element={<VolunteerRequestOtpPage />} />
         <Route path="/volunteer/verify-otp" element={<VolunteerVerifyOtpPage />} />
         <Route path="/dashboard" element={<DashboardPage volunteer={volunteer} onLogout={handleVolunteerLogout} />} />
         <Route path="/events" element={<EventsPage volunteer={volunteer} />} />
-        <Route path="/certificates" element={<CertificatesPage />} />
+        <Route path="/certificates" element={<CertificatesPage volunteer={volunteer} />} />
         <Route path="/admin/login" element={<AdminLoginPage onLogin={setAdminUser} />} />
+        <Route path="/admin/request-otp" element={<AdminRequestOtpPage />} />
+        <Route path="/admin/verify-otp" element={<AdminVerifyOtpPage />} />
         <Route path="/admin/panel" element={<AdminPanelPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
         <Route path="/admin/reports" element={<AdminReportsPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
         <Route path="/admin/events" element={<AdminEventsPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />

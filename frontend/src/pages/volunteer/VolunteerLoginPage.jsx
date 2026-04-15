@@ -116,20 +116,12 @@ export function VolunteerLoginPage({ onLogin }) {
                     </form>
 
                     {/* Reset Options */}
-                    <div className="mt-10 pt-8 border-t border-slate-50 space-y-4">
-                        <Link 
-                            to="/volunteer/password-reset" 
-                            className="flex items-center justify-between group p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-slate-200 transition-all"
-                        >
-                            <span className="text-xs font-bold text-slate-600">Forgot Password?</span>
-                            <i className="fas fa-chevron-right text-[10px] text-slate-300 group-hover:translate-x-1 transition-transform"></i>
-                        </Link>
-                        
+                    <div className="pt-8 border-t border-slate-50 space-y-4">
                         <Link 
                             to="/volunteer/request-otp" 
                             className="flex items-center justify-between group p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-slate-200 transition-all"
                         >
-                            <span className="text-xs font-bold text-slate-600">Reset via OTP</span>
+                            <span className="text-xs font-bold text-slate-600">Forgot Password? Use OTP</span>
                             <i className="fas fa-mobile-screen text-[10px] text-slate-300 group-hover:text-indigo-500 transition-all"></i>
                         </Link>
                     </div>

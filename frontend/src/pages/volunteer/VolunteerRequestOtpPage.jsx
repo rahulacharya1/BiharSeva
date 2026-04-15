@@ -111,10 +111,9 @@ export function VolunteerRequestOtpPage() {
                     </form>
 
                 </motion.div>
-
-                <p className="text-center mt-10 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                    Already have the OTP? <Link to="/volunteer/verify-otp" className="text-indigo-600 underline">Verify Now</Link>
-                </p>
+                <div className="mt-6 text-center text-sm text-slate-500">
+                    Remembered your password? <Link to="/volunteer/login" className="text-indigo-600 hover:underline inline-flex items-center gap-1"><FiArrowRight /> Back to Login</Link>
+                </div>
             </section>
         </main>
     );

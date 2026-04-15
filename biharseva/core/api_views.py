@@ -7,6 +7,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -21,7 +22,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .auth_utils import get_admin_from_request, get_volunteer_from_request, issue_token
+from .auth_utils import decode_token, get_admin_from_request, get_volunteer_from_request, issue_token
 from .models import Certificate, Event, EventRegistration, Report, Volunteer
 from .serializers import (
     AdminAttendanceSerializer,
@@ -30,6 +31,8 @@ from .serializers import (
     AdminEventManageSerializer,
     AdminReportManageSerializer,
     AdminReportStatusSerializer,
+    AdminOtpRequestSerializer,
+    AdminOtpVerifySerializer,
     AdminVolunteerActionSerializer,
     AdminVolunteerManageSerializer,
     CertificateSerializer,
@@ -40,7 +43,6 @@ from .serializers import (
     ReportSerializer,
     VolunteerOtpRequestSerializer,
     VolunteerOtpVerifySerializer,
-    VolunteerPasswordResetSerializer,
     VolunteerRegisterSerializer,
     VolunteerSerializer,
 )
@@ -117,6 +119,43 @@ If you made this change, no further action is required.
 If you did not make this change, please reset your password immediately and contact support.
 
 Best regards,
+BiharSeva Team
+    """
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
+
+
+def send_admin_otp_email(email, otp, username):
+    from django.core.mail import send_mail
+
+    subject = "BiharSeva Admin - Password Reset OTP"
+    message = f"""
+Hello {username},
+
+Your one-time password (OTP) for admin password reset is: {otp}
+
+This OTP is valid for 10 minutes. Please do not share this code with anyone.
+
+If you didn't request this reset, please ignore this email.
+
+Regards,
+BiharSeva Team
+    """
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
+
+
+def send_admin_password_changed_email(email, username):
+    from django.core.mail import send_mail
+
+    subject = "BiharSeva Admin - Password Changed"
+    message = f"""
+Hello {username},
+
+Your BiharSeva admin password was changed successfully.
+
+If you made this change, no further action is required.
+If you did not make this change, please reset your password immediately and contact support.
+
+Regards,
 BiharSeva Team
     """
     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
@@ -544,35 +583,6 @@ def api_volunteers_list(request):
 
 
 @api_view(["POST"])
-def api_volunteer_password_reset(request):
-    serializer = VolunteerPasswordResetSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=400)
-
-    email = serializer.validated_data["email"]
-    phone = serializer.validated_data["phone"]
-    new_password = serializer.validated_data["new_password"]
-
-    volunteer = Volunteer.objects.filter(email=email, phone=phone).first()
-    if not volunteer:
-        return Response({"detail": "No volunteer matched the provided email and phone number."}, status=404)
-    if not volunteer.is_verified:
-        return Response({"detail": "Account is not verified yet."}, status=403)
-
-    volunteer.set_password(new_password)
-    volunteer.save(update_fields=["password_hash"])
-    try:
-        threading.Thread(
-            target=send_password_changed_email,
-            args=(volunteer.email, volunteer.name),
-            daemon=True,
-        ).start()
-    except Exception:
-        pass
-    return Response({"message": "Password reset successful."})
-
-
-@api_view(["POST"])
 def api_volunteer_request_otp(request):
     serializer = VolunteerOtpRequestSerializer(data=request.data)
     if not serializer.is_valid():
@@ -723,15 +733,102 @@ def api_certificate_view(request, certificate_id):
 
 @api_view(["POST"])
 def api_admin_login(request):
-    username = (request.data.get("username") or "").strip()
+    identifier = (request.data.get("username") or request.data.get("email") or "").strip()
     password = request.data.get("password") or ""
 
+    if not identifier or not password:
+        return Response({"detail": "Username/email and password are required."}, status=400)
+
+    User = get_user_model()
+    username = identifier
+    if "@" in identifier:
+        by_email_user = User.objects.filter(email__iexact=identifier, is_active=True).first()
+        if by_email_user:
+            username = by_email_user.get_username()
+
     user = authenticate(request, username=username, password=password)
-    if not user or not user.is_staff:
+    if not user:
         return Response({"detail": "Invalid admin credentials."}, status=400)
+    if not user.is_staff:
+        return Response({"detail": "This account is not an admin account."}, status=403)
 
     token = issue_token({"role": "admin", "user_id": user.id}, expires_minutes=12 * 60)
     return Response({"message": "Admin login successful.", "token": token, "username": user.username})
+
+
+@api_view(["POST"])
+def api_admin_request_otp(request):
+    serializer = AdminOtpRequestSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+
+    email = serializer.validated_data["email"]
+    User = get_user_model()
+    admin_user = User.objects.filter(email=email, is_staff=True, is_active=True).first()
+    if not admin_user:
+        return Response({"detail": "No admin account found for the provided email."}, status=404)
+
+    otp = generate_otp()
+    otp_reset_token = issue_token(
+        {"role": "admin", "purpose": "otp_reset", "email": email, "user_id": admin_user.id, "otp": otp},
+        expires_minutes=10,
+    )
+
+    try:
+        threading.Thread(target=send_admin_otp_email, args=(email, otp, admin_user.username), daemon=True).start()
+    except Exception:
+        return Response({"detail": "Failed to send OTP. Please try again later."}, status=500)
+
+    return Response(
+        {
+            "message": f"OTP requested for {email}. It usually arrives in a few seconds.",
+            "otp_reset_token": otp_reset_token,
+        },
+        status=202,
+    )
+
+
+@api_view(["POST"])
+def api_admin_verify_otp(request):
+    serializer = AdminOtpVerifySerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+
+    otp_reset_token = request.data.get("otp_reset_token")
+    if not otp_reset_token:
+        return Response({"detail": "otp_reset_token is required."}, status=400)
+
+    try:
+        otp_payload = decode_token(otp_reset_token)
+    except Exception:
+        return Response({"detail": "OTP session expired or invalid. Please request a new OTP."}, status=400)
+
+    if otp_payload.get("role") != "admin" or otp_payload.get("purpose") != "otp_reset":
+        return Response({"detail": "Invalid OTP session."}, status=400)
+
+    email = otp_payload.get("email") or ""
+    user_id = otp_payload.get("user_id")
+    expected_otp = otp_payload.get("otp") or ""
+    otp = serializer.validated_data["otp"]
+    new_password = serializer.validated_data["new_password"]
+
+    if otp != expected_otp:
+        return Response({"detail": "Invalid OTP code."}, status=400)
+
+    User = get_user_model()
+    admin_user = User.objects.filter(id=user_id, email=email, is_staff=True, is_active=True).first()
+    if not admin_user:
+        return Response({"detail": "Admin account not found."}, status=404)
+
+    admin_user.set_password(new_password)
+    admin_user.save(update_fields=["password"])
+
+    try:
+        threading.Thread(target=send_admin_password_changed_email, args=(admin_user.email, admin_user.username), daemon=True).start()
+    except Exception:
+        pass
+
+    return Response({"message": "Admin password reset successful."})
 
 
 @api_view(["GET"])

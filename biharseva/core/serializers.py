@@ -95,23 +95,6 @@ class VolunteerSerializer(serializers.ModelSerializer):
         return value
 
 
-class VolunteerPasswordResetSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    phone = serializers.CharField()
-    new_password = serializers.CharField(write_only=True)
-    confirm_password = serializers.CharField(write_only=True)
-
-    def validate_phone(self, value):
-        if not value.isdigit() or len(value) != 10:
-            raise serializers.ValidationError("Enter a valid 10-digit mobile number")
-        return value
-
-    def validate(self, attrs):
-        if attrs["new_password"] != attrs["confirm_password"]:
-            raise serializers.ValidationError("New password and confirm password must match")
-        return attrs
-
-
 class VolunteerOtpRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
     phone = serializers.CharField()
@@ -123,6 +106,26 @@ class VolunteerOtpRequestSerializer(serializers.Serializer):
 
 
 class VolunteerOtpVerifySerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate_otp(self, value):
+        if not value.isdigit() or len(value) != 6:
+            raise serializers.ValidationError("OTP must be a 6-digit number")
+        return value
+
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError("New password and confirm password must match")
+        return attrs
+
+
+class AdminOtpRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class AdminOtpVerifySerializer(serializers.Serializer):
     otp = serializers.CharField(max_length=6)
     new_password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)

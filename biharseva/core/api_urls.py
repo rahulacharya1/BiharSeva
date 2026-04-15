@@ -17,7 +17,6 @@ urlpatterns = [
     path("volunteers/logout/", api_views.api_volunteer_logout, name="api_volunteer_logout"),
     path("volunteers/me/", api_views.api_volunteer_me, name="api_volunteer_me"),
     path("volunteers/", api_views.api_volunteers_list, name="api_volunteers_list"),
-    path("volunteers/password-reset/", api_views.api_volunteer_password_reset, name="api_volunteer_password_reset"),
     path("volunteers/request-otp/", api_views.api_volunteer_request_otp, name="api_volunteer_request_otp"),
     path("volunteers/verify-otp/", api_views.api_volunteer_verify_otp, name="api_volunteer_verify_otp"),
 
@@ -29,6 +28,8 @@ urlpatterns = [
     path("certificates/<int:certificate_id>/view/", api_views.api_certificate_view, name="api_certificate_view"),
 
     path("admin/auth/login/", api_views.api_admin_login, name="api_admin_login"),
+    path("admin/auth/request-otp/", api_views.api_admin_request_otp, name="api_admin_request_otp"),
+    path("admin/auth/verify-otp/", api_views.api_admin_verify_otp, name="api_admin_verify_otp"),
     path("admin/auth/me/", api_views.api_admin_me, name="api_admin_me"),
     path("admin/dashboard/", api_views.api_admin_dashboard, name="api_admin_dashboard"),
     path("admin/reports/", api_views.api_admin_reports, name="api_admin_reports"),

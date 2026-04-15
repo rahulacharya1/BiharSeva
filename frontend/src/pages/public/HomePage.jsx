@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { api } from "../../api";
+import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 
 export function HomePage() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState("");
+    useAutoDismissMessage(message, setMessage, 1000);
 
     useEffect(() => {
         api.get("/meta/home/")
@@ -13,7 +16,10 @@ export function HomePage() {
                 setData(res.data);
                 setLoading(false);
             })
-            .catch(() => setLoading(false));
+            .catch((err) => {
+                setMessage("Failed to load statistics");
+                setLoading(false);
+            });
     }, []);
 
     if (loading) {
@@ -27,11 +33,21 @@ export function HomePage() {
         );
     }
 
+    if (message) {
+        return (
+            <div className="max-w-7xl mx-auto px-6 py-6">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-sm font-bold text-center animate-pulse">
+                    {message}
+                </div>
+            </div>
+        );
+    }
+
     const metrics = [
-        { label: "Total Reports", value: data?.stats?.total_reports || 0, icon: "fa-bullhorn", color: "text-orange-600", bg: "bg-orange-50" },
-        { label: "Verified Volunteers", value: data?.stats?.total_volunteers || 0, icon: "fa-user-shield", color: "text-purple-600", bg: "bg-purple-50" },
-        { label: "Total Events", value: data?.stats?.total_events || 0, icon: "fa-calendar-check", color: "text-blue-600", bg: "bg-blue-50" },
-        { label: "Certificates", value: data?.stats?.total_certificates || 0, icon: "fa-award", color: "text-emerald-600", bg: "bg-emerald-50" },
+        { label: "Total Reports", value: data?.stats?.total_reports ?? 0, icon: "fa-bullhorn", color: "text-orange-600", bg: "bg-orange-50" },
+        { label: "Verified Volunteers", value: data?.stats?.total_volunteers ?? 0, icon: "fa-user-shield", color: "text-purple-600", bg: "bg-purple-50" },
+        { label: "Total Events", value: data?.stats?.total_events ?? 0, icon: "fa-calendar-check", color: "text-blue-600", bg: "bg-blue-50" },
+        { label: "Certificates", value: data?.stats?.total_certificates ?? 0, icon: "fa-award", color: "text-emerald-600", bg: "bg-emerald-50" },
     ];
 
     return (

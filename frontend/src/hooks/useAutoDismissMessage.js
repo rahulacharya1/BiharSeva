@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export function useAutoDismissMessage(message, setMessage, delayMs = 2500) {
+export function useAutoDismissMessage(message, setMessage, delayMs = 1000) {
   useEffect(() => {
     const hasMessage =
       typeof message === "string"

@@ -1,24 +1,35 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiAward, FiDownload, FiExternalLink, FiCalendar, FiShield, FiAlertCircle } from "react-icons/fi";
 import { api } from "../../api";
 
-export function CertificatesPage() {
+export function CertificatesPage({ volunteer }) {
     const [certs, setCerts] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const token = localStorage.getItem("volunteer_token");
+        if (!token || !volunteer) {
+            setError("Login required to view your certificates.");
+            setLoading(false);
+            return;
+        }
+
         api.get("/certificates/")
             .then((res) => {
                 setCerts(res.data);
                 setLoading(false);
             })
-            .catch(() => {
+            .catch((err) => {
+                if (err?.response?.status === 401) {
+                    localStorage.removeItem("volunteer_token");
+                }
                 setError("Login required to view your certificates.");
                 setLoading(false);
             });
-    }, []);
+    }, [volunteer]);
 
     const openCertificate = async (id) => {
         try {
