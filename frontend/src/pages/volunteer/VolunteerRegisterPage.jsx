@@ -212,13 +212,13 @@ export function VolunteerRegisterPage() {
                                 )}
                             </button>
                             {message && <p className="text-center text-sm font-medium text-rose-500 mt-4">{message}</p>}
-                            <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest mt-10">
+                            <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4">
                                 Registration confirms you agree to our <Link to="/privacy" className="text-emerald-600 underline">Privacy Policy</Link>
                             </p>
-                            <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest mt-10">
+                            <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4">
                                 By submitting this form, you agree to our <Link to="/services" className="text-emerald-600 underline">Terms of Service</Link>
                             </p>
-                            <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest mt-10">
+                            <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4">
                                 Already have an account? <Link to="/volunteer/login" className="text-emerald-600 underline">Login here</Link>
                             </p>
                         </div>

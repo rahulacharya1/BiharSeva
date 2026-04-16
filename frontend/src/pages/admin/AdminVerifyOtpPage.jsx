@@ -89,7 +89,8 @@ export function AdminVerifyOtpPage() {
 
             <section className="max-w-xl mx-auto px-6 -mt-32 relative z-20">
                 <motion.div
-                    initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
                     className="bg-white rounded-[1.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden"
                 >
                     <div className="bg-slate-900 px-10 py-5 flex justify-between items-center">
@@ -104,6 +105,8 @@ export function AdminVerifyOtpPage() {
                                 OTP session missing. Please request OTP again.
                             </div>
                         )}
+
+                        {/* OTP Input */}
                         <div className="relative group">
                             <FiHash className={iconClasses} />
                             <input
@@ -114,16 +117,19 @@ export function AdminVerifyOtpPage() {
                                 required
                             />
                         </div>
+
+                        {/* New Password - Removed the manual top: 75% which caused misalignment */}
                         <PasswordInput
-                            leftIcon={<FiLock className={iconClasses} style={{ top: '75%' }} />}
+                            leftIcon={<FiLock className={iconClasses} />}
                             value={form.new_password}
                             onChange={(e) => setForm({ ...form, new_password: e.target.value })}
                             placeholder="New Secure Password"
                             required
                             autoComplete="new-password"
                             inputClassName={`${inputClasses} pr-16`}
-                            wrapperClassName="border-t border-slate-100 pt-6"
                         />
+
+                        {/* Confirm Password */}
                         <PasswordInput
                             leftIcon={<FiLock className={iconClasses} />}
                             value={form.confirm_password}
@@ -138,16 +144,28 @@ export function AdminVerifyOtpPage() {
                             <button
                                 type="submit"
                                 disabled={loading || !otpResetToken}
-                                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-6 rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 group disabled:opacity-50"
+                                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-6 rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {loading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>Verify & Reset <FiArrowRight className="group-hover:translate-x-1 transition-transform" /></>}
+                                {loading ? (
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        Verify & Reset
+                                        <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
                             </button>
 
                             <AnimatePresence>
                                 {message.text && (
                                     <motion.div
-                                        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                                        className={`p-5 rounded-2xl flex items-center justify-center gap-3 text-xs font-bold ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        className={`p-5 rounded-2xl flex items-center justify-center gap-3 text-xs font-bold ${message.type === 'success'
+                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                                : 'bg-red-50 text-red-700 border border-red-100'
+                                            }`}
                                     >
                                         {message.type === 'success' ? <FiCheckCircle /> : <FiAlertCircle />}
                                         {message.text}
