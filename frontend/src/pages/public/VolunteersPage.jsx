@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiUser, FiHome, FiMapPin, FiAward, FiSearch } from "react-icons/fi";
+import { FiUser, FiHome, FiMapPin, FiAward, FiSearch, FiUsers } from "react-icons/fi";
 import { api } from "../../api";
 
 export function VolunteersPage() {

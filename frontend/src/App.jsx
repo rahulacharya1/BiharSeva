@@ -24,10 +24,20 @@ import { AdminLoginPage } from "./pages/admin/AdminLoginPage";
 import { AdminRequestOtpPage } from "./pages/admin/AdminRequestOtpPage";
 import { AdminVerifyOtpPage } from "./pages/admin/AdminVerifyOtpPage";
 import { AdminPanelPage } from "./pages/admin/AdminPanelPage";
-import { AdminReportsPage } from "./pages/admin/AdminReportsPage";
-import { AdminEventsPage } from "./pages/admin/AdminEventsPage";
-import { AdminVolunteersPage } from "./pages/admin/AdminVolunteersPage";
-import { AdminCertificatesPage } from "./pages/admin/AdminCertificatesPage";
+import { AdminCollegesPage } from "./pages/admin/AdminCollegesPage";
+import { CollegeDashboardPage } from "./pages/college/CollegeDashboardPage";
+import { AdminReportsPage } from "./pages/college/AdminReportsPage";
+import { AdminEventsPage } from "./pages/college/AdminEventsPage";
+import { AdminVolunteersPage } from "./pages/college/AdminVolunteersPage";
+import { AdminCertificatesPage } from "./pages/college/AdminCertificatesPage";
+import { AdminNssUnitsPage } from "./pages/college/AdminNssUnitsPage";
+import { AdminProgramOfficersPage } from "./pages/college/AdminProgramOfficersPage";
+import { AdminActivityProposalsPage } from "./pages/college/AdminActivityProposalsPage";
+import { AdminVolunteerHoursPage } from "./pages/college/AdminVolunteerHoursPage";
+import { AdminBadgesPage } from "./pages/college/AdminBadgesPage";
+import { CoordinatorDashboardPage } from "./pages/college/CoordinatorDashboardPage";
+import { ImpactAnalyticsPage } from "./pages/college/ImpactAnalyticsPage";
+import { CollegeProfilePage } from "./pages/college/CollegeProfilePage";
 import { PageTransition } from "./components/PageTransition";
 import { Footer } from "./app/Footer";
 import { Header } from "./app/Header";
@@ -76,7 +86,14 @@ export default function App() {
     if (localStorage.getItem("admin_token")) {
       adminApi
         .get("/admin/auth/me/")
-        .then((res) => setAdminUser({ username: res.data.username }))
+        .then((res) =>
+          setAdminUser({
+            username: res.data.username,
+            admin_role: res.data.admin_role,
+            admin_college_id: res.data.admin_college_id,
+            admin_college_name: res.data.admin_college_name,
+          })
+        )
         .catch(() => {
           localStorage.removeItem("admin_token");
           setAdminUser(null);
@@ -140,10 +157,21 @@ export default function App() {
         <Route path="/admin/request-otp" element={<AdminRequestOtpPage />} />
         <Route path="/admin/verify-otp" element={<AdminVerifyOtpPage />} />
         <Route path="/admin/panel" element={<AdminPanelPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/admin/reports" element={<AdminReportsPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/admin/events" element={<AdminEventsPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/admin/volunteers" element={<AdminVolunteersPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/admin/certificates" element={<AdminCertificatesPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
+        <Route path="/admin/colleges" element={<AdminCollegesPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
+
+        <Route path="/college/dashboard" element={<CollegeDashboardPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/reports" element={<AdminReportsPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/events" element={<AdminEventsPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/volunteers" element={<AdminVolunteersPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/certificates" element={<AdminCertificatesPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/nss-units" element={<AdminNssUnitsPage onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/program-officers" element={<AdminProgramOfficersPage onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/activity-proposals" element={<AdminActivityProposalsPage onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/volunteer-hours" element={<AdminVolunteerHoursPage onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/badges" element={<AdminBadgesPage onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/coordinator-dashboard" element={<CoordinatorDashboardPage onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/impact-analytics" element={<ImpactAnalyticsPage onLogout={() => setAdminUser(null)} />} />
+        <Route path="/college/profile" element={<CollegeProfilePage onLogout={() => setAdminUser(null)} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

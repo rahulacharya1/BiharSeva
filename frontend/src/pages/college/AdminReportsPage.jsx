@@ -121,7 +121,7 @@ export function AdminReportsPage({ adminUser, onLogout }) {
                         Civic <span className="text-slate-500">Database.</span>
                     </h1>
                     <div className="mt-10 flex justify-center gap-4">
-                        <Link to="/admin/panel" className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
+                        <Link to="/college/dashboard" className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
                             <FiArrowLeft /> Dashboard
                         </Link>
                     </div>
@@ -261,3 +261,4 @@ export function AdminReportsPage({ adminUser, onLogout }) {
         </main>
     );
 }
+

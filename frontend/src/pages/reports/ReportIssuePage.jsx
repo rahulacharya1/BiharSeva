@@ -13,7 +13,7 @@ const initialFormState = {
 
 const districts = [
     "Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", 
-    "Saharsa", "Patna", "Gaya", "Bhagalpur", "Muzaffarpur"
+    "Saharsa"
 ];
 
 export function ReportIssuePage() {

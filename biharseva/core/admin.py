@@ -1,5 +1,18 @@
 from django.contrib import admin
-from .models import Report, Volunteer, Event, EventRegistration, Certificate
+from .models import (
+    AdminProfile,
+    ActivityProposal,
+    Badge,
+    Certificate,
+    College,
+    Event,
+    EventRegistration,
+    NSSUnit,
+    ProgramOfficer,
+    Report,
+    Volunteer,
+    VolunteerHours,
+)
 import uuid
 
 # -----------------------------
@@ -33,7 +46,7 @@ class ReportAdmin(admin.ModelAdmin):
 class VolunteerAdmin(admin.ModelAdmin):
     list_display = ['name', 'email', 'phone', 'college', 'district', 'is_verified', 'created_at']
     list_filter = ['is_verified', 'district', 'created_at']
-    search_fields = ['name', 'email', 'phone', 'college']
+    search_fields = ['name', 'email', 'phone', 'college__name', 'college_name']
     actions = ['verify_volunteers', 'unverify_volunteers']
     ordering = ['is_verified', '-created_at']
 
@@ -103,3 +116,52 @@ class CertificateAdmin(admin.ModelAdmin):
     list_filter = ['issued_date', 'event']
     search_fields = ['certificate_id', 'volunteer__name', 'volunteer__email', 'event__title']
     readonly_fields = ['certificate_id', 'issued_date']
+
+
+@admin.register(College)
+class CollegeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'city', 'district', 'code', 'created_at']
+    list_filter = ['district', 'created_at']
+    search_fields = ['name', 'city', 'code', 'email']
+
+
+@admin.register(NSSUnit)
+class NSSUnitAdmin(admin.ModelAdmin):
+    list_display = ['college', 'unit_number', 'name', 'created_at']
+    list_filter = ['college', 'created_at']
+    search_fields = ['college__name', 'name']
+
+
+@admin.register(ProgramOfficer)
+class ProgramOfficerAdmin(admin.ModelAdmin):
+    list_display = ['name', 'nss_unit', 'email', 'phone', 'designation', 'is_active']
+    list_filter = ['is_active', 'designation', 'nss_unit__college']
+    search_fields = ['name', 'email', 'phone', 'nss_unit__college__name']
+
+
+@admin.register(VolunteerHours)
+class VolunteerHoursAdmin(admin.ModelAdmin):
+    list_display = ['volunteer', 'event', 'hours', 'recorded_by', 'recorded_at']
+    list_filter = ['event', 'recorded_at']
+    search_fields = ['volunteer__name', 'event__title', 'recorded_by']
+
+
+@admin.register(Badge)
+class BadgeAdmin(admin.ModelAdmin):
+    list_display = ['volunteer', 'level', 'name', 'hours_required', 'earned_date']
+    list_filter = ['level', 'earned_date']
+    search_fields = ['volunteer__name', 'name', 'description']
+
+
+@admin.register(ActivityProposal)
+class ActivityProposalAdmin(admin.ModelAdmin):
+    list_display = ['title', 'nss_unit', 'activity_type', 'status', 'proposed_date', 'created_at']
+    list_filter = ['status', 'activity_type', 'proposed_date']
+    search_fields = ['title', 'description', 'nss_unit__college__name']
+
+
+@admin.register(AdminProfile)
+class AdminProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'role', 'college', 'created_at']
+    list_filter = ['role', 'college']
+    search_fields = ['user__username', 'user__email', 'college__name']

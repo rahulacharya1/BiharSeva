@@ -77,7 +77,7 @@ export function AdminVerifyOtpPage() {
                     </h1>
                     {email ? (
                         <p className="mt-8 max-w-2xl mx-auto text-lg text-slate-500 font-medium leading-relaxed">
-                            We sent a 6-digit code to <span className="text-slate-900 font-bold">{email}</span>. Enter it below to reset your admin password.
+                            We sent a 6-digit code to <span className="text-slate-900 font-bold">{email}</span>. Enter it below to reset your Platform/College admin password.
                         </p>
                     ) : (
                         <p className="mt-8 max-w-2xl mx-auto text-lg text-slate-500 font-medium leading-relaxed">

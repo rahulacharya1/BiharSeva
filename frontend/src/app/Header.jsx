@@ -29,6 +29,10 @@ const NavItem = ({ to, children, end = false, className = "" }) => (
 );
 
 export function Header({ volunteer, adminUser, mobileOpen, onToggleMobile, onCloseMobile }) {
+    const adminHomePath = adminUser
+        ? (adminUser.admin_role === "platform_admin" ? "/admin/panel" : "/college/dashboard")
+        : "/admin/login";
+
     return (
         <header className="sticky top-0 z-[100] w-full bg-white/90 backdrop-blur-xl border-b border-slate-100/60">
             <div className="max-w-7xl mx-auto px-6 h-20 md:h-24 flex items-center justify-between">
@@ -84,9 +88,9 @@ export function Header({ volunteer, adminUser, mobileOpen, onToggleMobile, onClo
                         )}
 
                         <NavLink
-                            to={adminUser ? "/admin/panel" : "/admin/login"}
+                            to={adminHomePath}
                             className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all border border-slate-100 hover:border-slate-200"
-                            title={adminUser ? "Admin Panel" : "Admin Login"}
+                            title={adminUser ? "Admin Dashboard" : "Admin Login"}
                         >
                             <i className={`fas ${adminUser ? "fa-user-shield" : "fa-lock-open"} text-sm`}></i>
                         </NavLink>

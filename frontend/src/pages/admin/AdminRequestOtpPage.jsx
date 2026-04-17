@@ -61,7 +61,7 @@ export function AdminRequestOtpPage() {
                         Admin <span className="text-slate-400 font-black">OTP Reset.</span>
                     </h1>
                     <p className="mt-8 max-w-2xl mx-auto text-lg text-slate-500 font-medium leading-relaxed">
-                        Enter your admin email address. We will send a one-time password to verify your identity.
+                        Enter your Platform Admin or College Admin email. We will send a one-time password to verify your identity.
                     </p>
                 </div>
             </div>
@@ -82,7 +82,7 @@ export function AdminRequestOtpPage() {
                             <FiMail className={iconClasses} />
                             <input
                                 type="email"
-                                placeholder="Admin Email Address"
+                                placeholder="Admin / College Admin Email"
                                 className={inputClasses}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required

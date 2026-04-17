@@ -14,8 +14,13 @@ export function AdminEventsPage({ adminUser, onLogout }) {
         location: "",
         description: "",
         program_coordinator_name: "",
+        nss_unit: "",
+        activity_type: "other",
+        hours_per_volunteer: 2,
     }), [today]);
     const [events, setEvents] = useState([]);
+    const [units, setUnits] = useState([]);
+    const [adminRole, setAdminRole] = useState(adminUser?.admin_role || "platform_admin");
     const [form, setForm] = useState(initialForm);
     const [editingEventId, setEditingEventId] = useState(null);
     const [selectedEventId, setSelectedEventId] = useState("");
@@ -33,8 +38,14 @@ export function AdminEventsPage({ adminUser, onLogout }) {
 
     const loadEvents = async () => {
         try {
-            const res = await adminApi.get("/admin/events/");
-            setEvents(res.data);
+            const [eventsRes, unitsRes, meRes] = await Promise.all([
+                adminApi.get("/admin/events/"),
+                adminApi.get("/admin/nss-units/"),
+                adminApi.get("/admin/auth/me/"),
+            ]);
+            setEvents(eventsRes.data || []);
+            setUnits(unitsRes.data || []);
+            setAdminRole(meRes.data?.admin_role || "platform_admin");
         } catch (err) {
             if ([401, 403].includes(err?.response?.status)) {
                 clearSession();
@@ -76,6 +87,9 @@ export function AdminEventsPage({ adminUser, onLogout }) {
             location: event.location || "",
             description: event.description || "",
             program_coordinator_name: event.program_coordinator_name || "",
+            nss_unit: event.nss_unit || "",
+            activity_type: event.activity_type || "other",
+            hours_per_volunteer: event.hours_per_volunteer || 2,
         });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -150,7 +164,7 @@ export function AdminEventsPage({ adminUser, onLogout }) {
                         Manage <span className="text-slate-500">Events.</span>
                     </h1>
                     <div className="mt-10 flex justify-center gap-4">
-                        <Link to="/admin/panel" className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
+                        <Link to="/college/dashboard" className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
                             <FiArrowLeft /> Dashboard
                         </Link>
                     </div>
@@ -171,6 +185,13 @@ export function AdminEventsPage({ adminUser, onLogout }) {
 
                         <form onSubmit={submitEvent} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <input className={`${inputClasses} md:col-span-2`} placeholder="Event Title (e.g. Clean Purnea Drive)" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+                            <select className={inputClasses} value={form.nss_unit} onChange={(e) => setForm({ ...form, nss_unit: e.target.value })} required={adminRole !== "platform_admin"}>
+                                <option value="">Select NSS Unit</option>
+                                {units.map((u) => (
+                                    <option key={u.id} value={u.id}>{u.college_name} / Unit {u.unit_number}</option>
+                                ))}
+                            </select>
+                            <input type="number" step="0.25" min="0.25" className={inputClasses} placeholder="Hours per Volunteer" value={form.hours_per_volunteer} onChange={(e) => setForm({ ...form, hours_per_volunteer: e.target.value })} />
                         <input type="date" min={today} className={inputClasses} value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
                         <input className={inputClasses} placeholder="Location / Meeting Point" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} required />
                         <textarea className={`${inputClasses} md:col-span-2 resize-none h-32`} placeholder="Mission Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
@@ -212,6 +233,7 @@ export function AdminEventsPage({ adminUser, onLogout }) {
                                         <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Date</th>
                                         <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Location</th>
                                         <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Coordinator</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">NSS Unit</th>
                                         <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Description</th>
                                         <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Status</th>
                                         <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">Actions</th>
@@ -230,6 +252,7 @@ export function AdminEventsPage({ adminUser, onLogout }) {
                                             <td className="px-6 py-4 border-b border-slate-100 text-xs font-bold text-slate-600">{e.date}</td>
                                             <td className="px-6 py-4 border-b border-slate-100 text-xs font-bold text-slate-600">{e.location}</td>
                                             <td className="px-6 py-4 border-b border-slate-100 text-xs font-bold text-slate-600">{e.program_coordinator_name || "-"}</td>
+                                            <td className="px-6 py-4 border-b border-slate-100 text-xs font-bold text-slate-500">{e.nss_unit_name || "Unassigned"}</td>
                                             <td className="px-6 py-4 border-b border-slate-100 text-xs text-slate-500 max-w-[320px]">{e.description || "-"}</td>
                                             <td className="px-6 py-4 border-b border-slate-100">
                                                 <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${e.is_completed ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
@@ -341,3 +364,4 @@ export function AdminEventsPage({ adminUser, onLogout }) {
         </main>
     );
 }
+

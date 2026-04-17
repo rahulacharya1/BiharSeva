@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiShield, FiLogOut, FiBarChart2, FiCalendar, FiUsers, FiAward, FiArrowRight } from "react-icons/fi";
+import { FiLogOut, FiArrowRight, FiHome } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 
 export function AdminPanelPage({ adminUser, onLogout }) {
     const navigate = useNavigate();
     const [stats, setStats] = useState(null);
+    const [adminContext, setAdminContext] = useState(null);
+    const [collegesOverview, setCollegesOverview] = useState([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
     useAutoDismissMessage(message, setMessage, 2500);
@@ -23,6 +25,8 @@ export function AdminPanelPage({ adminUser, onLogout }) {
             try {
                 const res = await adminApi.get("/admin/dashboard/");
                 setStats(res.data.stats);
+                setAdminContext(res.data.admin_context || null);
+                setCollegesOverview(res.data.colleges_overview || []);
             } catch (err) {
                 if ([401, 403].includes(err?.response?.status)) {
                     clearSession();
@@ -54,11 +58,15 @@ export function AdminPanelPage({ adminUser, onLogout }) {
         </div>
     );
 
-    const adminModules = [
-        { title: "Manage Reports", path: "/admin/reports", count: stats?.total_reports ?? 0, icon: <FiBarChart2 />, color: "text-blue-600", bg: "bg-blue-50" },
-        { title: "Manage Events", path: "/admin/events", count: stats?.total_events ?? 0, icon: <FiCalendar />, color: "text-emerald-600", bg: "bg-emerald-50" },
-        { title: "Manage Volunteers", path: "/admin/volunteers", count: stats?.total_volunteers ?? 0, icon: <FiUsers />, color: "text-purple-600", bg: "bg-purple-50" },
-        { title: "Manage Certificates", path: "/admin/certificates", count: stats?.total_certificates ?? 0, icon: <FiAward />, color: "text-orange-600", bg: "bg-orange-50" },
+    const role = adminContext?.role || adminUser?.admin_role || "platform_admin";
+    const isPlatform = role === "platform_admin";
+
+    if (!isPlatform) {
+        return <Navigate to="/college/dashboard" replace />;
+    }
+
+    const visibleModules = [
+        { title: "Colleges", path: "/admin/colleges", count: "ORG", icon: <FiHome />, color: "text-cyan-700", bg: "bg-cyan-50" },
     ];
 
     return (
@@ -76,7 +84,7 @@ export function AdminPanelPage({ adminUser, onLogout }) {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </span>
-                        System Administrator
+                        Platform Administrator
                     </span>
                     <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
                         Control <span className="text-slate-500 font-black">Center.</span>
@@ -99,7 +107,7 @@ export function AdminPanelPage({ adminUser, onLogout }) {
                 )}
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {adminModules.map((module, index) => (
+                    {visibleModules.map((module, index) => (
                         <motion.div
                             key={module.path}
                             whileHover={{ y: -5 }}
@@ -126,12 +134,53 @@ export function AdminPanelPage({ adminUser, onLogout }) {
             <section className="max-w-3xl mx-auto px-6 mt-20">
                 <div className="bg-slate-50 border border-slate-100 rounded-[2.5rem] p-8 text-center">
                     <p className="text-slate-500 text-xs font-medium leading-relaxed">
-                        Ye BiharSeva ka central node hai. Yahan se aap reports verify kar sakte hain,
-                        naya event create kar sakte hain aur volunteers ko manage kar sakte hain.
-                        Sari activities real-time mein track ho rahi hain.
+                        Ye Platform Admin command center hai. Aap yahan sirf college create karte ho aur
+                        all-college monitoring dekhte ho. Daily NSS operations College Dashboard se handle hote hain.
                     </p>
                 </div>
             </section>
+
+            {isPlatform && (
+                <section className="max-w-7xl mx-auto px-6 mt-10">
+                    <div className="bg-white border border-slate-100 rounded-3xl overflow-x-auto">
+                        <div className="px-6 py-4 border-b border-slate-100">
+                            <h2 className="text-sm font-black uppercase tracking-widest text-slate-700">College Operations Overview</h2>
+                            <p className="text-xs text-slate-500 mt-1">Platform view only: units, officers, events, volunteers and certificates by college.</p>
+                        </div>
+                        <table className="w-full text-sm">
+                            <thead className="bg-slate-50 text-slate-500 text-xs uppercase">
+                                <tr>
+                                    <th className="text-left px-4 py-3">College</th>
+                                    <th className="text-left px-4 py-3">District</th>
+                                    <th className="text-right px-4 py-3">Units</th>
+                                    <th className="text-right px-4 py-3">Officers</th>
+                                    <th className="text-right px-4 py-3">Events</th>
+                                    <th className="text-right px-4 py-3">Volunteers</th>
+                                    <th className="text-right px-4 py-3">Certificates</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {collegesOverview.map((college) => (
+                                    <tr key={college.college_id} className="border-t border-slate-100">
+                                        <td className="px-4 py-3 font-semibold text-slate-800">{college.college_name}</td>
+                                        <td className="px-4 py-3 text-slate-600">{college.district || "-"}</td>
+                                        <td className="px-4 py-3 text-right font-bold text-slate-700">{college.nss_units}</td>
+                                        <td className="px-4 py-3 text-right font-bold text-slate-700">{college.program_officers}</td>
+                                        <td className="px-4 py-3 text-right font-bold text-slate-700">{college.events}</td>
+                                        <td className="px-4 py-3 text-right font-bold text-slate-700">{college.volunteers}</td>
+                                        <td className="px-4 py-3 text-right font-bold text-slate-700">{college.certificates}</td>
+                                    </tr>
+                                ))}
+                                {!collegesOverview.length && (
+                                    <tr>
+                                        <td colSpan={7} className="px-4 py-8 text-center text-xs font-semibold text-slate-400">No colleges found yet.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            )}
         </main>
     );
 }

@@ -139,7 +139,7 @@ export function DashboardPage({ volunteer, onLogout }) {
                                     <p className="text-sm font-bold text-white mb-1">{e.title}</p>
                                     <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{e.date}</p>
                                 </div>
-                                <Link to={`/event/${e.id}`} className="w-10 h-10 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-emerald-500 transition-all">
+                                <Link to="/events" className="w-10 h-10 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-emerald-500 transition-all">
                                     <i className="fas fa-plus text-xs"></i>
                                 </Link>
                             </div>

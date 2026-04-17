@@ -82,7 +82,7 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
                         Volunteer <span className="text-slate-500">Registry.</span>
                     </h1>
                     <div className="mt-10 flex justify-center">
-                        <Link to="/admin/panel" className="px-8 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
+                        <Link to="/college/dashboard" className="px-8 py-3 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
                             <FiArrowLeft /> Dashboard
                         </Link>
                     </div>
@@ -191,3 +191,4 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
         </main>
     );
 }
+

@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiShield, FiUser, FiLock, FiArrowRight, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import { FiShield, FiUser, FiLock, FiArrowRight, FiCheckCircle, FiAlertCircle, FiBookOpen } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
 
 export function AdminLoginPage({ onLogin }) {
     const navigate = useNavigate();
+    const [accessMode, setAccessMode] = useState("admin");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -22,9 +23,15 @@ export function AdminLoginPage({ onLogin }) {
         try {
             const res = await adminApi.post("/admin/auth/login/", { username, password });
             localStorage.setItem("admin_token", res.data.token);
-            onLogin?.({ username: res.data.username });
-            setMessage({ type: "success", text: "Welcome to Admin Command Center." });
-            navigate("/admin/panel");
+            const isPlatform = res.data.admin_role === "platform_admin";
+            onLogin?.({
+                username: res.data.username,
+                admin_role: res.data.admin_role,
+                admin_college_id: res.data.admin_college_id,
+                admin_college_name: res.data.admin_college_name,
+            });
+            setMessage({ type: "success", text: isPlatform ? "Welcome to Platform Admin Command Center." : "Welcome to College Management Dashboard." });
+            navigate(isPlatform ? "/admin/panel" : "/college/dashboard");
         } catch (err) {
             const isNetworkError = !err.response;
             setMessage({
@@ -55,13 +62,13 @@ export function AdminLoginPage({ onLogin }) {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
                         </span>
-                        Restricted Area
+                        Choose Access
                     </span>
                     <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-slate-900 leading-[1.1]">
-                        Admin <span className="text-slate-400 font-black">Control.</span>
+                        Sign in to your <span className="text-slate-400 font-black">Dashboard.</span>
                     </h1>
                     <p className="mt-8 max-w-2xl mx-auto text-lg text-slate-500 font-medium leading-relaxed">
-                        Authorized personnel only. Please enter your administrative credentials to manage BiharSeva reports, volunteers, and events.
+                        Use the same login for Platform Admin and College Admin access.
                     </p>
                 </div>
             </div>
@@ -72,17 +79,33 @@ export function AdminLoginPage({ onLogin }) {
                     initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
                     className="bg-white rounded-[1.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden"
                 >
-                    <div className="bg-slate-900 px-10 py-5 flex justify-between items-center">
+                    <div className="bg-slate-900 px-6 md:px-10 py-5 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic flex items-center gap-2">
-                            <FiShield className="text-slate-500" /> Command Center Login
+                            <FiShield className="text-slate-500" /> {accessMode === "admin" ? "Platform Admin Login" : "College Admin Login"}
                         </span>
+                        <div className="grid grid-cols-2 gap-2 bg-white/5 p-1 rounded-2xl border border-white/10">
+                            <button
+                                type="button"
+                                onClick={() => setAccessMode("admin")}
+                                className={`px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${accessMode === "admin" ? "bg-gradient-to-r from-violet-600 to-cyan-500 text-white shadow-lg" : "text-slate-300 hover:text-white hover:bg-white/5"}`}
+                            >
+                                <FiShield /> Admin
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setAccessMode("college")}
+                                className={`px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${accessMode === "college" ? "bg-gradient-to-r from-violet-600 to-cyan-500 text-white shadow-lg" : "text-slate-300 hover:text-white hover:bg-white/5"}`}
+                            >
+                                <FiBookOpen /> College
+                            </button>
+                        </div>
                     </div>
 
                     <form onSubmit={submit} className="p-10 md:p-14 space-y-6">
                         <div className="relative group">
                             <FiUser className={iconClasses} />
                             <input
-                                placeholder="Admin Username or Email"
+                                placeholder={accessMode === "admin" ? "Admin Username or Email" : "College Admin Username or Email"}
                                 className={inputClasses}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
@@ -90,7 +113,7 @@ export function AdminLoginPage({ onLogin }) {
                         </div>
                         <PasswordInput
                             leftIcon={<FiLock className={iconClasses} />}
-                            placeholder="Master Password"
+                            placeholder={accessMode === "admin" ? "Admin Password" : "College Admin Password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -104,7 +127,7 @@ export function AdminLoginPage({ onLogin }) {
                                 disabled={loading}
                                 className="w-full bg-slate-900 hover:bg-slate-800 text-white py-6 rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 group disabled:opacity-50"
                             >
-                                {loading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>Authorize Session <FiArrowRight className="group-hover:translate-x-1 transition-transform" /></>}
+                                {loading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>{accessMode === "admin" ? "Enter Admin" : "Enter College"} <FiArrowRight className="group-hover:translate-x-1 transition-transform" /></>}
                             </button>
 
                             <AnimatePresence>
