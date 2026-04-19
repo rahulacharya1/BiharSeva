@@ -1,8 +1,7 @@
-import { FiLogOut, FiArrowRight, FiCalendar, FiUsers, FiAward, FiLayers, FiUserPlus, FiClipboard, FiClock, FiBarChart2, FiUser } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiLogOut, FiArrowRight, FiCalendar, FiUsers, FiAward, FiLayers, FiUserPlus, FiClipboard, FiClock, FiBarChart2, FiUser } from "react-icons/fi";
+import { FiLogOut, FiArrowRight, FiCalendar, FiUsers, FiAward, FiLayers, FiUserPlus, FiFileText, FiClock, FiBarChart2, FiUser } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 
@@ -68,12 +67,12 @@ export function CollegeDashboardPage({ adminUser, onLogout }) {
     { title: "Certificates", path: "/college/certificates", count: "CRT", icon: <FiAward />, color: "text-amber-700", bg: "bg-amber-50" },
     { title: "NSS Units", path: "/college/nss-units", count: "UNT", icon: <FiLayers />, color: "text-teal-700", bg: "bg-teal-50" },
     { title: "Program Officers", path: "/college/program-officers", count: "PO", icon: <FiUserPlus />, color: "text-indigo-700", bg: "bg-indigo-50" },
-    { title: "Activity Proposals", path: "/college/activity-proposals", count: "PLN", icon: <FiClipboard />, color: "text-orange-700", bg: "bg-orange-50" },
+    { title: "Activity Proposals", path: "/college/activity-proposals", count: "PLN", icon: <FiFileText />, color: "text-orange-700", bg: "bg-orange-50" },
     { title: "Volunteer Hours", path: "/college/volunteer-hours", count: "HRS", icon: <FiClock />, color: "text-slate-700", bg: "bg-slate-100" },
     { title: "Badges", path: "/college/badges", count: "BDG", icon: <FiAward />, color: "text-rose-700", bg: "bg-rose-50" },
     { title: "Coordinator Dashboard", path: "/college/coordinator-dashboard", count: "CO", icon: <FiUsers />, color: "text-cyan-700", bg: "bg-cyan-50" },
     { title: "Impact Analytics", path: "/college/impact-analytics", count: "DATA", icon: <FiBarChart2 />, color: "text-lime-700", bg: "bg-lime-50" },
-    { title: "Reports", path: "/college/reports", count: "REP", icon: <FiClipboard />, color: "text-fuchsia-700", bg: "bg-fuchsia-50" },
+    { title: "Reports", path: "/college/reports", count: "REP", icon: <FiFileText />, color: "text-fuchsia-700", bg: "bg-fuchsia-50" },
   ];
 
   return (
