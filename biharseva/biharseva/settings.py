@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,9 +80,31 @@ WSGI_APPLICATION = 'biharseva.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# Use DATABASE_URL env var for PostgreSQL in production.
+# Format: postgres://USER:PASSWORD@HOST:PORT/DB_NAME
+
+def parse_database_url(url):
+    """Parse DATABASE_URL into Django DATABASES dict."""
+    pattern = re.compile(
+        r'^postgres(?:ql)?://(?P<user>[^:]+):(?P<password>[^@]+)@(?P<host>[^:]+):(?P<port>\d+)/(?P<name>.+)$'
+    )
+    match = pattern.match(url)
+    if not match:
+        return None
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': match.group('name'),
+        'USER': match.group('user'),
+        'PASSWORD': match.group('password'),
+        'HOST': match.group('host'),
+        'PORT': match.group('port'),
+    }
+
+_DATABASE_URL = os.getenv('DATABASE_URL', '')
+_pg_config = parse_database_url(_DATABASE_URL) if _DATABASE_URL else None
 
 DATABASES = {
-    'default': {
+    'default': _pg_config or {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
@@ -122,6 +146,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (uploads)
 MEDIA_URL = 'media/'
@@ -147,6 +173,17 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '30/minute',
+        'user': '120/minute',
+        'otp': '5/minute',
+    },
 }
 
 # Security settings (configure via .env)

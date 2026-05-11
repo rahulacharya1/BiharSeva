@@ -1,6 +1,7 @@
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { adminApi, api } from "./api";
+import { Route, Routes, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useAuth } from "./context/AuthContext";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { HomePage } from "./pages/public/HomePage";
 import { AboutPage } from "./pages/public/AboutPage";
 import { CivicSensePage } from "./pages/public/CivicSensePage";
@@ -38,13 +39,14 @@ import { AdminBadgesPage } from "./pages/college/AdminBadgesPage";
 import { CoordinatorDashboardPage } from "./pages/college/CoordinatorDashboardPage";
 import { ImpactAnalyticsPage } from "./pages/college/ImpactAnalyticsPage";
 import { CollegeProfilePage } from "./pages/college/CollegeProfilePage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 import { PageTransition } from "./components/PageTransition";
 import { Footer } from "./app/Footer";
 import { Header } from "./app/Header";
 
-function Layout({ children, volunteer, adminUser, pathname }) {
+function Layout({ children, pathname }) {
+  const { volunteer, adminUser } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const closeMenu = () => setMobileOpen(false);
 
   return (
@@ -56,7 +58,6 @@ function Layout({ children, volunteer, adminUser, pathname }) {
         onToggleMobile={() => setMobileOpen((prev) => !prev)}
         onCloseMobile={closeMenu}
       />
-
       <main>
         <PageTransition pageKey={pathname}>{children}</PageTransition>
       </main>
@@ -67,51 +68,15 @@ function Layout({ children, volunteer, adminUser, pathname }) {
 
 export default function App() {
   const location = useLocation();
-  const [volunteer, setVolunteer] = useState(null);
-  const [adminUser, setAdminUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const volunteerToken = localStorage.getItem("volunteer_token");
-
-    const volunteerRequest = volunteerToken
-      ? api.get("/volunteers/me/")
-          .then((res) => setVolunteer(res.data.volunteer))
-          .catch(() => {
-            localStorage.removeItem("volunteer_token");
-            setVolunteer(null);
-          })
-      : Promise.resolve(setVolunteer(null));
-
-    if (localStorage.getItem("admin_token")) {
-      adminApi
-        .get("/admin/auth/me/")
-        .then((res) =>
-          setAdminUser({
-            username: res.data.username,
-            admin_role: res.data.admin_role,
-            admin_college_id: res.data.admin_college_id,
-            admin_college_name: res.data.admin_college_name,
-          })
-        )
-        .catch(() => {
-          localStorage.removeItem("admin_token");
-          setAdminUser(null);
-        });
-    }
-
-    Promise.resolve(volunteerRequest).finally(() => setLoading(false));
-  }, []);
-
-  const handleVolunteerLogin = (payload) => {
-    localStorage.setItem("volunteer_token", payload.token);
-    setVolunteer(payload.volunteer);
-  };
-
-  const handleVolunteerLogout = () => {
-    localStorage.removeItem("volunteer_token");
-    setVolunteer(null);
-  };
+  const {
+    volunteer,
+    adminUser,
+    loading,
+    handleVolunteerLogin,
+    handleVolunteerLogout,
+    handleAdminLogin,
+    handleAdminLogout,
+  } = useAuth();
 
   if (loading) {
     return (
@@ -132,48 +97,51 @@ export default function App() {
   }
 
   return (
-    <Layout volunteer={volunteer} adminUser={adminUser} pathname={location.pathname}>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/civic-sense" element={<CivicSensePage />} />
-        <Route path="/traffic-rules" element={<TrafficRulesPage />} />
-        <Route path="/clean-bihar" element={<CleanBiharPage />} />
-        <Route path="/services" element={<ServicesPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/report-issue" element={<ReportIssuePage />} />
-        <Route path="/report-gallery" element={<ReportGalleryPage />} />
-        <Route path="/volunteers" element={<VolunteersPage />} />
-        <Route path="/volunteer/register" element={<VolunteerRegisterPage />} />
-        <Route path="/volunteer/login" element={<VolunteerLoginPage onLogin={handleVolunteerLogin} />} />
-        <Route path="/volunteer/profile" element={<VolunteerProfilePage />} />
-        <Route path="/volunteer/request-otp" element={<VolunteerRequestOtpPage />} />
-        <Route path="/volunteer/verify-otp" element={<VolunteerVerifyOtpPage />} />
-        <Route path="/dashboard" element={<DashboardPage volunteer={volunteer} onLogout={handleVolunteerLogout} />} />
-        <Route path="/events" element={<EventsPage volunteer={volunteer} />} />
-        <Route path="/certificates" element={<CertificatesPage volunteer={volunteer} />} />
-        <Route path="/admin/login" element={<AdminLoginPage onLogin={setAdminUser} />} />
-        <Route path="/admin/request-otp" element={<AdminRequestOtpPage />} />
-        <Route path="/admin/verify-otp" element={<AdminVerifyOtpPage />} />
-        <Route path="/admin/panel" element={<AdminPanelPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/admin/colleges" element={<AdminCollegesPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
+    <ErrorBoundary>
+      <Layout pathname={location.pathname}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/civic-sense" element={<CivicSensePage />} />
+          <Route path="/traffic-rules" element={<TrafficRulesPage />} />
+          <Route path="/clean-bihar" element={<CleanBiharPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/report-issue" element={<ReportIssuePage />} />
+          <Route path="/report-gallery" element={<ReportGalleryPage />} />
+          <Route path="/volunteers" element={<VolunteersPage />} />
+          <Route path="/volunteer/register" element={<VolunteerRegisterPage />} />
+          <Route path="/volunteer/login" element={<VolunteerLoginPage onLogin={handleVolunteerLogin} />} />
+          <Route path="/volunteer/profile" element={<VolunteerProfilePage />} />
+          <Route path="/volunteer/request-otp" element={<VolunteerRequestOtpPage />} />
+          <Route path="/volunteer/verify-otp" element={<VolunteerVerifyOtpPage />} />
+          <Route path="/dashboard" element={<DashboardPage volunteer={volunteer} onLogout={handleVolunteerLogout} />} />
+          <Route path="/events" element={<EventsPage volunteer={volunteer} />} />
+          <Route path="/certificates" element={<CertificatesPage volunteer={volunteer} />} />
+          <Route path="/admin/login" element={<AdminLoginPage onLogin={handleAdminLogin} />} />
+          <Route path="/admin/request-otp" element={<AdminRequestOtpPage />} />
+          <Route path="/admin/verify-otp" element={<AdminVerifyOtpPage />} />
+          <Route path="/admin/panel" element={<AdminPanelPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+          <Route path="/admin/colleges" element={<AdminCollegesPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
 
-        <Route path="/college/dashboard" element={<CollegeDashboardPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/reports" element={<AdminReportsPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/events" element={<AdminEventsPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/volunteers" element={<AdminVolunteersPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/certificates" element={<AdminCertificatesPage adminUser={adminUser} onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/nss-units" element={<AdminNssUnitsPage onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/program-officers" element={<AdminProgramOfficersPage onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/activity-proposals" element={<AdminActivityProposalsPage onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/volunteer-hours" element={<AdminVolunteerHoursPage onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/badges" element={<AdminBadgesPage onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/coordinator-dashboard" element={<CoordinatorDashboardPage onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/impact-analytics" element={<ImpactAnalyticsPage onLogout={() => setAdminUser(null)} />} />
-        <Route path="/college/profile" element={<CollegeProfilePage onLogout={() => setAdminUser(null)} />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+          <Route path="/college/dashboard" element={<CollegeDashboardPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+          <Route path="/college/reports" element={<AdminReportsPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+          <Route path="/college/events" element={<AdminEventsPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+          <Route path="/college/volunteers" element={<AdminVolunteersPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+          <Route path="/college/certificates" element={<AdminCertificatesPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+          <Route path="/college/nss-units" element={<AdminNssUnitsPage onLogout={handleAdminLogout} />} />
+          <Route path="/college/program-officers" element={<AdminProgramOfficersPage onLogout={handleAdminLogout} />} />
+          <Route path="/college/activity-proposals" element={<AdminActivityProposalsPage onLogout={handleAdminLogout} />} />
+          <Route path="/college/volunteer-hours" element={<AdminVolunteerHoursPage onLogout={handleAdminLogout} />} />
+          <Route path="/college/badges" element={<AdminBadgesPage onLogout={handleAdminLogout} />} />
+          <Route path="/college/coordinator-dashboard" element={<CoordinatorDashboardPage onLogout={handleAdminLogout} />} />
+          <Route path="/college/impact-analytics" element={<ImpactAnalyticsPage onLogout={handleAdminLogout} />} />
+          <Route path="/college/profile" element={<CollegeProfilePage onLogout={handleAdminLogout} />} />
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Layout>
+    </ErrorBoundary>
   );
 }
