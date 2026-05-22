@@ -1,19 +1,40 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../../api";
+import { SkeletonGrid } from "../../components/Skeleton";
+
+const districts = ["", "Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", "Saharsa"];
+const statuses = ["", "verified", "in_progress", "cleaned"];
 
 export function ReportGalleryPage() {
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState({ district: "", status: "", search: "" });
 
-    useEffect(() => {
-        api.get("/reports/gallery/")
+    const fetchReports = () => {
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (filters.district) params.set("district", filters.district);
+        if (filters.status) params.set("status", filters.status);
+        if (filters.search) params.set("search", filters.search);
+
+        api.get(`/reports/gallery/?${params.toString()}`)
             .then((res) => {
                 setReports(res.data);
                 setLoading(false);
             })
             .catch(() => setLoading(false));
-    }, []);
+    };
+
+    useEffect(() => {
+        fetchReports();
+    }, [filters.district, filters.status]);
+
+    // Debounced search
+    useEffect(() => {
+        const timeout = setTimeout(fetchReports, 400);
+        return () => clearTimeout(timeout);
+    }, [filters.search]);
 
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
@@ -56,13 +77,50 @@ export function ReportGalleryPage() {
                 </div>
             </section>
 
-            {/* --- GALLERY GRID --- */}
-            <section className="max-w-7xl mx-auto px-6 -mt-24 relative z-20">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Loading Reports...</p>
+            {/* --- SEARCH & FILTERS --- */}
+            <section className="max-w-7xl mx-auto px-6 -mt-24 relative z-20 mb-10">
+                <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl p-6 flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 relative">
+                        <i className="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
+                        <input
+                            type="text"
+                            placeholder="Search by location, description..."
+                            value={filters.search}
+                            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-400 transition-all text-sm font-medium"
+                        />
                     </div>
+                    <div className="relative">
+                        <select
+                            value={filters.district}
+                            onChange={(e) => setFilters({ ...filters, district: e.target.value })}
+                            className="appearance-none bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 pr-10 text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer"
+                        >
+                            <option value="">All Districts</option>
+                            {districts.filter(Boolean).map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                        <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={filters.status}
+                            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                            className="appearance-none bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 pr-10 text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer"
+                        >
+                            <option value="">All Statuses</option>
+                            {statuses.filter(Boolean).map(s => (
+                                <option key={s} value={s}>{s.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())}</option>
+                            ))}
+                        </select>
+                        <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
+                </div>
+            </section>
+
+            {/* --- GALLERY GRID --- */}
+            <section className="max-w-7xl mx-auto px-6">
+                {loading ? (
+                    <SkeletonGrid count={6} />
                 ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {reports.map((report, index) => (
@@ -88,6 +146,7 @@ export function ReportGalleryPage() {
                                                 src={report.photo || "https://placehold.co/600x400?text=Before+Photo"}
                                                 alt={`${report.location} before cleanup`}
                                                 className="w-full h-56 object-cover"
+                                                loading="lazy"
                                                 onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Before+Photo"; }}
                                             />
                                         </div>
@@ -97,6 +156,7 @@ export function ReportGalleryPage() {
                                                 src={report.after_photo || "https://placehold.co/600x400?text=After+Photo+Pending"}
                                                 alt={`${report.location} after cleanup`}
                                                 className="w-full h-56 object-cover"
+                                                loading="lazy"
                                                 onError={(e) => { e.target.src = "https://placehold.co/600x400?text=After+Photo+Pending"; }}
                                             />
                                         </div>
@@ -134,7 +194,7 @@ export function ReportGalleryPage() {
                 {!loading && reports.length === 0 && (
                     <div className="bg-slate-50 rounded-[3rem] p-20 text-center border-2 border-dashed border-slate-200">
                         <i className="fas fa-folder-open text-4xl text-slate-300 mb-4"></i>
-                        <p className="text-slate-500 font-medium">No reports have been published to the gallery yet.</p>
+                        <p className="text-slate-500 font-medium">No reports match your filters.</p>
                     </div>
                 )}
             </section>

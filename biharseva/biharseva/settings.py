@@ -1,5 +1,4 @@
 import os
-import re
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -80,31 +79,9 @@ WSGI_APPLICATION = 'biharseva.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-# Use DATABASE_URL env var for PostgreSQL in production.
-# Format: postgres://USER:PASSWORD@HOST:PORT/DB_NAME
-
-def parse_database_url(url):
-    """Parse DATABASE_URL into Django DATABASES dict."""
-    pattern = re.compile(
-        r'^postgres(?:ql)?://(?P<user>[^:]+):(?P<password>[^@]+)@(?P<host>[^:]+):(?P<port>\d+)/(?P<name>.+)$'
-    )
-    match = pattern.match(url)
-    if not match:
-        return None
-    return {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': match.group('name'),
-        'USER': match.group('user'),
-        'PASSWORD': match.group('password'),
-        'HOST': match.group('host'),
-        'PORT': match.group('port'),
-    }
-
-_DATABASE_URL = os.getenv('DATABASE_URL', '')
-_pg_config = parse_database_url(_DATABASE_URL) if _DATABASE_URL else None
 
 DATABASES = {
-    'default': _pg_config or {
+    'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }

@@ -4,15 +4,14 @@ import { useAuth } from "./context/AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { HomePage } from "./pages/public/HomePage";
 import { AboutPage } from "./pages/public/AboutPage";
-import { CivicSensePage } from "./pages/public/CivicSensePage";
-import { TrafficRulesPage } from "./pages/public/TrafficRulesPage";
-import { CleanBiharPage } from "./pages/public/CleanBiharPage";
 import { ServicesPage } from "./pages/public/ServicesPage";
 import { ContactPage } from "./pages/public/ContactPage";
 import { PrivacyPage } from "./pages/public/PrivacyPage";
 import { VolunteersPage } from "./pages/public/VolunteersPage";
+import { LeaderboardPage } from "./pages/public/LeaderboardPage";
 import { ReportIssuePage } from "./pages/reports/ReportIssuePage";
 import { ReportGalleryPage } from "./pages/reports/ReportGalleryPage";
+import { TrackReportPage } from "./pages/reports/TrackReportPage";
 import { VolunteerRegisterPage } from "./pages/volunteer/VolunteerRegisterPage";
 import { VolunteerLoginPage } from "./pages/volunteer/VolunteerLoginPage";
 import { VolunteerProfilePage } from "./pages/volunteer/VolunteerProfilePage";
@@ -102,15 +101,14 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/civic-sense" element={<CivicSensePage />} />
-          <Route path="/traffic-rules" element={<TrafficRulesPage />} />
-          <Route path="/clean-bihar" element={<CleanBiharPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/report-issue" element={<ReportIssuePage />} />
           <Route path="/report-gallery" element={<ReportGalleryPage />} />
+          <Route path="/track-report" element={<TrackReportPage />} />
           <Route path="/volunteers" element={<VolunteersPage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/volunteer/register" element={<VolunteerRegisterPage />} />
           <Route path="/volunteer/login" element={<VolunteerLoginPage onLogin={handleVolunteerLogin} />} />
           <Route path="/volunteer/profile" element={<VolunteerProfilePage />} />

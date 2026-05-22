@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { api } from "../../api";
-import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { useToast } from "../../context/ToastContext";
+import { compressImage } from "../../utils/compressImage";
 
 const initialFormState = { 
     reporter_name: "", 
@@ -19,22 +20,35 @@ const districts = [
 export function ReportIssuePage() {
     const [form, setForm] = useState(initialFormState);
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState({ type: "", text: "" });
-    useAutoDismissMessage(message, setMessage, 2500);
+    const [compressing, setCompressing] = useState(false);
+    const toast = useToast();
 
-    // --- CLEANUP ON NAVIGATE ---
-    // Resets state when user leaves the page to prevent "stale" data on back button
+    // Resets state on unmount
     useEffect(() => {
         return () => {
             setForm(initialFormState);
-            setMessage({ type: "", text: "" });
         };
     }, []);
+
+    const handlePhoto = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            setCompressing(true);
+            toast.info("Compressing large image...");
+            const compressed = await compressImage(file, { maxSizeMB: 2, quality: 0.75 });
+            setForm({ ...form, photo: compressed });
+            setCompressing(false);
+            toast.success(`Image compressed: ${(file.size / 1024 / 1024).toFixed(1)}MB → ${(compressed.size / 1024 / 1024).toFixed(1)}MB`);
+        } else {
+            setForm({ ...form, photo: file });
+        }
+    };
 
     const onSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage({ type: "", text: "" });
 
         const payload = new FormData();
         Object.entries(form).forEach(([k, v]) => {
@@ -42,21 +56,15 @@ export function ReportIssuePage() {
         });
 
         try {
-            await api.post("/reports/", payload, { 
+            const res = await api.post("/reports/", payload, { 
                 headers: { "Content-Type": "multipart/form-data" } 
             });
-            
-            setMessage({ type: "success", text: "Issue reported successfully! Verification is in progress." });
-            
-            // --- FULL RESET ---
-            setForm(initialFormState); // Clears React State
-            e.target.reset();          // Clears native file input
-            
+            const tracking = res.data.tracking_number || "";
+            toast.success(`Report submitted! Your tracking number: ${tracking}`, 8000);
+            setForm(initialFormState);
+            e.target.reset();
         } catch (err) {
-            setMessage({ 
-                type: "error", 
-                text: err.response?.data?.detail || "Failed to submit issue. Please try again." 
-            });
+            toast.error(err.response?.data?.detail || "Failed to submit issue. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -151,11 +159,13 @@ export function ReportIssuePage() {
                             <textarea 
                                 value={form.description}
                                 rows={4}
+                                maxLength={2000}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:border-emerald-500/50 transition-all text-slate-900 font-medium"
                                 placeholder="What needs fixing? (e.g. Garbage pile at the corner, open drain...)"
                                 onChange={(e) => setForm({ ...form, description: e.target.value })} 
                                 required 
                             />
+                            <p className="text-[10px] text-slate-300 ml-2 font-bold">{form.description.length}/2000</p>
                         </div>
 
                         {/* Photo Upload Area */}
@@ -164,19 +174,24 @@ export function ReportIssuePage() {
                             <div className="relative group border-2 border-dashed border-slate-200 rounded-[2.5rem] p-12 flex flex-col items-center justify-center gap-4 hover:bg-slate-50 hover:border-emerald-300 transition-all cursor-pointer overflow-hidden">
                                 <input 
                                     type="file" 
-                                    accept="image/*" 
+                                    accept="image/*"
+                                    capture="environment"
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                    onChange={(e) => setForm({ ...form, photo: e.target.files?.[0] || null })} 
+                                    onChange={handlePhoto} 
                                     required 
                                 />
-                                <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                                    <i className="fas fa-camera"></i>
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform ${compressing ? 'bg-amber-50 text-amber-600 animate-pulse' : 'bg-emerald-50 text-emerald-600'}`}>
+                                    <i className={`fas ${compressing ? 'fa-compress' : 'fa-camera'}`}></i>
                                 </div>
                                 <div className="text-center">
                                     <p className="text-sm font-bold text-slate-700">
-                                        {form.photo ? form.photo.name : "Click to upload image"}
+                                        {compressing ? "Compressing..." : form.photo ? form.photo.name : "Click to upload image"}
                                     </p>
-                                    <p className="text-xs text-slate-400 mt-1 uppercase tracking-tighter">Support for JPG, PNG (Max 5MB)</p>
+                                    <p className="text-xs text-slate-400 mt-1 uppercase tracking-tighter">
+                                        {form.photo 
+                                            ? `${(form.photo.size / 1024 / 1024).toFixed(1)}MB selected`
+                                            : "Support for JPG, PNG (auto-compressed if over 5MB)"}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -184,31 +199,14 @@ export function ReportIssuePage() {
                         {/* Submit Button */}
                         <button 
                             type="submit" 
-                            disabled={loading}
+                            disabled={loading || compressing}
                             className={`w-full py-6 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-3
-                                ${loading ? 'bg-slate-400 cursor-not-allowed text-white' : 'bg-slate-900 hover:bg-emerald-600 text-white shadow-emerald-900/10'}
+                                ${loading || compressing ? 'bg-slate-400 cursor-not-allowed text-white' : 'bg-slate-900 hover:bg-emerald-600 text-white shadow-emerald-900/10'}
                             `}
                         >
                             {loading ? <i className="fas fa-circle-notch animate-spin"></i> : <i className="fas fa-paper-plane"></i>}
                             {loading ? "Processing..." : "Submit Report"}
                         </button>
-
-                        {/* Success/Error Feedback */}
-                        <AnimatePresence>
-                            {message.text && (
-                                <motion.div 
-                                    initial={{ opacity: 0, scale: 0.95 }} 
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    className={`p-5 rounded-2xl text-sm font-bold text-center flex items-center justify-center gap-3 ${
-                                        message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'
-                                    }`}
-                                >
-                                    <i className={`fas ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
-                                    {message.text}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
                     </form>
                 </motion.div>
             </section>

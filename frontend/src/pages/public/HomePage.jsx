@@ -163,13 +163,20 @@ export function HomePage() {
                             </p>
                         </div>
                         <div className="flex justify-center lg:justify-end">
-                            <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                className="w-48 h-48 border-[12px] border-emerald-500/10 rounded-full flex items-center justify-center"
-                            >
-                                <i className="fas fa-cog text-6xl text-emerald-500/20"></i>
-                            </motion.div>
+                            <div className="grid grid-cols-2 gap-4 text-center">
+                                {[
+                                    { label: "Districts", value: "38", icon: "fa-map-marker-alt" },
+                                    { label: "Real-Time", value: "API", icon: "fa-bolt" },
+                                    { label: "Certified", value: "PDF", icon: "fa-file-pdf" },
+                                    { label: "Open Data", value: "100%", icon: "fa-database" },
+                                ].map((item, idx) => (
+                                    <div key={idx} className="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                                        <i className={`fas ${item.icon} text-emerald-400 text-lg mb-2`}></i>
+                                        <p className="text-white font-display font-bold text-xl">{item.value}</p>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mt-1">{item.label}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

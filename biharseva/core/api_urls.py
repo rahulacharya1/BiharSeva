@@ -5,8 +5,10 @@ from .views import (
     api_about_stats,
     api_contact_message,
     api_report_create,
+    api_report_status,
     api_report_gallery,
     api_volunteers_list,
+    api_volunteer_leaderboard,
     api_volunteer_register,
     api_volunteer_login,
     api_volunteer_google_auth,
@@ -47,6 +49,9 @@ from .views import (
     api_admin_badge_detail,
     api_admin_coordinator_dashboard,
     api_admin_impact_analytics,
+    api_admin_export_volunteers,
+    api_admin_export_reports,
+    api_admin_export_events,
 )
 
 
@@ -56,6 +61,7 @@ urlpatterns = [
     path("contact/", api_contact_message, name="api_contact_message"),
 
     path("reports/", api_report_create, name="api_report_create"),
+    path("reports/status/", api_report_status, name="api_report_status"),
     path("reports/gallery/", api_report_gallery, name="api_report_gallery"),
 
     path("volunteers/register/", api_volunteer_register, name="api_volunteer_register"),
@@ -66,6 +72,7 @@ urlpatterns = [
     path("volunteers/", api_volunteers_list, name="api_volunteers_list"),
     path("volunteers/request-otp/", api_volunteer_request_otp, name="api_volunteer_request_otp"),
     path("volunteers/verify-otp/", api_volunteer_verify_otp, name="api_volunteer_verify_otp"),
+    path("volunteers/leaderboard/", api_volunteer_leaderboard, name="api_volunteer_leaderboard"),
 
     path("events/", api_events_list, name="api_events_list"),
     path("events/<int:pk>/register/", api_event_register, name="api_event_register"),
@@ -110,4 +117,9 @@ urlpatterns = [
     path("admin/badges/<int:badge_id>/", api_admin_badge_detail, name="api_admin_badge_detail"),
     path("admin/coordinator-dashboard/", api_admin_coordinator_dashboard, name="api_admin_coordinator_dashboard"),
     path("admin/impact-analytics/", api_admin_impact_analytics, name="api_admin_impact_analytics"),
+
+    # Admin data exports
+    path("admin/export/volunteers/", api_admin_export_volunteers, name="api_admin_export_volunteers"),
+    path("admin/export/reports/", api_admin_export_reports, name="api_admin_export_reports"),
+    path("admin/export/events/", api_admin_export_events, name="api_admin_export_events"),
 ]

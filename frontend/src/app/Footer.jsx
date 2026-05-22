@@ -62,10 +62,6 @@ export function Footer() {
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                         © {currentYear} BiharSeva • Built for a better Bihar
                     </p>
-                    <div className="flex items-center space-x-2 text-[10px] font-black text-slate-300 uppercase tracking-tighter">
-                        <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
-                        <span>Server Status: Online</span>
-                    </div>
                 </div>
             </div>
         </footer>

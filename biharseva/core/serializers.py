@@ -84,6 +84,15 @@ class VolunteerRegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This email is already registered")
         return value
 
+    def validate_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        if not any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Password must contain at least one number.")
+        if not any(c.isalpha() for c in value):
+            raise serializers.ValidationError("Password must contain at least one letter.")
+        return value
+
     def validate(self, attrs):
         if attrs.get("password") != attrs.get("password_confirm"):
             raise serializers.ValidationError("Password and confirm password must match")
@@ -163,6 +172,15 @@ class VolunteerOtpVerifySerializer(serializers.Serializer):
             raise serializers.ValidationError("OTP must be a 6-digit number")
         return value
 
+    def validate_new_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        if not any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Password must contain at least one number.")
+        if not any(c.isalpha() for c in value):
+            raise serializers.ValidationError("Password must contain at least one letter.")
+        return value
+
     def validate(self, attrs):
         if attrs["new_password"] != attrs["confirm_password"]:
             raise serializers.ValidationError("New password and confirm password must match")
@@ -181,6 +199,15 @@ class AdminOtpVerifySerializer(serializers.Serializer):
     def validate_otp(self, value):
         if not value.isdigit() or len(value) != 6:
             raise serializers.ValidationError("OTP must be a 6-digit number")
+        return value
+
+    def validate_new_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        if not any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Password must contain at least one number.")
+        if not any(c.isalpha() for c in value):
+            raise serializers.ValidationError("Password must contain at least one letter.")
         return value
 
     def validate(self, attrs):

@@ -1,8 +1,9 @@
 """Public-facing API views (no authentication required)."""
 import threading
+import uuid
 
 from django.conf import settings
-from django.db.models import Count
+from django.db.models import Count, Q
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -45,13 +46,50 @@ def api_report_create(request):
     serializer = ReportSerializer(data=request.data)
     if serializer.is_valid():
         report = serializer.save()
+        # Generate tracking number for the reporter
+        tracking = f"BS-R{report.id:06d}"
         recipient_email = getattr(settings, "CONTACT_RECIPIENT_EMAIL", settings.DEFAULT_FROM_EMAIL)
         try:
             threading.Thread(target=send_new_report_alert_email, args=(recipient_email, report), daemon=True).start()
         except Exception:
             pass
-        return Response({"message": "Issue reported successfully!", "report": serializer.data}, status=201)
+        return Response({
+            "message": "Issue reported successfully!",
+            "tracking_number": tracking,
+            "report": serializer.data,
+        }, status=201)
     return Response(serializer.errors, status=400)
+
+
+@api_view(["GET"])
+def api_report_status(request):
+    """Public endpoint: check report status by tracking number (BS-R000001) or report ID."""
+    tracking = (request.query_params.get("tracking") or "").strip().upper()
+    if not tracking:
+        return Response({"detail": "tracking query parameter is required."}, status=400)
+
+    # Parse tracking number → report ID
+    report_id = None
+    if tracking.startswith("BS-R"):
+        try:
+            report_id = int(tracking[4:])
+        except ValueError:
+            pass
+
+    if report_id is None:
+        return Response({"detail": "Invalid tracking number format. Expected BS-RXXXXXX."}, status=400)
+
+    report = Report.objects.filter(id=report_id).first()
+    if not report:
+        return Response({"detail": "No report found with this tracking number."}, status=404)
+
+    return Response({
+        "tracking_number": tracking,
+        "status": report.status,
+        "district": report.district,
+        "location": report.location,
+        "created_at": report.created_at,
+    })
 
 
 @api_view(["POST"])
@@ -80,11 +118,85 @@ def api_contact_message(request):
 
 @api_view(["GET"])
 def api_report_gallery(request):
-    reports = Report.objects.filter(status__in=["verified", "in_progress", "cleaned"]).order_by("-created_at")
+    """Report gallery with search and filter support.
+    Query params:
+      ?district=Purnea     — filter by district
+      ?status=cleaned      — filter by status
+      ?search=garbage      — search in location and description
+    """
+    reports = Report.objects.filter(status__in=["verified", "in_progress", "cleaned"])
+
+    district = request.query_params.get("district")
+    report_status = request.query_params.get("status")
+    search = request.query_params.get("search")
+
+    if district:
+        reports = reports.filter(district__iexact=district)
+    if report_status:
+        reports = reports.filter(status=report_status)
+    if search:
+        reports = reports.filter(
+            Q(location__icontains=search)
+            | Q(description__icontains=search)
+            | Q(reporter_name__icontains=search)
+        )
+
+    reports = reports.order_by("-created_at")
     return Response(ReportSerializer(reports, many=True, context={"request": request}).data)
 
 
 @api_view(["GET"])
 def api_volunteers_list(request):
-    volunteers = Volunteer.objects.filter(is_verified=True).order_by("name")
+    """Volunteer directory with search and filter support.
+    Query params:
+      ?district=Purnea     — filter by district
+      ?search=rahul        — search by name
+    """
+    volunteers = Volunteer.objects.filter(is_verified=True)
+
+    district = request.query_params.get("district")
+    search = request.query_params.get("search")
+
+    if district:
+        volunteers = volunteers.filter(district__iexact=district)
+    if search:
+        volunteers = volunteers.filter(name__icontains=search)
+
+    volunteers = volunteers.order_by("name")
     return Response(PublicVolunteerSerializer(volunteers, many=True).data)
+
+
+@api_view(["GET"])
+def api_volunteer_leaderboard(request):
+    """Public leaderboard: top volunteers by service hours.
+    Query params:
+      ?district=Purnea     — filter by district
+      ?limit=10            — number of results (default 10, max 50)
+    """
+    qs = Volunteer.objects.filter(is_verified=True, total_hours__gt=0)
+
+    district = request.query_params.get("district")
+    if district:
+        qs = qs.filter(district__iexact=district)
+
+    try:
+        limit = min(int(request.query_params.get("limit", 10)), 50)
+    except (ValueError, TypeError):
+        limit = 10
+
+    top_volunteers = qs.order_by("-total_hours")[:limit]
+
+    leaderboard = []
+    for rank, volunteer in enumerate(top_volunteers, 1):
+        badges = list(volunteer.badges.values_list("level", flat=True))
+        leaderboard.append({
+            "rank": rank,
+            "name": volunteer.name,
+            "district": volunteer.district,
+            "college": volunteer.college.name if volunteer.college else None,
+            "total_hours": float(volunteer.total_hours or 0),
+            "badges": badges,
+            "highest_badge": badges[-1] if badges else None,
+        })
+
+    return Response({"leaderboard": leaderboard, "total_active": qs.count()})
