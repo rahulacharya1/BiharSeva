@@ -2,6 +2,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "./context/AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { PrivateRoute } from "./components/PrivateRoute";
 import { HomePage } from "./pages/public/HomePage";
 import { AboutPage } from "./pages/public/AboutPage";
 import { ServicesPage } from "./pages/public/ServicesPage";
@@ -111,31 +112,31 @@ export default function App() {
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/volunteer/register" element={<VolunteerRegisterPage />} />
           <Route path="/volunteer/login" element={<VolunteerLoginPage onLogin={handleVolunteerLogin} />} />
-          <Route path="/volunteer/profile" element={<VolunteerProfilePage />} />
+          <Route path="/volunteer/profile" element={<PrivateRoute role="volunteer"><VolunteerProfilePage /></PrivateRoute>} />
           <Route path="/volunteer/request-otp" element={<VolunteerRequestOtpPage />} />
           <Route path="/volunteer/verify-otp" element={<VolunteerVerifyOtpPage />} />
-          <Route path="/dashboard" element={<DashboardPage volunteer={volunteer} onLogout={handleVolunteerLogout} />} />
+          <Route path="/dashboard" element={<PrivateRoute role="volunteer"><DashboardPage volunteer={volunteer} onLogout={handleVolunteerLogout} /></PrivateRoute>} />
           <Route path="/events" element={<EventsPage volunteer={volunteer} />} />
-          <Route path="/certificates" element={<CertificatesPage volunteer={volunteer} />} />
+          <Route path="/certificates" element={<PrivateRoute role="volunteer"><CertificatesPage volunteer={volunteer} /></PrivateRoute>} />
           <Route path="/admin/login" element={<AdminLoginPage onLogin={handleAdminLogin} />} />
           <Route path="/admin/request-otp" element={<AdminRequestOtpPage />} />
           <Route path="/admin/verify-otp" element={<AdminVerifyOtpPage />} />
-          <Route path="/admin/panel" element={<AdminPanelPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
-          <Route path="/admin/colleges" element={<AdminCollegesPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+          <Route path="/admin/panel" element={<PrivateRoute role="admin"><AdminPanelPage adminUser={adminUser} onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/admin/colleges" element={<PrivateRoute role="admin"><AdminCollegesPage adminUser={adminUser} onLogout={handleAdminLogout} /></PrivateRoute>} />
 
-          <Route path="/college/dashboard" element={<CollegeDashboardPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
-          <Route path="/college/reports" element={<AdminReportsPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
-          <Route path="/college/events" element={<AdminEventsPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
-          <Route path="/college/volunteers" element={<AdminVolunteersPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
-          <Route path="/college/certificates" element={<AdminCertificatesPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
-          <Route path="/college/nss-units" element={<AdminNssUnitsPage onLogout={handleAdminLogout} />} />
-          <Route path="/college/program-officers" element={<AdminProgramOfficersPage onLogout={handleAdminLogout} />} />
-          <Route path="/college/activity-proposals" element={<AdminActivityProposalsPage onLogout={handleAdminLogout} />} />
-          <Route path="/college/volunteer-hours" element={<AdminVolunteerHoursPage onLogout={handleAdminLogout} />} />
-          <Route path="/college/badges" element={<AdminBadgesPage onLogout={handleAdminLogout} />} />
-          <Route path="/college/coordinator-dashboard" element={<CoordinatorDashboardPage onLogout={handleAdminLogout} />} />
-          <Route path="/college/impact-analytics" element={<ImpactAnalyticsPage onLogout={handleAdminLogout} />} />
-          <Route path="/college/profile" element={<CollegeProfilePage onLogout={handleAdminLogout} />} />
+          <Route path="/college/dashboard" element={<PrivateRoute role="admin"><CollegeDashboardPage adminUser={adminUser} onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/reports" element={<PrivateRoute role="admin"><AdminReportsPage adminUser={adminUser} onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/events" element={<PrivateRoute role="admin"><AdminEventsPage adminUser={adminUser} onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/volunteers" element={<PrivateRoute role="admin"><AdminVolunteersPage adminUser={adminUser} onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/certificates" element={<PrivateRoute role="admin"><AdminCertificatesPage adminUser={adminUser} onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/nss-units" element={<PrivateRoute role="admin"><AdminNssUnitsPage onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/program-officers" element={<PrivateRoute role="admin"><AdminProgramOfficersPage onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/activity-proposals" element={<PrivateRoute role="admin"><AdminActivityProposalsPage onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/volunteer-hours" element={<PrivateRoute role="admin"><AdminVolunteerHoursPage onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/badges" element={<PrivateRoute role="admin"><AdminBadgesPage onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/coordinator-dashboard" element={<PrivateRoute role="admin"><CoordinatorDashboardPage onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/impact-analytics" element={<PrivateRoute role="admin"><ImpactAnalyticsPage onLogout={handleAdminLogout} /></PrivateRoute>} />
+          <Route path="/college/profile" element={<PrivateRoute role="admin"><CollegeProfilePage onLogout={handleAdminLogout} /></PrivateRoute>} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

@@ -166,9 +166,9 @@ export function HomePage() {
                             <div className="grid grid-cols-2 gap-4 text-center">
                                 {[
                                     { label: "Districts", value: "38", icon: "fa-map-marker-alt" },
-                                    { label: "Real-Time", value: "API", icon: "fa-bolt" },
+                                    { label: "Live Tracking", value: "24/7", icon: "fa-bolt" },
                                     { label: "Certified", value: "PDF", icon: "fa-file-pdf" },
-                                    { label: "Open Data", value: "100%", icon: "fa-database" },
+                                    { label: "Transparent", value: "100%", icon: "fa-shield-halved" },
                                 ].map((item, idx) => (
                                     <div key={idx} className="p-6 bg-white/5 border border-white/10 rounded-2xl">
                                         <i className={`fas ${item.icon} text-emerald-400 text-lg mb-2`}></i>

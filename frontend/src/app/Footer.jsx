@@ -22,14 +22,17 @@ export function Footer() {
                             Citizen reporting aur volunteer coordination ka ek digital ecosystem. Hum Bihar ke har nagrik ko civic action se jodkar ek swachh aur shrestha prant banane mein madad karte hain.
                         </p>
                         <div className="flex space-x-4">
-                            <a href="#" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm">
+                            <a href="https://facebook.com/biharseva" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm" aria-label="Facebook">
                                 <i className="fab fa-facebook-f text-sm"></i>
                             </a>
-                            <a href="#" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm">
+                            <a href="https://instagram.com/biharseva" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm" aria-label="Instagram">
                                 <i className="fab fa-instagram text-sm"></i>
                             </a>
-                            <a href="#" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm">
+                            <a href="https://twitter.com/biharseva" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm" aria-label="Twitter">
                                 <i className="fab fa-twitter text-sm"></i>
+                            </a>
+                            <a href="https://github.com/rahulacharya1/BiharSeva" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm" aria-label="GitHub">
+                                <i className="fab fa-github text-sm"></i>
                             </a>
                         </div>
                     </div>

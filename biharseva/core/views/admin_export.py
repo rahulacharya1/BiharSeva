@@ -36,7 +36,7 @@ def api_admin_export_volunteers(request):
             v.email,
             v.phone,
             v.district,
-            v.college.name if v.college else v.college_name,
+            v.college.name if v.college else (v.college_name or ""),
             "Yes" if v.is_verified else "No",
             float(v.total_hours or 0),
             v.created_at.strftime("%Y-%m-%d"),

@@ -26,7 +26,7 @@ class PublicVolunteerSerializer(serializers.ModelSerializer):
     def get_college(self, obj):
         if obj.college:
             return obj.college.name
-        return obj.college_name
+        return ""
 
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
@@ -104,7 +104,12 @@ class VolunteerRegisterSerializer(serializers.ModelSerializer):
         college_label = (validated_data.pop("college", "") or "").strip()
         volunteer = Volunteer(**validated_data)
         if college_label:
-            volunteer.college_name = college_label
+            # Try to match to an existing College, otherwise store as-is in college_name
+            matched_college = College.objects.filter(name__iexact=college_label).first()
+            if matched_college:
+                volunteer.college = matched_college
+            else:
+                volunteer.college_name = college_label
         volunteer.set_password(password)
         volunteer.save()
         return volunteer
@@ -135,7 +140,7 @@ class VolunteerSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["college"] = instance.college.name if instance.college else instance.college_name
+        data["college"] = instance.college.name if instance.college else (instance.college_name or "")
         return data
 
     def update(self, instance, validated_data):
@@ -144,8 +149,16 @@ class VolunteerSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
 
         if college_label is not None:
-            instance.college_name = (college_label or "").strip()
-            if instance.college_name:
+            college_label = (college_label or "").strip()
+            matched_college = College.objects.filter(name__iexact=college_label).first()
+            if matched_college:
+                instance.college = matched_college
+                instance.college_name = ""
+            elif college_label:
+                instance.college_name = college_label
+                instance.college = None
+            else:
+                instance.college_name = ""
                 instance.college = None
 
         instance.save()
@@ -344,8 +357,16 @@ class AdminVolunteerManageSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
 
         if college_label is not None:
-            instance.college_name = (college_label or "").strip()
-            if instance.college_name:
+            college_label = (college_label or "").strip()
+            matched_college = College.objects.filter(name__iexact=college_label).first()
+            if matched_college:
+                instance.college = matched_college
+                instance.college_name = ""
+            elif college_label:
+                instance.college_name = college_label
+                instance.college = None
+            else:
+                instance.college_name = ""
                 instance.college = None
 
         instance.save()

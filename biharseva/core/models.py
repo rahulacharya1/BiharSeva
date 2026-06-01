@@ -4,13 +4,46 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
 
 DISTRICT_CHOICES = [
-    ("Purnea", "Purnea"),
-    ("Katihar", "Katihar"),
     ("Araria", "Araria"),
+    ("Arwal", "Arwal"),
+    ("Aurangabad", "Aurangabad"),
+    ("Banka", "Banka"),
+    ("Begusarai", "Begusarai"),
+    ("Bhagalpur", "Bhagalpur"),
+    ("Bhojpur", "Bhojpur"),
+    ("Buxar", "Buxar"),
+    ("Darbhanga", "Darbhanga"),
+    ("East Champaran", "East Champaran"),
+    ("Gaya", "Gaya"),
+    ("Gopalganj", "Gopalganj"),
+    ("Jamui", "Jamui"),
+    ("Jehanabad", "Jehanabad"),
+    ("Kaimur", "Kaimur"),
+    ("Katihar", "Katihar"),
+    ("Khagaria", "Khagaria"),
     ("Kishanganj", "Kishanganj"),
+    ("Lakhisarai", "Lakhisarai"),
     ("Madhepura", "Madhepura"),
-    ("Saharsa", "Saharsa")
+    ("Madhubani", "Madhubani"),
+    ("Munger", "Munger"),
+    ("Muzaffarpur", "Muzaffarpur"),
+    ("Nalanda", "Nalanda"),
+    ("Nawada", "Nawada"),
+    ("Patna", "Patna"),
+    ("Purnia", "Purnia"),
+    ("Rohtas", "Rohtas"),
+    ("Saharsa", "Saharsa"),
+    ("Samastipur", "Samastipur"),
+    ("Saran", "Saran"),
+    ("Sheikhpura", "Sheikhpura"),
+    ("Sheohar", "Sheohar"),
+    ("Sitamarhi", "Sitamarhi"),
+    ("Siwan", "Siwan"),
+    ("Supaul", "Supaul"),
+    ("Vaishali", "Vaishali"),
+    ("West Champaran", "West Champaran"),
 ]
+
 
 ACTIVITY_TYPE_CHOICES = [
     ("cleanliness", "Cleanliness Drive"),
@@ -128,6 +161,7 @@ class Report(models.Model):
     after_photo = models.ImageField(upload_to='reports_images/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['-created_at']
@@ -151,6 +185,7 @@ class Volunteer(models.Model):
     otp_expiry = models.DateTimeField(blank=True, null=True)
     total_hours = models.DecimalField(max_digits=6, decimal_places=2, default=0)  # Total service hours
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         status = "Verified" if self.is_verified else "Not Verified"
@@ -175,6 +210,7 @@ class Event(models.Model):
     hours_per_volunteer = models.DecimalField(max_digits=5, decimal_places=2, default=2)  # Hours credited per volunteer
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['-date']

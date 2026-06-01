@@ -85,8 +85,21 @@ def api_admin_request_otp(request):
         return Response({"detail": "No admin account found for the provided email."}, status=404)
 
     otp = generate_otp()
+
+    # Store hashed OTP server-side in cache (NOT in the JWT)
+    import hashlib
+    from django.core.cache import cache
+
+    otp_nonce = hashlib.sha256(f"{admin_user.id}:{email}:{otp}".encode()).hexdigest()[:16]
+    cache_key = f"admin_otp:{otp_nonce}"
+    cache.set(cache_key, {
+        "otp_hash": hashlib.sha256(otp.encode()).hexdigest(),
+        "user_id": admin_user.id,
+        "email": email,
+    }, timeout=600)  # 10 minutes
+
     otp_reset_token = issue_token(
-        {"role": "admin", "purpose": "otp_reset", "email": email, "user_id": admin_user.id, "otp": otp},
+        {"role": "admin", "purpose": "otp_reset", "email": email, "user_id": admin_user.id, "otp_nonce": otp_nonce},
         expires_minutes=10,
     )
 
@@ -102,6 +115,7 @@ def api_admin_request_otp(request):
         },
         status=202,
     )
+
 
 
 @api_view(["POST"])
@@ -124,12 +138,27 @@ def api_admin_verify_otp(request):
 
     email = otp_payload.get("email") or ""
     user_id = otp_payload.get("user_id")
-    expected_otp = otp_payload.get("otp") or ""
+    otp_nonce = otp_payload.get("otp_nonce") or ""
     otp = serializer.validated_data["otp"]
     new_password = serializer.validated_data["new_password"]
 
-    if otp != expected_otp:
+    # Verify OTP against server-side cache (not from JWT)
+    import hashlib
+    from django.core.cache import cache
+
+    cache_key = f"admin_otp:{otp_nonce}"
+    cached_data = cache.get(cache_key)
+    if not cached_data:
+        return Response({"detail": "OTP has expired. Please request a new OTP."}, status=400)
+
+    expected_otp_hash = cached_data.get("otp_hash", "")
+    submitted_otp_hash = hashlib.sha256(otp.encode()).hexdigest()
+
+    if submitted_otp_hash != expected_otp_hash:
         return Response({"detail": "Invalid OTP code."}, status=400)
+
+    if cached_data.get("user_id") != user_id or cached_data.get("email") != email:
+        return Response({"detail": "OTP session mismatch."}, status=400)
 
     User = get_user_model()
     admin_user = User.objects.filter(id=user_id, email=email, is_staff=True, is_active=True).first()
@@ -139,12 +168,16 @@ def api_admin_verify_otp(request):
     admin_user.set_password(new_password)
     admin_user.save(update_fields=["password"])
 
+    # Invalidate OTP after successful use
+    cache.delete(cache_key)
+
     try:
         threading.Thread(target=send_admin_password_changed_email, args=(admin_user.email, admin_user.username), daemon=True).start()
     except Exception:
         pass
 
     return Response({"message": "Admin password reset successful."})
+
 
 
 @api_view(["GET"])
