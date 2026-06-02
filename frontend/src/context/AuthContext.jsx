@@ -50,20 +50,25 @@ export function AuthProvider({ children }) {
 
   const handleVolunteerLogin = useCallback((payload) => {
     localStorage.setItem("volunteer_token", payload.token);
+    localStorage.setItem("volunteer_refresh_token", payload.refresh_token);
     setVolunteer(payload.volunteer);
   }, []);
 
   const handleVolunteerLogout = useCallback(() => {
     localStorage.removeItem("volunteer_token");
+    localStorage.removeItem("volunteer_refresh_token");
     setVolunteer(null);
   }, []);
 
-  const handleAdminLogin = useCallback((adminData) => {
-    setAdminUser(adminData);
+  const handleAdminLogin = useCallback((payload) => {
+    localStorage.setItem("admin_token", payload.token);
+    localStorage.setItem("admin_refresh_token", payload.refresh_token);
+    setAdminUser(payload.adminUser);
   }, []);
 
   const handleAdminLogout = useCallback(() => {
     localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_refresh_token");
     setAdminUser(null);
   }, []);
 

@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { NAV_GROUPS } from "./navConfig";
+import { NotificationBell } from "../components/NotificationBell";
 
 // Improved NavItem with micro-indicator
 const NavItem = ({ to, children, end = false, className = "" }) => (
@@ -77,7 +78,10 @@ export function Header({ volunteer, adminUser, mobileOpen, onToggleMobile, onClo
                         </NavLink>
 
                         {volunteer ? (
-                            <NavItem to="/dashboard">Dashboard</NavItem>
+                            <>
+                                <NavItem to="/dashboard">Dashboard</NavItem>
+                                <NotificationBell volunteer={volunteer} />
+                            </>
                         ) : (
                             <NavLink
                                 to="/volunteer/register"

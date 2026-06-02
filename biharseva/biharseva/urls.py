@@ -5,7 +5,8 @@ from django.urls import include, path
 
 urlpatterns = [
     path('superadmin/', admin.site.urls),
-    path('api/', include('core.api_urls')),
+    path('api/v1/', include('core.api_urls')),
+    path('api/', include('core.api_urls')),  # Backward compatibility
 ]
 
 if settings.DEBUG:

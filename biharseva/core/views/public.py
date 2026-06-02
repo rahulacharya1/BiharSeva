@@ -4,10 +4,12 @@ import uuid
 
 from django.conf import settings
 from django.db.models import Count, Q
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from ..auth_utils import refresh_access_token
 from ..models import Certificate, Event, Report, Volunteer
 from ..serializers import (
     ContactMessageSerializer,
@@ -200,3 +202,28 @@ def api_volunteer_leaderboard(request):
         })
 
     return Response({"leaderboard": leaderboard, "total_active": qs.count()})
+
+
+@api_view(["POST"])
+def api_token_refresh(request):
+    """Refresh an access token using a valid refresh token."""
+    refresh_token = request.data.get("refresh_token")
+    if not refresh_token:
+        return Response({"detail": "refresh_token is required."}, status=400)
+
+    new_access_token = refresh_access_token(refresh_token)
+    if not new_access_token:
+        return Response({"detail": "Invalid or expired refresh token. Please log in again."}, status=401)
+
+    return Response({"token": new_access_token})
+
+
+@api_view(["GET"])
+def api_health_check(request):
+    """Health check endpoint for monitoring."""
+    return Response({
+        "status": "healthy",
+        "version": "1.0.0",
+        "timestamp": timezone.now().isoformat(),
+    })
+

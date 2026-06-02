@@ -16,21 +16,57 @@ from ..auth_utils import (
     issue_token,
 )
 from ..models import (
+    ActivityProposal,
     AdminProfile,
+    AuditLog,
     Badge,
     Certificate,
     College,
     Event,
     EventRegistration,
     NSSUnit,
+    Notification,
     ProgramOfficer,
     Volunteer,
     VolunteerHours,
-    ActivityProposal,
 )
 from ..serializers import VolunteerSerializer, EventSerializer
 
 logger = logging.getLogger(__name__)
+
+
+# ─── Audit + notification helpers ───────────────────────────────
+
+def log_admin_action(request, admin_user, action, target_model, target_id=None, details=""):
+    """Record an admin action in the audit log."""
+    ip = request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
+    if ip and "," in ip:
+        ip = ip.split(",")[0].strip()
+    try:
+        AuditLog.objects.create(
+            admin_user=admin_user,
+            action=action,
+            target_model=target_model,
+            target_id=target_id,
+            details=details,
+            ip_address=ip or None,
+        )
+    except Exception:
+        logger.exception("Failed to create audit log entry")
+
+
+def create_notification(volunteer, title, message, notification_type="general", link=""):
+    """Create an in-app notification for a volunteer."""
+    try:
+        Notification.objects.create(
+            volunteer=volunteer,
+            title=title,
+            message=message,
+            notification_type=notification_type,
+            link=link,
+        )
+    except Exception:
+        logger.exception("Failed to create notification for volunteer %s", volunteer.id)
 
 
 # ─── Auth helpers ───────────────────────────────────────────────

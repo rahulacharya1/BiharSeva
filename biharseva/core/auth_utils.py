@@ -6,6 +6,9 @@ from django.contrib.auth import get_user_model
 
 from .models import Volunteer
 
+ACCESS_TOKEN_EXPIRY_MINUTES = 30
+REFRESH_TOKEN_EXPIRY_MINUTES = 7 * 24 * 60  # 7 days
+
 
 def issue_token(payload, expires_minutes=120):
     now = datetime.now(timezone.utc)
@@ -15,6 +18,31 @@ def issue_token(payload, expires_minutes=120):
         "exp": int((now + timedelta(minutes=expires_minutes)).timestamp()),
     }
     return jwt.encode(claims, settings.SECRET_KEY, algorithm="HS256")
+
+
+def issue_token_pair(payload):
+    """Issue an access + refresh token pair."""
+    access_payload = {**payload, "token_type": "access"}
+    refresh_payload = {**payload, "token_type": "refresh"}
+    access_token = issue_token(access_payload, expires_minutes=ACCESS_TOKEN_EXPIRY_MINUTES)
+    refresh_token = issue_token(refresh_payload, expires_minutes=REFRESH_TOKEN_EXPIRY_MINUTES)
+    return {"access_token": access_token, "refresh_token": refresh_token}
+
+
+def refresh_access_token(refresh_token_str):
+    """Validate a refresh token and return a new access token, or None on failure."""
+    try:
+        payload = decode_token(refresh_token_str)
+    except jwt.InvalidTokenError:
+        return None
+
+    if payload.get("token_type") != "refresh":
+        return None
+
+    # Strip token metadata and reissue
+    new_payload = {k: v for k, v in payload.items() if k not in ("iat", "exp", "token_type")}
+    new_payload["token_type"] = "access"
+    return issue_token(new_payload, expires_minutes=ACCESS_TOKEN_EXPIRY_MINUTES)
 
 
 def decode_token(token):
@@ -67,3 +95,4 @@ def get_admin_from_request(request):
 
     User = get_user_model()
     return User.objects.filter(id=user_id, is_staff=True, is_active=True).first()
+

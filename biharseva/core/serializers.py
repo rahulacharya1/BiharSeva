@@ -127,6 +127,7 @@ class VolunteerSerializer(serializers.ModelSerializer):
             "email",
             "phone",
             "district",
+            "avatar",
             "is_verified",
             "has_participated",
             "created_at",

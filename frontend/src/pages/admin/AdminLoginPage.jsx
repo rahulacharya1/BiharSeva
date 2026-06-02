@@ -22,13 +22,16 @@ export function AdminLoginPage({ onLogin }) {
 
         try {
             const res = await adminApi.post("/admin/auth/login/", { username, password });
-            localStorage.setItem("admin_token", res.data.token);
             const isPlatform = res.data.admin_role === "platform_admin";
             onLogin?.({
-                username: res.data.username,
-                admin_role: res.data.admin_role,
-                admin_college_id: res.data.admin_college_id,
-                admin_college_name: res.data.admin_college_name,
+                token: res.data.token,
+                refresh_token: res.data.refresh_token,
+                adminUser: {
+                    username: res.data.username,
+                    admin_role: res.data.admin_role,
+                    admin_college_id: res.data.admin_college_id,
+                    admin_college_name: res.data.admin_college_name,
+                }
             });
             setMessage({ type: "success", text: isPlatform ? "Welcome to Platform Admin Command Center." : "Welcome to College Management Dashboard." });
             navigate(isPlatform ? "/admin/panel" : "/college/dashboard");

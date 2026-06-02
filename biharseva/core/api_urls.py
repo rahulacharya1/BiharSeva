@@ -54,6 +54,15 @@ from .views import (
     api_admin_export_events,
 )
 
+from .views import (
+    api_token_refresh,
+    api_health_check,
+    api_admin_audit_logs,
+    api_notifications,
+    api_notification_read,
+    api_notifications_read_all,
+)
+
 
 urlpatterns = [
     path("meta/home/", api_home_stats, name="api_home_stats"),
@@ -122,4 +131,16 @@ urlpatterns = [
     path("admin/export/volunteers/", api_admin_export_volunteers, name="api_admin_export_volunteers"),
     path("admin/export/reports/", api_admin_export_reports, name="api_admin_export_reports"),
     path("admin/export/events/", api_admin_export_events, name="api_admin_export_events"),
+
+    # Token refresh and health check
+    path("token/refresh/", api_token_refresh, name="api_token_refresh"),
+    path("health/", api_health_check, name="api_health_check"),
+
+    # Volunteer notifications
+    path("notifications/", api_notifications, name="api_notifications"),
+    path("notifications/<int:notification_id>/read/", api_notification_read, name="api_notification_read"),
+    path("notifications/read-all/", api_notifications_read_all, name="api_notifications_read_all"),
+
+    # Admin audit logs
+    path("admin/audit-log/", api_admin_audit_logs, name="api_admin_audit_logs"),
 ]

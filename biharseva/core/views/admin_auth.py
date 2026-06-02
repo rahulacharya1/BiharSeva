@@ -3,10 +3,10 @@ import threading
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 
-from ..auth_utils import decode_token, issue_token
+from ..auth_utils import decode_token, issue_token, issue_token_pair
 from ..models import AdminProfile
 from ..serializers import AdminOtpRequestSerializer, AdminOtpVerifySerializer
 from .helpers import (
@@ -15,6 +15,7 @@ from .helpers import (
     send_admin_otp_email,
     send_admin_password_changed_email,
 )
+from .volunteer import OTPThrottle
 
 
 @api_view(["POST"])
@@ -51,19 +52,19 @@ def api_admin_login(request):
     if admin_role == "college_admin" and not admin_college_id:
         return Response({"detail": "College admin account must be assigned to a college."}, status=403)
 
-    token = issue_token(
+    tokens = issue_token_pair(
         {
             "role": "admin",
             "user_id": user.id,
             "admin_role": admin_role,
             "admin_college_id": admin_college_id,
-        },
-        expires_minutes=12 * 60,
+        }
     )
     return Response(
         {
             "message": "Admin login successful.",
-            "token": token,
+            "token": tokens["access_token"],
+            "refresh_token": tokens["refresh_token"],
             "username": user.username,
             "admin_role": admin_role,
             "admin_college_id": admin_college_id,
@@ -73,6 +74,7 @@ def api_admin_login(request):
 
 
 @api_view(["POST"])
+@throttle_classes([OTPThrottle])
 def api_admin_request_otp(request):
     serializer = AdminOtpRequestSerializer(data=request.data)
     if not serializer.is_valid():
@@ -119,6 +121,7 @@ def api_admin_request_otp(request):
 
 
 @api_view(["POST"])
+@throttle_classes([OTPThrottle])
 def api_admin_verify_otp(request):
     serializer = AdminOtpVerifySerializer(data=request.data)
     if not serializer.is_valid():

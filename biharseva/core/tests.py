@@ -1,8 +1,13 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
+from rest_framework.settings import api_settings
 import json
+
+# Disable API throttling globally for all tests
+api_settings.DEFAULT_THROTTLE_CLASSES = []
+api_settings.DEFAULT_THROTTLE_RATES = {}
 
 from .models import (
     AdminProfile,
@@ -16,9 +21,12 @@ from .models import (
     VolunteerHours,
     Certificate,
     Report,
+    AuditLog,
+    Notification,
 )
 
 
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
 class VolunteerAuthTestCase(TestCase):
     """Test volunteer registration, login, and authentication flows."""
     
@@ -311,6 +319,7 @@ class PublicVolunteerListTestCase(TestCase):
         self.assertIn("district", volunteer_data)
 
 
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
 class Phase2InfrastructureTestCase(TestCase):
     """Tests for Phase 2 institutional and hour-tracking features."""
 
@@ -434,6 +443,7 @@ class Phase2InfrastructureTestCase(TestCase):
         self.assertTrue(volunteer.has_participated)
 
 
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
 class Phase2AdminEndpointAndBadgeEdgeCaseTests(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -607,6 +617,7 @@ class Phase2AdminEndpointAndBadgeEdgeCaseTests(TestCase):
         self.assertEqual(Badge.objects.filter(volunteer=self.volunteer, level="bronze").count(), 1)
 
 
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
 class RoleScopedAdminPermissionsTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -706,3 +717,127 @@ class RoleScopedAdminPermissionsTestCase(TestCase):
         profile = AdminProfile.objects.get(user=created_admin)
         self.assertEqual(profile.role, "college_admin")
         self.assertEqual(profile.college.name, "Provisioned College")
+
+
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
+class Part4FeaturesTestCase(TestCase):
+    """Tests for Part 4 features: health check, token refresh, notifications, audit logging."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.volunteer = Volunteer.objects.create(
+            name="Part4 Volunteer",
+            email="part4@example.com",
+            phone="9876543210",
+            district="Purnia",
+            is_verified=True,
+        )
+        self.volunteer.set_password("secure123")
+        self.volunteer.save()
+
+        # Admin user
+        self.admin_user = User.objects.create_superuser(
+            username="part4admin",
+            email="part4admin@test.com",
+            password="admin123",
+        )
+
+        from .auth_utils import issue_token, issue_token_pair
+        # Issue volunteer token pair
+        tokens = issue_token_pair({"role": "volunteer", "volunteer_id": self.volunteer.id})
+        self.vol_access_token = tokens["access_token"]
+        self.vol_refresh_token = tokens["refresh_token"]
+
+        # Issue admin token pair
+        admin_tokens = issue_token_pair({
+            "role": "admin",
+            "user_id": self.admin_user.id,
+            "admin_role": "platform_admin",
+        })
+        self.admin_access_token = admin_tokens["access_token"]
+
+    def test_health_check_endpoint(self):
+        # Test basic health check
+        response = self.client.get("/api/health/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["status"], "healthy")
+
+        # Test v1 health check alias
+        response_v1 = self.client.get("/api/v1/health/")
+        self.assertEqual(response_v1.status_code, 200)
+        self.assertEqual(response_v1.data["status"], "healthy")
+
+    def test_token_refresh_flow(self):
+        # Refresh access token using valid refresh token
+        response = self.client.post(
+            "/api/token/refresh/",
+            {"refresh_token": self.vol_refresh_token},
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("token", response.data)
+
+        # Test with invalid refresh token
+        response_invalid = self.client.post(
+            "/api/token/refresh/",
+            {"refresh_token": "invalid_refresh_token"},
+            format="json"
+        )
+        self.assertEqual(response_invalid.status_code, 401)
+
+    def test_notifications_crud(self):
+        # Create notifications
+        Notification.objects.create(
+            volunteer=self.volunteer,
+            title="Notification 1",
+            message="Test Message 1",
+            notification_type="general",
+        )
+        Notification.objects.create(
+            volunteer=self.volunteer,
+            title="Notification 2",
+            message="Test Message 2",
+            notification_type="certificate",
+        )
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.vol_access_token}")
+        
+        # Test listing
+        response = self.client.get("/api/notifications/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["notifications"]), 2)
+        self.assertEqual(response.data["unread_count"], 2)
+
+        # Mark single as read
+        notif = Notification.objects.first()
+        response_read = self.client.patch(f"/api/notifications/{notif.id}/read/")
+        self.assertEqual(response_read.status_code, 200)
+        
+        # Mark all read
+        response_read_all = self.client.post("/api/notifications/read-all/")
+        self.assertEqual(response_read_all.status_code, 200)
+        
+        response_list = self.client.get("/api/notifications/")
+        self.assertEqual(response_list.data["unread_count"], 0)
+
+    def test_audit_log_endpoint(self):
+        # Create audit logs
+        AuditLog.objects.create(
+            admin_user=self.admin_user,
+            action="test.action",
+            target_model="Volunteer",
+            target_id=self.volunteer.id,
+            details="Test audit detail",
+        )
+
+        # Non-admin user can't access audit logs
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.vol_access_token}")
+        response_unauthorized = self.client.get("/api/admin/audit-log/")
+        self.assertEqual(response_unauthorized.status_code, 403)
+
+        # Platform admin can access
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_access_token}")
+        response = self.client.get("/api/admin/audit-log/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["action"], "test.action")

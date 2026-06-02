@@ -42,3 +42,179 @@ adminApi.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Queue management for refreshing volunteer tokens
+let isRefreshingVolunteer = false;
+let volunteerQueue = [];
+
+const processVolunteerQueue = (error, token = null) => {
+  volunteerQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  volunteerQueue = [];
+};
+
+// Queue management for refreshing admin tokens
+let isRefreshingAdmin = false;
+let adminQueue = [];
+
+const processAdminQueue = (error, token = null) => {
+  adminQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  adminQueue = [];
+};
+
+export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
+  // Response interceptor for volunteer API
+  api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+      if (!error.response) {
+        return Promise.reject(error);
+      }
+
+      const status = error.response.status;
+
+      // Handle 401 Unauthorized - Attempt Token Refresh
+      if (status === 401 && !originalRequest._retry) {
+        if (originalRequest.url.includes("/token/refresh/")) {
+          return Promise.reject(error);
+        }
+
+        originalRequest._retry = true;
+
+        if (isRefreshingVolunteer) {
+          return new Promise((resolve, reject) => {
+            volunteerQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return api(originalRequest);
+            })
+            .catch((err) => Promise.reject(err));
+        }
+
+        isRefreshingVolunteer = true;
+        const refreshToken = localStorage.getItem("volunteer_refresh_token");
+
+        if (!refreshToken) {
+          isRefreshingVolunteer = false;
+          volunteerLogout();
+          toast.error("Session expired. Please log in again.");
+          return Promise.reject(error);
+        }
+
+        try {
+          const res = await axios.post(`${API_BASE}/token/refresh/`, {
+            refresh_token: refreshToken,
+          });
+          const newToken = res.data.token;
+          localStorage.setItem("volunteer_token", newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          
+          processVolunteerQueue(null, newToken);
+          isRefreshingVolunteer = false;
+          
+          return api(originalRequest);
+        } catch (refreshErr) {
+          processVolunteerQueue(refreshErr, null);
+          isRefreshingVolunteer = false;
+          volunteerLogout();
+          toast.error("Session expired. Please log in again.");
+          return Promise.reject(refreshErr);
+        }
+      }
+
+      // Handle other global error codes
+      if (status === 403) {
+        toast.error(error.response.data?.detail || "You do not have permission to perform this action.");
+      } else if (status >= 500) {
+        toast.error("A server error occurred. Please try again later.");
+      }
+
+      return Promise.reject(error);
+    }
+  );
+
+  // Response interceptor for admin API
+  adminApi.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+      if (!error.response) {
+        return Promise.reject(error);
+      }
+
+      const status = error.response.status;
+
+      // Handle 401 Unauthorized - Attempt Token Refresh
+      if (status === 401 && !originalRequest._retry) {
+        if (originalRequest.url.includes("/token/refresh/")) {
+          return Promise.reject(error);
+        }
+
+        originalRequest._retry = true;
+
+        if (isRefreshingAdmin) {
+          return new Promise((resolve, reject) => {
+            adminQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return adminApi(originalRequest);
+            })
+            .catch((err) => Promise.reject(err));
+        }
+
+        isRefreshingAdmin = true;
+        const refreshToken = localStorage.getItem("admin_refresh_token");
+
+        if (!refreshToken) {
+          isRefreshingAdmin = false;
+          adminLogout();
+          toast.error("Admin session expired. Please log in again.");
+          return Promise.reject(error);
+        }
+
+        try {
+          const res = await axios.post(`${API_BASE}/token/refresh/`, {
+            refresh_token: refreshToken,
+          });
+          const newToken = res.data.token;
+          localStorage.setItem("admin_token", newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          
+          processAdminQueue(null, newToken);
+          isRefreshingAdmin = false;
+          
+          return adminApi(originalRequest);
+        } catch (refreshErr) {
+          processAdminQueue(refreshErr, null);
+          isRefreshingAdmin = false;
+          adminLogout();
+          toast.error("Admin session expired. Please log in again.");
+          return Promise.reject(refreshErr);
+        }
+      }
+
+      // Handle other global error codes
+      if (status === 403) {
+        toast.error(error.response.data?.detail || "You do not have permission to perform this action.");
+      } else if (status >= 500) {
+        toast.error("A server error occurred. Please try again later.");
+      }
+
+      return Promise.reject(error);
+    }
+  );
+};

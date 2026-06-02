@@ -38,8 +38,10 @@ from ..serializers import (
 from .certificates import build_certificate_pdf_response
 from .helpers import (
     award_badges_for_volunteer,
+    create_notification,
     ensure_college_admin_owns_unit,
     is_platform_admin,
+    log_admin_action,
     logger,
     require_staff_api,
     scoped_certificates_queryset,
@@ -125,6 +127,7 @@ def api_admin_reports(request, report_id=None):
 
     if request.method == "DELETE":
         report.delete()
+        log_admin_action(request, admin_user, "report.delete", "Report", report_id, f"Deleted report at {report.location}")
         return Response({"message": "Report deleted successfully."})
 
     if len(request.data.keys()) == 1 and "status" in request.data:
@@ -132,12 +135,14 @@ def api_admin_reports(request, report_id=None):
         if serializer.is_valid():
             report.status = serializer.validated_data["status"]
             report.save(update_fields=["status"])
+            log_admin_action(request, admin_user, "report.update_status", "Report", report.id, f"Updated report status to: {report.status}")
             return Response({"message": f"Report status updated to {report.status}."})
         return Response(serializer.errors, status=400)
 
     serializer = AdminReportManageSerializer(report, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
+        log_admin_action(request, admin_user, "report.update", "Report", report.id, "Updated report details")
         return Response({"message": "Report updated successfully."})
     return Response(serializer.errors, status=400)
 
@@ -159,6 +164,7 @@ def api_admin_volunteers(request, volunteer_id=None):
 
     if request.method == "DELETE":
         volunteer.delete()
+        log_admin_action(request, admin_user, "volunteer.delete", "Volunteer", volunteer_id, f"Deleted {volunteer.name}")
         return Response({"message": "Volunteer deleted successfully."})
 
     if "action" in request.data:
@@ -167,6 +173,16 @@ def api_admin_volunteers(request, volunteer_id=None):
             action = serializer.validated_data["action"]
             volunteer.is_verified = action == "verify"
             volunteer.save(update_fields=["is_verified"])
+            log_admin_action(request, admin_user, f"volunteer.{action}", "Volunteer", volunteer.id, f"{action} {volunteer.name}")
+            # Notify volunteer about verification status change
+            if action == "verify":
+                create_notification(
+                    volunteer,
+                    "Account Verified! ✅",
+                    "Your volunteer account has been verified. You can now register for events and earn certificates.",
+                    notification_type="verification",
+                    link="/dashboard",
+                )
             return Response({"message": "Volunteer status updated."})
         return Response(serializer.errors, status=400)
 
@@ -200,6 +216,7 @@ def api_admin_events(request):
             return unit_error
 
         event = serializer.save()
+        log_admin_action(request, admin_user, "event.create", "Event", event.id, f"Created: {event.title}")
 
         notify_verified_only = getattr(settings, "EVENT_ANNOUNCEMENT_VERIFIED_ONLY", False)
         volunteer_qs = Volunteer.objects.filter(is_verified=True) if notify_verified_only else Volunteer.objects.all()
@@ -227,11 +244,13 @@ def api_admin_event_detail(request, event_id):
 
     if request.method == "DELETE":
         event.delete()
+        log_admin_action(request, admin_user, "event.delete", "Event", event_id, f"Deleted event: {event.title}")
         return Response({"message": "Event deleted successfully."})
 
     serializer = AdminEventManageSerializer(event, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
+        log_admin_action(request, admin_user, "event.update", "Event", event.id, f"Updated event: {event.title}")
         return Response({"message": "Event updated successfully.", "event": EventSerializer(event).data})
     return Response(serializer.errors, status=400)
 
@@ -301,6 +320,14 @@ def api_admin_event_attendance(request, event_id, registration_id=None):
             defaults={"certificate_id": "BS-" + str(uuid.uuid4())[:8].upper()},
         )
         if created:
+            # Notify volunteer about new certificate
+            create_notification(
+                registration.volunteer,
+                f"Certificate Issued: {event.title} 🎓",
+                f"You've earned a certificate (ID: {certificate.certificate_id}) for participating in '{event.title}'.",
+                notification_type="certificate",
+                link="/dashboard",
+            )
             try:
                 send_new_certificate_email(
                     registration.volunteer.email,
@@ -312,6 +339,12 @@ def api_admin_event_attendance(request, event_id, registration_id=None):
                 )
             except Exception:
                 logger.exception("Failed to send certificate email for certificate id %s", certificate.id)
+
+    # Log the admin action
+    log_admin_action(
+        request, admin_user, "attendance.mark", "EventRegistration",
+        registration.id, f"Marked {'attended' if registration.attended else 'absent'} for {registration.volunteer.name} at {event.title}"
+    )
 
     return Response({"message": "Attendance updated successfully."})
 
@@ -338,6 +371,22 @@ def api_admin_certificates(request):
                     return Response({"detail": "Volunteer and event must belong to your college."}, status=403)
 
             certificate = serializer.save()
+            
+            # Send in-app notification to volunteer
+            create_notification(
+                certificate.volunteer,
+                f"Certificate Issued: {certificate.event.title} 🎓",
+                f"You've earned a certificate (ID: {certificate.certificate_id}) for participating in '{certificate.event.title}'.",
+                notification_type="certificate",
+                link="/dashboard",
+            )
+            
+            # Log admin action
+            log_admin_action(
+                request, admin_user, "certificate.create", "Certificate",
+                certificate.id, f"Issued certificate {certificate.certificate_id} to {certificate.volunteer.name}"
+            )
+
             try:
                 send_new_certificate_email(
                     certificate.volunteer.email,
@@ -380,11 +429,13 @@ def api_admin_certificate_detail(request, certificate_id):
 
     if request.method == "DELETE":
         certificate.delete()
+        log_admin_action(request, admin_user, "certificate.delete", "Certificate", certificate_id, f"Deleted certificate {certificate.certificate_id} for {certificate.volunteer.name}")
         return Response({"message": "Certificate deleted successfully."})
 
     serializer = AdminCertificateManageSerializer(certificate, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
+        log_admin_action(request, admin_user, "certificate.update", "Certificate", certificate.id, f"Updated certificate {certificate.certificate_id} details")
         return Response({"message": "Certificate updated successfully."})
     return Response(serializer.errors, status=400)
 
@@ -397,3 +448,57 @@ def api_admin_certificate_view(request, certificate_id):
 
     certificate = get_object_or_404(scoped_certificates_queryset(admin_user), id=certificate_id)
     return build_certificate_pdf_response(certificate, as_attachment=False)
+
+
+@api_view(["GET"])
+def api_admin_audit_logs(request):
+    """Retrieve audit logs for platform admin with search and pagination."""
+    admin_user = require_staff_api(request)
+    if isinstance(admin_user, Response):
+        return admin_user
+    if not is_platform_admin(admin_user):
+        return Response({"detail": "Only platform admin can view audit logs."}, status=403)
+
+    from django.core.paginator import Paginator
+    from ..models import AuditLog
+
+    logs = AuditLog.objects.select_related("admin_user").order_by("-created_at")
+
+    action = request.query_params.get("action", "").strip()
+    if action:
+        logs = logs.filter(action__icontains=action)
+
+    admin_username = request.query_params.get("admin_user", "").strip()
+    if admin_username:
+        logs = logs.filter(admin_user__username__icontains=admin_username)
+
+    page_number = request.query_params.get("page", 1)
+    page_size = request.query_params.get("page_size", 50)
+    
+    paginator = Paginator(logs, page_size)
+    try:
+        page_obj = paginator.page(page_number)
+    except Exception:
+        return Response({"detail": "Invalid page number."}, status=400)
+
+    data = []
+    for log in page_obj:
+        data.append({
+            "id": log.id,
+            "admin_user": log.admin_user.username if log.admin_user else "Unknown",
+            "action": log.action,
+            "target_model": log.target_model,
+            "target_id": log.target_id,
+            "details": log.details,
+            "ip_address": log.ip_address,
+            "created_at": log.created_at.isoformat(),
+        })
+
+    return Response({
+        "results": data,
+        "count": paginator.count,
+        "num_pages": paginator.num_pages,
+        "current_page": page_obj.number,
+        "has_next": page_obj.has_next(),
+        "has_previous": page_obj.has_previous(),
+    })

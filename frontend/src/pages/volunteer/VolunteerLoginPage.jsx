@@ -21,7 +21,11 @@ export function VolunteerLoginPage({ onLogin }) {
 
         try {
             const res = await api.post("/volunteers/login/", { email, password });
-            onLogin?.({ token: res.data.token, volunteer: res.data.volunteer });
+            onLogin?.({
+                token: res.data.token,
+                refresh_token: res.data.refresh_token,
+                volunteer: res.data.volunteer,
+            });
             setMessage({ type: "success", text: "Welcome back! Redirecting..." });
             navigate("/dashboard");
         } catch (err) {

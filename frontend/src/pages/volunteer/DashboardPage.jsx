@@ -35,6 +35,13 @@ export function DashboardPage({ volunteer, onLogout }) {
         </div>
     );
 
+    const getMediaUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith("http://") || url.startsWith("https://")) return url;
+        const base = api.defaults.baseURL.replace("/api", "");
+        return `${base}${url}`;
+    };
+
     if (loading) return <div className="min-h-screen flex items-center justify-center font-black text-slate-300 uppercase tracking-[0.3em] animate-pulse">Synchronizing Data...</div>;
 
     return (
@@ -45,6 +52,18 @@ export function DashboardPage({ volunteer, onLogout }) {
                     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100/40 rounded-full blur-[120px]" />
                 </div>
                 <div className="relative z-10 max-w-7xl mx-auto px-6">
+                    
+                    {/* Volunteer Avatar */}
+                    {data?.volunteer?.avatar && (
+                        <div className="flex justify-center mb-6">
+                            <img 
+                                src={getMediaUrl(data.volunteer.avatar)} 
+                                alt={data.volunteer.name} 
+                                className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-2xl"
+                            />
+                        </div>
+                    )}
+
                     {/* Added the Ping Dot here */}
                     <span className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-8 shadow-sm">
                         <span className="relative flex h-2 w-2">
@@ -55,7 +74,7 @@ export function DashboardPage({ volunteer, onLogout }) {
                     </span>
 
                     <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-slate-900 leading-[1.1]">
-                        Welcome, <span className="text-emerald-600">{data.volunteer.name.split(' ')[0]}.</span>
+                        Welcome, <span className="text-emerald-600">{data?.volunteer?.name?.split(' ')[0]}.</span>
                     </h1>
                     <div className="mt-10 flex flex-wrap justify-center gap-4">
                         <Link to="/volunteer/profile" className="px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-900 hover:text-white transition-all flex items-center gap-2 shadow-sm">

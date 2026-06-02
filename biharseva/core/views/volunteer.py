@@ -7,10 +7,11 @@ from django.utils import timezone
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
+from rest_framework.throttling import SimpleRateThrottle
 
-from ..auth_utils import decode_token, get_volunteer_from_request, issue_token
+from ..auth_utils import decode_token, get_volunteer_from_request, issue_token, issue_token_pair
 from ..models import Certificate, Event, EventRegistration, Volunteer
 from ..serializers import (
     CertificateSerializer,
@@ -28,6 +29,15 @@ from .helpers import (
     send_password_changed_email,
     volunteer_auth_required,
 )
+
+
+class OTPThrottle(SimpleRateThrottle):
+    """Rate limit OTP endpoints to 5 requests per minute."""
+    scope = 'otp'
+
+    def get_cache_key(self, request, view):
+        ident = self.get_ident(request)
+        return self.cache_format % {'scope': self.scope, 'ident': ident}
 
 
 @api_view(["POST"])
@@ -61,8 +71,13 @@ def api_volunteer_login(request):
     if not volunteer.is_verified:
         return Response({"detail": "Registration exists, but admin verification is pending."}, status=403)
 
-    token = issue_token({"role": "volunteer", "volunteer_id": volunteer.id}, expires_minutes=24 * 60)
-    return Response({"message": "Login successful.", "token": token, "volunteer": VolunteerSerializer(volunteer).data})
+    tokens = issue_token_pair({"role": "volunteer", "volunteer_id": volunteer.id})
+    return Response({
+        "message": "Login successful.",
+        "token": tokens["access_token"],
+        "refresh_token": tokens["refresh_token"],
+        "volunteer": VolunteerSerializer(volunteer).data,
+    })
 
 
 @api_view(["POST"])
@@ -95,8 +110,13 @@ def api_volunteer_google_auth(request):
         if not volunteer.is_verified:
             return Response({"detail": "Registration exists, but admin verification is pending."}, status=403)
 
-        token = issue_token({"role": "volunteer", "volunteer_id": volunteer.id}, expires_minutes=24 * 60)
-        return Response({"message": "Login successful.", "token": token, "volunteer": VolunteerSerializer(volunteer).data})
+        tokens = issue_token_pair({"role": "volunteer", "volunteer_id": volunteer.id})
+        return Response({
+            "message": "Login successful.",
+            "token": tokens["access_token"],
+            "refresh_token": tokens["refresh_token"],
+            "volunteer": VolunteerSerializer(volunteer).data,
+        })
 
     return Response(
         {
@@ -164,6 +184,7 @@ def api_volunteer_me(request):
 
 
 @api_view(["POST"])
+@throttle_classes([OTPThrottle])
 def api_volunteer_request_otp(request):
     serializer = VolunteerOtpRequestSerializer(data=request.data)
     if not serializer.is_valid():
@@ -205,6 +226,7 @@ def api_volunteer_request_otp(request):
 
 
 @api_view(["POST"])
+@throttle_classes([OTPThrottle])
 def api_volunteer_verify_otp(request):
     serializer = VolunteerOtpVerifySerializer(data=request.data)
     if not serializer.is_valid():

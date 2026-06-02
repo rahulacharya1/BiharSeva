@@ -1,6 +1,8 @@
 import { Route, Routes, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
+import { useToast } from "./context/ToastContext";
+import { setupInterceptors } from "./api";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PrivateRoute } from "./components/PrivateRoute";
 import { HomePage } from "./pages/public/HomePage";
@@ -77,6 +79,12 @@ export default function App() {
     handleAdminLogin,
     handleAdminLogout,
   } = useAuth();
+
+  const toast = useToast();
+
+  useEffect(() => {
+    setupInterceptors(toast, handleVolunteerLogout, handleAdminLogout);
+  }, [toast, handleVolunteerLogout, handleAdminLogout]);
 
   if (loading) {
     return (

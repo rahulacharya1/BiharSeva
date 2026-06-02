@@ -11,7 +11,16 @@ export function VolunteerProfilePage() {
     const [form, setForm] = useState({ name: "", college: "", phone: "", district: "Purnea", new_password: "" });
     const [message, setMessage] = useState({ type: "", text: "" });
     const [loading, setLoading] = useState(false);
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState(null);
     useAutoDismissMessage(message, setMessage, 2500);
+
+    const getMediaUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith("http://") || url.startsWith("https://")) return url;
+        const base = api.defaults.baseURL.replace("/api", "");
+        return `${base}${url}`;
+    };
 
     useEffect(() => {
         api.get("/volunteers/me/")
@@ -24,17 +33,44 @@ export function VolunteerProfilePage() {
                     phone: v.phone,
                     district: v.district
                 }));
+                if (v.avatar) {
+                    setAvatarPreview(getMediaUrl(v.avatar));
+                }
             })
             .catch(() => setMessage({ type: "error", text: "Login required to access profile." }));
     }, []);
+
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setAvatarFile(file);
+            setAvatarPreview(URL.createObjectURL(file));
+        }
+    };
 
     const submit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMessage({ type: "", text: "" });
 
+        const data = new FormData();
+        data.append("name", form.name);
+        data.append("college", form.college);
+        data.append("phone", form.phone);
+        data.append("district", form.district);
+        if (form.new_password) {
+            data.append("new_password", form.new_password);
+        }
+        if (avatarFile) {
+            data.append("avatar", avatarFile);
+        }
+
         try {
-            await api.patch("/volunteers/me/", form);
+            await api.patch("/volunteers/me/", data, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            });
             setMessage({ type: "success", text: "Profile updated successfully!" });
             navigate("/dashboard");
         } catch (err) {
@@ -90,6 +126,31 @@ export function VolunteerProfilePage() {
                             <div>
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Personal Information</h3>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Verified Volunteer Member</p>
+                            </div>
+                        </div>
+
+                        {/* Profile Photo Uploader */}
+                        <div className="flex flex-col items-center sm:flex-row gap-6 pb-6 border-b border-slate-50">
+                            <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 shadow-md">
+                                {avatarPreview ? (
+                                    <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-300 text-3xl">
+                                        <FiUser />
+                                    </div>
+                                )}
+                                <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-black uppercase tracking-wider cursor-pointer">
+                                    Change
+                                    <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                                </label>
+                            </div>
+                            <div className="text-center sm:text-left space-y-1">
+                                <h4 className="text-sm font-bold text-slate-800">Profile Picture</h4>
+                                <p className="text-xs text-slate-400 font-medium">JPEG, PNG or WEBP. Max 2MB.</p>
+                                <label className="inline-block mt-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 cursor-pointer transition-colors">
+                                    Select File
+                                    <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                                </label>
                             </div>
                         </div>
 

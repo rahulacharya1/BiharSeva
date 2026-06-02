@@ -78,6 +78,15 @@ ADMIN_ROLE_CHOICES = [
 ]
 
 
+NOTIFICATION_TYPE_CHOICES = [
+    ("certificate", "Certificate Issued"),
+    ("badge", "Badge Earned"),
+    ("verification", "Verification Status"),
+    ("event", "New Event"),
+    ("general", "General"),
+]
+
+
 class College(models.Model):
     """Represents a college or educational institution."""
     name = models.CharField(max_length=200, unique=True)
@@ -154,7 +163,7 @@ class Report(models.Model):
     ]
     
     reporter_name = models.CharField(max_length=100)
-    district = models.CharField(max_length=50, choices=DISTRICT_CHOICES)
+    district = models.CharField(max_length=50, choices=DISTRICT_CHOICES, db_index=True)
     location = models.CharField(max_length=200)
     description = models.TextField()
     photo = models.ImageField(upload_to='reports_images/')
@@ -174,11 +183,12 @@ class Volunteer(models.Model):
     college_name = models.CharField(max_length=200, blank=True)  # Legacy field for backward compatibility
     college = models.ForeignKey(College, on_delete=models.SET_NULL, null=True, blank=True, related_name='volunteers')
     nss_unit = models.ForeignKey(NSSUnit, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, db_index=True)
     google_sub = models.CharField(max_length=255, blank=True, null=True, unique=True)
     password_hash = models.CharField(max_length=128, blank=True)
     phone = models.CharField(max_length=15)
     district = models.CharField(max_length=50, choices=DISTRICT_CHOICES)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     has_participated = models.BooleanField(default=False)
     otp_code = models.CharField(max_length=6, blank=True, null=True)
@@ -201,7 +211,7 @@ class Volunteer(models.Model):
 
 class Event(models.Model):
     title = models.CharField(max_length=200)
-    date = models.DateField()
+    date = models.DateField(db_index=True)
     location = models.CharField(max_length=200)
     description = models.TextField()
     program_coordinator_name = models.CharField(max_length=120, blank=True)
@@ -232,7 +242,7 @@ class EventRegistration(models.Model):
 
 class Certificate(models.Model):
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
-    certificate_id = models.CharField(max_length=20, unique=True)
+    certificate_id = models.CharField(max_length=20, unique=True, db_index=True)
     issued_date = models.DateField(auto_now_add=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     
@@ -307,4 +317,41 @@ class ActivityProposal(models.Model):
     
     def __str__(self):
         return f"{self.title} - {self.get_status_display()}"
+
+
+class Notification(models.Model):
+    """In-app notifications for volunteers."""
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPE_CHOICES, default='general')
+    is_read = models.BooleanField(default=False, db_index=True)
+    link = models.CharField(max_length=300, blank=True)  # Frontend route to navigate to
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.volunteer.name}: {self.title}"
+
+
+class AuditLog(models.Model):
+    """Tracks admin actions for accountability."""
+    admin_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='audit_logs'
+    )
+    action = models.CharField(max_length=100, db_index=True)  # e.g., "volunteer.verify", "event.create"
+    target_model = models.CharField(max_length=50)  # e.g., "Volunteer", "Event"
+    target_id = models.IntegerField(null=True, blank=True)
+    details = models.TextField(blank=True)  # JSON or free-text description
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        user = self.admin_user.username if self.admin_user else "Unknown"
+        return f"[{self.created_at:%Y-%m-%d %H:%M}] {user}: {self.action}"
 
