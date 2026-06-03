@@ -3,17 +3,20 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiArrowLeft, FiTrash2, FiMapPin, FiUser, FiActivity, FiSearch, FiUpload } from "react-icons/fi";
 import { adminApi } from "../../api";
-import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { useToast } from "../../context/ToastContext";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 
 export function AdminReportsPage({ adminUser, onLogout }) {
     const navigate = useNavigate();
+    const toast = useToast();
     const [reports, setReports] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [afterPhotoFiles, setAfterPhotoFiles] = useState({});
     const [uploadingId, setUploadingId] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [message, setMessage] = useState({ type: "", text: "" });
-    useAutoDismissMessage(message, setMessage, 2500);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [reportToDelete, setReportToDelete] = useState(null);
 
     const filteredReports = reports.filter((r) => {
         const q = searchQuery.trim().toLowerCase();
@@ -45,7 +48,7 @@ export function AdminReportsPage({ adminUser, onLogout }) {
                 clearSession();
                 return;
             }
-            setMessage({ type: "error", text: "Database connection failed" });
+            toast.error("Database connection failed");
         } finally {
             setLoading(false);
         }
@@ -54,22 +57,40 @@ export function AdminReportsPage({ adminUser, onLogout }) {
     useEffect(() => { loadReports(); }, []);
 
     const updateStatus = async (id, status) => {
-        const res = await adminApi.patch(`/admin/reports/${id}/`, { status });
-        setMessage({ type: "success", text: res?.data?.message || "Report status synchronized" });
-        loadReports();
+        try {
+            const res = await adminApi.patch(`/admin/reports/${id}/`, { status });
+            toast.success(res?.data?.message || "Report status synchronized");
+            loadReports();
+        } catch {
+            toast.error("Failed to update status");
+        }
     };
 
-    const deleteReport = async (id) => {
-        if (!window.confirm("Permanent delete? This cannot be undone.")) return;
-        await adminApi.delete(`/admin/reports/${id}/`);
-        setMessage({ type: "success", text: "Entry removed from registry" });
-        loadReports();
+    const triggerDelete = (r) => {
+        setReportToDelete(r);
+        setConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!reportToDelete) return;
+        setDeleteLoading(true);
+        try {
+            await adminApi.delete(`/admin/reports/${reportToDelete.id}/`);
+            toast.success("Entry removed from registry");
+            loadReports();
+        } catch {
+            toast.error("Failed to delete report");
+        } finally {
+            setDeleteLoading(false);
+            setConfirmOpen(false);
+            setReportToDelete(null);
+        }
     };
 
     const uploadAfterPhoto = async (reportId) => {
         const file = afterPhotoFiles[reportId];
         if (!file) {
-            setMessage({ type: "error", text: "Choose an image first" });
+            toast.error("Choose an image first");
             return;
         }
 
@@ -81,11 +102,11 @@ export function AdminReportsPage({ adminUser, onLogout }) {
             await adminApi.patch(`/admin/reports/${reportId}/`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-            setMessage({ type: "success", text: "After photo uploaded" });
+            toast.success("After photo uploaded");
             setAfterPhotoFiles((prev) => ({ ...prev, [reportId]: null }));
             loadReports();
         } catch {
-            setMessage({ type: "error", text: "Failed to upload after photo" });
+            toast.error("Failed to upload after photo");
         } finally {
             setUploadingId(null);
         }
@@ -130,14 +151,6 @@ export function AdminReportsPage({ adminUser, onLogout }) {
 
             {/* TABLE OVERLAP SECTION */}
             <section className="max-w-7xl mx-auto px-6 -mt-32 relative z-20">
-                <AnimatePresence>
-                    {message.text && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                            className={`mb-6 p-4 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest border ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
-                            {message.text}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
                 <div className="bg-white rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
                     {/* Table Header/Toolbar */}
@@ -236,7 +249,7 @@ export function AdminReportsPage({ adminUser, onLogout }) {
                                         </td>
                                         <td className="px-10 py-6 border-b border-slate-50 text-right">
                                             <button
-                                                onClick={() => deleteReport(r.id)}
+                                                onClick={() => triggerDelete(r)}
                                                 className="w-10 h-10 bg-red-50 text-red-400 rounded-xl inline-flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm"
                                             >
                                                 <FiTrash2 />
@@ -258,6 +271,14 @@ export function AdminReportsPage({ adminUser, onLogout }) {
                     )}
                 </div>
             </section>
+            <ConfirmDialog 
+                open={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Report?"
+                message="This will permanently delete this report. This action cannot be undone."
+                loading={deleteLoading}
+            />
         </main>
     );
 }

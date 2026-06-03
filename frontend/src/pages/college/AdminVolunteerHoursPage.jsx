@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { adminApi } from "../../api";
+import { useToast } from "../../context/ToastContext";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 
 const initialForm = { volunteer: "", event: "", hours: 2 };
 
 export function AdminVolunteerHoursPage({ onLogout }) {
   const navigate = useNavigate();
+  const toast = useToast();
   const [records, setRecords] = useState([]);
   const [summary, setSummary] = useState({ total_records: 0, total_hours: 0 });
   const [volunteers, setVolunteers] = useState([]);
@@ -17,7 +20,10 @@ export function AdminVolunteerHoursPage({ onLogout }) {
   const [minHours, setMinHours] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 10;
-  const [msg, setMsg] = useState("");
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState(null);
 
   const filteredRecords = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -71,7 +77,7 @@ export function AdminVolunteerHoursPage({ onLogout }) {
       }
     } catch (err) {
       if ([401, 403].includes(err?.response?.status)) return clearSession();
-      setMsg("Failed to load hour records");
+      toast.error("Failed to load hour records");
     }
   };
 
@@ -81,26 +87,43 @@ export function AdminVolunteerHoursPage({ onLogout }) {
 
   const createRecord = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
     try {
       await adminApi.post("/admin/volunteer-hours/", {
         volunteer: form.volunteer,
         event: form.event,
         hours: Number(form.hours),
       });
-      setMsg("Hour record created");
+      toast.success("Hour record created");
       load();
     } catch (err) {
       const data = err?.response?.data;
       const text = typeof data === "string" ? data : JSON.stringify(data);
-      setMsg(text || "Could not create record");
+      toast.error(text || "Could not create record");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
-  const removeRecord = async (id) => {
-    if (!window.confirm("Delete this hour record?")) return;
-    await adminApi.delete(`/admin/volunteer-hours/${id}/`);
-    setMsg("Hour record deleted");
-    load();
+  const triggerDelete = (r) => {
+    setRecordToDelete(r);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!recordToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await adminApi.delete(`/admin/volunteer-hours/${recordToDelete.id}/`);
+      toast.success("Hour record deleted");
+      load();
+    } catch {
+      toast.error("Failed to delete hour record");
+    } finally {
+      setDeleteLoading(false);
+      setConfirmOpen(false);
+      setRecordToDelete(null);
+    }
   };
 
   return (
@@ -110,7 +133,7 @@ export function AdminVolunteerHoursPage({ onLogout }) {
         <Link to="/college/dashboard" className="px-4 py-2 rounded-xl bg-slate-100 text-xs font-black uppercase tracking-wider">Back</Link>
       </div>
 
-      {msg && <p className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">{msg}</p>}
+
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
@@ -124,16 +147,25 @@ export function AdminVolunteerHoursPage({ onLogout }) {
       </div>
 
       <form onSubmit={createRecord} className="grid md:grid-cols-4 gap-3 bg-slate-50 border border-slate-100 rounded-2xl p-4">
-        <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.volunteer} onChange={(e) => setForm({ ...form, volunteer: e.target.value })} required>
+        <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.volunteer} onChange={(e) => setForm({ ...form, volunteer: e.target.value })} disabled={submitLoading} required>
           <option value="">Volunteer</option>
           {volunteers.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
         </select>
-        <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.event} onChange={(e) => setForm({ ...form, event: e.target.value })} required>
+        <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.event} onChange={(e) => setForm({ ...form, event: e.target.value })} disabled={submitLoading} required>
           <option value="">Event</option>
           {events.map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
         </select>
-        <input type="number" step="0.25" min="0.25" className="px-3 py-2 rounded-xl border border-slate-200" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} required />
-        <button className="px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-wider">Add Hours</button>
+        <input type="number" step="0.25" min="0.25" className="px-3 py-2 rounded-xl border border-slate-200" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} disabled={submitLoading} required />
+        <button disabled={submitLoading} className="px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50">
+          {submitLoading ? (
+            <>
+              <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              Processing...
+            </>
+          ) : (
+            "Add Hours"
+          )}
+        </button>
       </form>
 
       <div className="grid md:grid-cols-5 gap-3 bg-white border border-slate-100 rounded-2xl p-4">
@@ -173,14 +205,22 @@ export function AdminVolunteerHoursPage({ onLogout }) {
             </tr>
           </thead>
           <tbody>
-            {paginatedRecords.map((r) => (
-              <tr key={r.id} className="border-t border-slate-100">
-                <td className="px-4 py-3">{r.volunteer_name}</td>
-                <td className="px-4 py-3">{r.event_title}</td>
-                <td className="px-4 py-3 font-semibold">{r.hours}</td>
-                <td className="px-4 py-3 text-right"><button onClick={() => removeRecord(r.id)} className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-bold">Delete</button></td>
+            {paginatedRecords.length > 0 ? (
+              paginatedRecords.map((r) => (
+                <tr key={r.id} className="border-t border-slate-100">
+                  <td className="px-4 py-3">{r.volunteer_name}</td>
+                  <td className="px-4 py-3">{r.event_title}</td>
+                  <td className="px-4 py-3 font-semibold">{r.hours}</td>
+                  <td className="px-4 py-3 text-right"><button onClick={() => triggerDelete(r)} className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors">Delete</button></td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center py-10 text-slate-400 italic">
+                  No volunteer hours recorded yet.
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -193,6 +233,14 @@ export function AdminVolunteerHoursPage({ onLogout }) {
           <button type="button" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold disabled:opacity-40">Next</button>
         </div>
       </div>
+      <ConfirmDialog 
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Hour Record?"
+        message="This will permanently delete this volunteer hours entry."
+        loading={deleteLoading}
+      />
     </main>
   );
 }

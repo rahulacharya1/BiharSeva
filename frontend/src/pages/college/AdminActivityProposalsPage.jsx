@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { adminApi } from "../../api";
+import { useToast } from "../../context/ToastContext";
 
 const initialForm = {
   nss_unit: "",
@@ -20,6 +21,7 @@ const statuses = ["draft", "submitted", "approved", "rejected", "in_progress", "
 
 export function AdminActivityProposalsPage({ onLogout }) {
   const navigate = useNavigate();
+  const toast = useToast();
   const [rows, setRows] = useState([]);
   const [units, setUnits] = useState([]);
   const [form, setForm] = useState(initialForm);
@@ -29,7 +31,7 @@ export function AdminActivityProposalsPage({ onLogout }) {
   const [page, setPage] = useState(1);
   const pageSize = 8;
   const [adminRole, setAdminRole] = useState("platform_admin");
-  const [msg, setMsg] = useState("");
+  const [submitLoading, setSubmitLoading] = useState(false);
   const isPlatform = adminRole === "platform_admin";
 
   const filteredRows = useMemo(() => {
@@ -79,7 +81,7 @@ export function AdminActivityProposalsPage({ onLogout }) {
       if (!form.nss_unit && u.data?.length) setForm((prev) => ({ ...prev, nss_unit: u.data[0].id }));
     } catch (err) {
       if ([401, 403].includes(err?.response?.status)) return clearSession();
-      setMsg("Failed to load proposals");
+      toast.error("Failed to load proposals");
     }
   };
 
@@ -89,6 +91,7 @@ export function AdminActivityProposalsPage({ onLogout }) {
 
   const createProposal = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
     try {
       await adminApi.post("/admin/activity-proposals/", {
         ...form,
@@ -96,18 +99,24 @@ export function AdminActivityProposalsPage({ onLogout }) {
         estimated_hours: Number(form.estimated_hours),
         estimated_budget: Number(form.estimated_budget),
       });
-      setMsg("Proposal created");
+      toast.success("Proposal created successfully");
       setForm((prev) => ({ ...initialForm, nss_unit: prev.nss_unit }));
       load();
     } catch {
-      setMsg("Could not create proposal");
+      toast.error("Could not create proposal");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
   const updateStatus = async (id, status) => {
-    await adminApi.patch(`/admin/activity-proposals/${id}/`, { status });
-    setMsg("Proposal status updated");
-    load();
+    try {
+      await adminApi.patch(`/admin/activity-proposals/${id}/`, { status });
+      toast.success("Proposal status updated");
+      load();
+    } catch {
+      toast.error("Failed to update proposal status");
+    }
   };
 
   return (
@@ -117,7 +126,7 @@ export function AdminActivityProposalsPage({ onLogout }) {
         <Link to="/college/dashboard" className="px-4 py-2 rounded-xl bg-slate-100 text-xs font-black uppercase tracking-wider">Back</Link>
       </div>
 
-      {msg && <p className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">{msg}</p>}
+
 
       {isPlatform ? (
         <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-xs font-semibold text-slate-600">
@@ -125,20 +134,29 @@ export function AdminActivityProposalsPage({ onLogout }) {
         </div>
       ) : (
         <form onSubmit={createProposal} className="grid md:grid-cols-4 gap-3 bg-slate-50 border border-slate-100 rounded-2xl p-4">
-          <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.nss_unit} onChange={(e) => setForm({ ...form, nss_unit: e.target.value })} required>
+          <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.nss_unit} onChange={(e) => setForm({ ...form, nss_unit: e.target.value })} disabled={submitLoading} required>
             <option value="">Select Unit</option>
             {units.map((u) => <option key={u.id} value={u.id}>{u.college_name} / Unit {u.unit_number}</option>)}
           </select>
-          <input className="md:col-span-3 px-3 py-2 rounded-xl border border-slate-200" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-          <textarea className="md:col-span-4 px-3 py-2 rounded-xl border border-slate-200" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
-          <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.activity_type} onChange={(e) => setForm({ ...form, activity_type: e.target.value })}>{activityTypes.map((a) => <option key={a} value={a}>{a}</option>)}</select>
-          <input type="date" className="px-3 py-2 rounded-xl border border-slate-200" value={form.proposed_date} onChange={(e) => setForm({ ...form, proposed_date: e.target.value })} required />
-          <input className="px-3 py-2 rounded-xl border border-slate-200" placeholder="Location" value={form.proposed_location} onChange={(e) => setForm({ ...form, proposed_location: e.target.value })} required />
-          <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>{statuses.map((s) => <option key={s} value={s}>{s}</option>)}</select>
-          <input type="number" min="1" className="px-3 py-2 rounded-xl border border-slate-200" placeholder="Volunteers" value={form.estimated_volunteers} onChange={(e) => setForm({ ...form, estimated_volunteers: e.target.value })} />
-          <input type="number" step="0.5" min="0" className="px-3 py-2 rounded-xl border border-slate-200" placeholder="Hours" value={form.estimated_hours} onChange={(e) => setForm({ ...form, estimated_hours: e.target.value })} />
-          <input type="number" step="0.01" min="0" className="px-3 py-2 rounded-xl border border-slate-200" placeholder="Budget" value={form.estimated_budget} onChange={(e) => setForm({ ...form, estimated_budget: e.target.value })} />
-          <button className="md:col-span-4 px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-wider">Create Proposal</button>
+          <input className="md:col-span-3 px-3 py-2 rounded-xl border border-slate-200" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} disabled={submitLoading} required />
+          <textarea className="md:col-span-4 px-3 py-2 rounded-xl border border-slate-200" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} disabled={submitLoading} required />
+          <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.activity_type} onChange={(e) => setForm({ ...form, activity_type: e.target.value })} disabled={submitLoading}>{activityTypes.map((a) => <option key={a} value={a}>{a}</option>)}</select>
+          <input type="date" className="px-3 py-2 rounded-xl border border-slate-200" value={form.proposed_date} onChange={(e) => setForm({ ...form, proposed_date: e.target.value })} disabled={submitLoading} required />
+          <input className="px-3 py-2 rounded-xl border border-slate-200" placeholder="Location" value={form.proposed_location} onChange={(e) => setForm({ ...form, proposed_location: e.target.value })} disabled={submitLoading} required />
+          <select className="px-3 py-2 rounded-xl border border-slate-200" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} disabled={submitLoading}>{statuses.map((s) => <option key={s} value={s}>{s}</option>)}</select>
+          <input type="number" min="1" className="px-3 py-2 rounded-xl border border-slate-200" placeholder="Volunteers" value={form.estimated_volunteers} onChange={(e) => setForm({ ...form, estimated_volunteers: e.target.value })} disabled={submitLoading} />
+          <input type="number" step="0.5" min="0" className="px-3 py-2 rounded-xl border border-slate-200" placeholder="Hours" value={form.estimated_hours} onChange={(e) => setForm({ ...form, estimated_hours: e.target.value })} disabled={submitLoading} />
+          <input type="number" step="0.01" min="0" className="px-3 py-2 rounded-xl border border-slate-200" placeholder="Budget" value={form.estimated_budget} onChange={(e) => setForm({ ...form, estimated_budget: e.target.value })} disabled={submitLoading} />
+          <button disabled={submitLoading} className="md:col-span-4 px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50">
+            {submitLoading ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Create Proposal"
+            )}
+          </button>
         </form>
       )}
 
@@ -171,23 +189,31 @@ export function AdminActivityProposalsPage({ onLogout }) {
             </tr>
           </thead>
           <tbody>
-            {paginatedRows.map((r) => (
-              <tr key={r.id} className="border-t border-slate-100">
-                <td className="px-4 py-3 font-semibold">{r.title}</td>
-                <td className="px-4 py-3">{r.nss_unit_info?.college} / Unit {r.nss_unit_info?.unit_number}</td>
-                <td className="px-4 py-3">{r.activity_type}</td>
-                <td className="px-4 py-3">{r.proposed_date}</td>
-                <td className="px-4 py-3">
-                  {isPlatform ? (
-                    <span className="px-2 py-1 rounded-lg bg-slate-100 text-xs font-semibold text-slate-600">{r.status}</span>
-                  ) : (
-                    <select className="px-2 py-1 rounded-lg border border-slate-200" value={r.status} onChange={(e) => updateStatus(r.id, e.target.value)}>
-                      {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  )}
+            {paginatedRows.length > 0 ? (
+              paginatedRows.map((r) => (
+                <tr key={r.id} className="border-t border-slate-100">
+                  <td className="px-4 py-3 font-semibold">{r.title}</td>
+                  <td className="px-4 py-3">{r.nss_unit_info?.college} / Unit {r.nss_unit_info?.unit_number}</td>
+                  <td className="px-4 py-3">{r.activity_type}</td>
+                  <td className="px-4 py-3">{r.proposed_date}</td>
+                  <td className="px-4 py-3">
+                    {isPlatform ? (
+                      <span className="px-2 py-1 rounded-lg bg-slate-100 text-xs font-semibold text-slate-600">{r.status}</span>
+                    ) : (
+                      <select className="px-2 py-1 rounded-lg border border-slate-200" value={r.status} onChange={(e) => updateStatus(r.id, e.target.value)}>
+                        {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center py-10 text-slate-400 italic">
+                  No activity proposals found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

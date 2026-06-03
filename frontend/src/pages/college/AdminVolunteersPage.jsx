@@ -3,15 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiArrowLeft, FiUserCheck, FiUserMinus, FiTrash2, FiMail, FiPhone, FiHome, FiCheckCircle, FiSearch } from "react-icons/fi";
 import { adminApi } from "../../api";
-import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { useToast } from "../../context/ToastContext";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 
 export function AdminVolunteersPage({ adminUser, onLogout }) {
     const navigate = useNavigate();
+    const toast = useToast();
     const [volunteers, setVolunteers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
-    const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(true);
-    useAutoDismissMessage(message, setMessage, 2500);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [volunteerToDelete, setVolunteerToDelete] = useState(null);
 
     const filteredVolunteers = volunteers.filter((v) => {
         const q = searchQuery.trim().toLowerCase();
@@ -40,7 +43,7 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
                 navigate("/admin/login");
                 return;
             }
-            setMessage("Failed to load volunteer registry");
+            toast.error("Failed to load volunteer registry");
         } finally {
             setLoading(false);
         }
@@ -49,16 +52,34 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
     useEffect(() => { loadVolunteers(); }, []);
 
     const verify = async (id, action) => {
-        await adminApi.patch(`/admin/volunteers/${id}/`, { action });
-        setMessage(`Volunteer status updated to ${action === 'verify' ? 'Verified' : 'Unverified'}`);
-        loadVolunteers();
+        try {
+            await adminApi.patch(`/admin/volunteers/${id}/`, { action });
+            toast.success(`Volunteer status updated to ${action === 'verify' ? 'Verified' : 'Unverified'}`);
+            loadVolunteers();
+        } catch {
+            toast.error("Failed to update volunteer status");
+        }
     };
 
-    const deleteVolunteer = async (v) => {
-        if (!window.confirm(`Permanently remove ${v.name} from BiharSeva?`)) return;
-        await adminApi.delete(`/admin/volunteers/${v.id}/`);
-        setMessage("Member removed from registry");
-        loadVolunteers();
+    const triggerDelete = (v) => {
+        setVolunteerToDelete(v);
+        setConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!volunteerToDelete) return;
+        setDeleteLoading(true);
+        try {
+            await adminApi.delete(`/admin/volunteers/${volunteerToDelete.id}/`);
+            toast.success("Member removed from registry");
+            loadVolunteers();
+        } catch {
+            toast.error("Failed to delete volunteer");
+        } finally {
+            setDeleteLoading(false);
+            setConfirmOpen(false);
+            setVolunteerToDelete(null);
+        }
     };
 
     if (loading) return <div className="min-h-screen flex items-center justify-center font-black text-slate-300 uppercase tracking-[0.3em] animate-pulse">Accessing Member Records...</div>;
@@ -91,14 +112,6 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
 
             {/* TABLE OVERLAP SECTION */}
             <section className="max-w-7xl mx-auto px-6 -mt-32 relative z-20">
-                <AnimatePresence>
-                    {message && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                            className="mb-6 p-4 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest border bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm">
-                            <FiCheckCircle className="inline mr-2" /> {message}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
                 <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
                     {/* Toolbar */}
@@ -168,7 +181,7 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
                                                 ) : (
                                                     <button onClick={() => verify(v.id, "unverify")} className="px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-amber-50 hover:text-amber-600 transition-all">Revoke</button>
                                                 )}
-                                                <button onClick={() => deleteVolunteer(v)} className="w-10 h-10 bg-red-50 text-red-400 rounded-xl inline-flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm">
+                                                <button onClick={() => triggerDelete(v)} className="w-10 h-10 bg-red-50 text-red-400 rounded-xl inline-flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm">
                                                     <FiTrash2 />
                                                 </button>
                                             </div>
@@ -188,6 +201,14 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
                     )}
                 </div>
             </section>
+            <ConfirmDialog 
+                open={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={confirmDelete}
+                title="Remove Volunteer?"
+                message={`This will permanently remove "${volunteerToDelete?.name || 'this volunteer'}" from BiharSeva.`}
+                loading={deleteLoading}
+            />
         </main>
     );
 }

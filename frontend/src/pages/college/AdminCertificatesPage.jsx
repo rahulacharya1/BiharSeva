@@ -3,14 +3,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiArrowLeft, FiTrash2, FiAward, FiUser, FiEye } from "react-icons/fi";
 import { adminApi } from "../../api";
-import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { useToast } from "../../context/ToastContext";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 
 export function AdminCertificatesPage({ adminUser, onLogout }) {
     const navigate = useNavigate();
+    const toast = useToast();
     const [certificates, setCertificates] = useState([]);
-    const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(true);
-    useAutoDismissMessage(message, setMessage, 2500);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [certToDelete, setCertToDelete] = useState(null);
 
     const clearSession = () => {
         localStorage.removeItem("admin_token");
@@ -27,7 +30,7 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
                 clearSession();
                 return;
             }
-            setMessage("Failed to load registry data");
+            toast.error("Failed to load registry data");
         } finally {
             setLoading(false);
         }
@@ -35,11 +38,25 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
 
     useEffect(() => { loadAll(); }, []);
 
-    const deleteCertificate = async (c) => {
-        if (!window.confirm(`Permanently revoke certificate ${c.certificate_id}?`)) return;
-        await adminApi.delete(`/admin/certificates/${c.id}/`);
-        setMessage("Certificate record removed");
-        loadAll();
+    const triggerDelete = (c) => {
+        setCertToDelete(c);
+        setConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!certToDelete) return;
+        setDeleteLoading(true);
+        try {
+            await adminApi.delete(`/admin/certificates/${certToDelete.id}/`);
+            toast.success("Certificate record removed");
+            loadAll();
+        } catch {
+            toast.error("Failed to delete certificate");
+        } finally {
+            setDeleteLoading(false);
+            setConfirmOpen(false);
+            setCertToDelete(null);
+        }
     };
 
     const viewCertificate = async (certificate) => {
@@ -52,7 +69,7 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
             window.open(fileURL, "_blank", "noopener,noreferrer");
             setTimeout(() => URL.revokeObjectURL(fileURL), 10000);
         } catch {
-            setMessage("Unable to open certificate");
+            toast.error("Unable to open certificate");
         }
     };
 
@@ -140,7 +157,7 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
                                                     <FiEye />
                                                 </button>
                                                 <button 
-                                                    onClick={() => deleteCertificate(c)}
+                                                    onClick={() => triggerDelete(c)}
                                                     className="w-10 h-10 bg-red-50 text-red-400 rounded-xl inline-flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm"
                                                     title="Delete Certificate"
                                                 >
@@ -155,6 +172,14 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
                     </div>
                 </div>
             </section>
+            <ConfirmDialog 
+                open={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={confirmDelete}
+                title="Revoke Certificate?"
+                message={`This will permanently revoke certificate "${certToDelete?.certificate_id || ''}" and delete it from the registry.`}
+                loading={deleteLoading}
+            />
         </main>
     );
 }

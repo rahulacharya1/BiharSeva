@@ -97,6 +97,7 @@ class College(models.Model):
     phone = models.CharField(max_length=15, blank=True)
     website = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['name']
@@ -111,6 +112,7 @@ class NSSUnit(models.Model):
     unit_number = models.IntegerField()
     name = models.CharField(max_length=100, blank=True)  # e.g., "NSS Unit-1"
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         unique_together = ['college', 'unit_number']
@@ -129,6 +131,7 @@ class ProgramOfficer(models.Model):
     designation = models.CharField(max_length=100)  # e.g., "NSS Program Officer"
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['nss_unit', 'name']
@@ -143,6 +146,7 @@ class AdminProfile(models.Model):
     role = models.CharField(max_length=30, choices=ADMIN_ROLE_CHOICES, default="college_admin")
     college = models.ForeignKey(College, on_delete=models.SET_NULL, null=True, blank=True, related_name="admin_profiles")
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["role", "user__username"]
@@ -233,6 +237,7 @@ class EventRegistration(models.Model):
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
     attended = models.BooleanField(default=False)
     registered_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         unique_together = ['event', 'volunteer']
@@ -244,6 +249,7 @@ class Certificate(models.Model):
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
     certificate_id = models.CharField(max_length=20, unique=True, db_index=True)
     issued_date = models.DateField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     
     class Meta:
@@ -260,6 +266,7 @@ class VolunteerHours(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='hour_records')
     hours = models.DecimalField(max_digits=5, decimal_places=2)
     recorded_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     recorded_by = models.CharField(max_length=100, blank=True)  # NSS officer name
     
     class Meta:
@@ -278,6 +285,7 @@ class Badge(models.Model):
     description = models.TextField(blank=True)
     hours_required = models.DecimalField(max_digits=6, decimal_places=2)  # Minimum hours for this badge
     earned_date = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['-earned_date']
@@ -328,6 +336,7 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False, db_index=True)
     link = models.CharField(max_length=300, blank=True)  # Frontend route to navigate to
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']
