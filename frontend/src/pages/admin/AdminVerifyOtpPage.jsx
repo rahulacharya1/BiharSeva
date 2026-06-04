@@ -24,6 +24,23 @@ export function AdminVerifyOtpPage() {
 
     const submit = async (e) => {
         e.preventDefault();
+
+        // Validation
+        const otpClean = form.otp.replace(/\D/g, "");
+        if (otpClean.length !== 6) {
+            setMessage({ type: "error", text: "OTP must be a valid 6-digit number." });
+            return;
+        }
+
+        if (form.new_password.length < 8) {
+            setMessage({ type: "error", text: "Password must be at least 8 characters long." });
+            return;
+        }
+        if (!/[a-zA-Z]/.test(form.new_password) || !/\d/.test(form.new_password)) {
+            setMessage({ type: "error", text: "Password must contain at least one letter and one number." });
+            return;
+        }
+
         if (form.new_password !== form.confirm_password) {
             setMessage({ type: "error", text: "Passwords do not match." });
             return;

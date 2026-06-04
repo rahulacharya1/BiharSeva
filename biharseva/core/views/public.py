@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from ..auth_utils import refresh_access_token
-from ..models import Certificate, Event, Report, Volunteer
+from ..models import Certificate, Event, Report, Volunteer, College
 from ..serializers import (
     ContactMessageSerializer,
     PublicVolunteerSerializer,
@@ -226,4 +226,13 @@ def api_health_check(request):
         "version": "1.0.0",
         "timestamp": timezone.now().isoformat(),
     })
+
+
+@api_view(["GET"])
+def api_public_colleges(request):
+    """List of all registered colleges."""
+    colleges = College.objects.all().order_by("name")
+    data = [{"id": c.id, "name": c.name, "district": c.district} for c in colleges]
+    return Response(data)
+
 

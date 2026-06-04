@@ -48,6 +48,39 @@ export function ReportIssuePage() {
 
     const onSubmit = async (e) => {
         e.preventDefault();
+
+        // Validation
+        const reporterNameTrimmed = form.reporter_name.trim();
+        if (reporterNameTrimmed.length < 2) {
+            toast.error("Reporter Name must be at least 2 characters.");
+            return;
+        }
+        if (!/^[a-zA-Z\s]+$/.test(reporterNameTrimmed)) {
+            toast.error("Reporter Name must only contain letters and spaces.");
+            return;
+        }
+
+        const locationTrimmed = form.location.trim();
+        if (locationTrimmed.length < 5) {
+            toast.error("Specific Location details must be at least 5 characters.");
+            return;
+        }
+
+        const descriptionTrimmed = form.description.trim();
+        if (descriptionTrimmed.length < 10) {
+            toast.error("Problem Description must be at least 10 characters long.");
+            return;
+        }
+        if (descriptionTrimmed.length > 2000) {
+            toast.error("Problem Description cannot exceed 2000 characters.");
+            return;
+        }
+
+        if (!form.photo) {
+            toast.error("Please upload photo evidence of the issue.");
+            return;
+        }
+
         setLoading(true);
 
         const payload = new FormData();

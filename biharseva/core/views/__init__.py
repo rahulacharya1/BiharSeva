@@ -24,6 +24,7 @@ from .public import (
     api_volunteer_leaderboard,
     api_token_refresh,
     api_health_check,
+    api_public_colleges,
 )
 
 # Volunteer views

@@ -19,7 +19,14 @@ export function TrackReportPage() {
     const handleTrack = async (e) => {
         e.preventDefault();
         const val = tracking.trim().toUpperCase();
-        if (!val) return toast.warning("Please enter a tracking number.");
+        if (!val) {
+            toast.warning("Please enter a tracking number.");
+            return;
+        }
+        if (!/^BS-R\d{6}$/.test(val)) {
+            toast.error("Invalid tracking number format. Format should be like BS-R000001.");
+            return;
+        }
 
         setLoading(true);
         setResult(null);

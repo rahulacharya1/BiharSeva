@@ -61,6 +61,7 @@ from .views import (
     api_notifications,
     api_notification_read,
     api_notifications_read_all,
+    api_public_colleges,
 )
 
 
@@ -68,6 +69,7 @@ urlpatterns = [
     path("meta/home/", api_home_stats, name="api_home_stats"),
     path("meta/about/", api_about_stats, name="api_about_stats"),
     path("contact/", api_contact_message, name="api_contact_message"),
+    path("colleges/public/", api_public_colleges, name="api_public_colleges"),
 
     path("reports/", api_report_create, name="api_report_create"),
     path("reports/status/", api_report_status, name="api_report_status"),

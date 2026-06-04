@@ -37,6 +37,18 @@ export function CollegeProfilePage({ onLogout }) {
 
   const submit = async (e) => {
     e.preventDefault();
+
+    // Validation
+    const usernameTrimmed = form.username.trim();
+    if (usernameTrimmed.length < 3) {
+      setMessage("Username must be at least 3 characters.");
+      return;
+    }
+    if (!form.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(form.email)) {
+      setMessage("Please enter a valid email address (e.g. name@domain.com).");
+      return;
+    }
+
     try {
       const res = await adminApi.patch("/admin/profile/me/", {
         username: form.username,

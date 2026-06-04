@@ -68,6 +68,14 @@ def api_admin_colleges(request):
     admin_username = (payload.pop("admin_username", "") or "").strip()
     admin_email = (payload.pop("admin_email", "") or "").strip().lower()
 
+    if admin_email:
+        from django.core.validators import validate_email
+        from django.core.exceptions import ValidationError
+        try:
+            validate_email(admin_email)
+        except ValidationError:
+            return Response({"detail": "Enter a valid college admin email address."}, status=400)
+
     serializer = CollegeSerializer(data=payload)
     if serializer.is_valid():
         with transaction.atomic():

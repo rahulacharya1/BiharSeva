@@ -17,6 +17,17 @@ export function AdminLoginPage({ onLogin }) {
 
     const submit = async (e) => {
         e.preventDefault();
+
+        // Validation
+        if (username.trim().length < 3) {
+            setMessage({ type: "error", text: "Username/Email must be at least 3 characters." });
+            return;
+        }
+        if (password.length < 8) {
+            setMessage({ type: "error", text: "Password must be at least 8 characters long." });
+            return;
+        }
+
         setLoading(true);
         setMessage({ type: "", text: "" });
 

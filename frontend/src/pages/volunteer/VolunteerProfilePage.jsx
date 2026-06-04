@@ -50,6 +50,35 @@ export function VolunteerProfilePage() {
 
     const submit = async (e) => {
         e.preventDefault();
+
+        // Validation
+        const nameTrimmed = form.name.trim();
+        if (nameTrimmed.length < 2) {
+            setMessage({ type: "error", text: "Full Name must be at least 2 characters." });
+            return;
+        }
+        if (!/^[a-zA-Z\s]+$/.test(nameTrimmed)) {
+            setMessage({ type: "error", text: "Full Name must only contain letters and spaces." });
+            return;
+        }
+
+        const phoneClean = form.phone.replace(/\D/g, "");
+        if (phoneClean.length !== 10 || !/^[6789]/.test(phoneClean)) {
+            setMessage({ type: "error", text: "Phone number must be a valid 10-digit number starting with 6, 7, 8, or 9." });
+            return;
+        }
+
+        if (form.new_password) {
+            if (form.new_password.length < 8) {
+                setMessage({ type: "error", text: "New password must be at least 8 characters long." });
+                return;
+            }
+            if (!/[a-zA-Z]/.test(form.new_password) || !/\d/.test(form.new_password)) {
+                setMessage({ type: "error", text: "New password must contain at least one letter and one number." });
+                return;
+            }
+        }
+
         setLoading(true);
         setMessage({ type: "", text: "" });
 

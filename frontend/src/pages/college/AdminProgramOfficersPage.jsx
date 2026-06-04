@@ -58,6 +58,18 @@ export function AdminProgramOfficersPage({ onLogout }) {
 
   const submitOfficer = async (e) => {
     e.preventDefault();
+
+    // Validation
+    const phoneClean = form.phone.replace(/\D/g, "");
+    if (phoneClean.length !== 10 || !/^[6789]/.test(phoneClean)) {
+      toast.error("Phone number must be a valid 10-digit number starting with 6, 7, 8, or 9.");
+      return;
+    }
+    if (!form.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(form.email)) {
+      toast.error("Please enter a valid email address (e.g. name@domain.com).");
+      return;
+    }
+
     setSubmitLoading(true);
     try {
       if (editingId) {

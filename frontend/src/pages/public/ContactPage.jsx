@@ -14,6 +14,35 @@ export function ContactPage() {
 
     const submit = async (e) => {
         e.preventDefault();
+        
+        // Validation
+        const nameTrimmed = form.name.trim();
+        if (nameTrimmed.length < 2) {
+            setStatus({ type: "error", text: "Name must be at least 2 characters." });
+            return;
+        }
+        if (!/^[a-zA-Z\s]+$/.test(nameTrimmed)) {
+            setStatus({ type: "error", text: "Name must only contain letters and spaces." });
+            return;
+        }
+
+        if (!form.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(form.email)) {
+            setStatus({ type: "error", text: "Please enter a valid email address (e.g. name@domain.com)." });
+            return;
+        }
+
+        const subjectTrimmed = form.subject.trim();
+        if (subjectTrimmed.length < 3) {
+            setStatus({ type: "error", text: "Subject must be at least 3 characters." });
+            return;
+        }
+
+        const messageTrimmed = form.message.trim();
+        if (messageTrimmed.length < 10) {
+            setStatus({ type: "error", text: "Message must be at least 10 characters." });
+            return;
+        }
+
         setLoading(true);
         setStatus({ type: "idle", text: "" });
 
@@ -88,7 +117,7 @@ export function ContactPage() {
                         <div className="space-y-6">
                             {[
                                 { label: "Email", val: "noreply.biharseva@gmail.com", icon: "fa-envelope" },
-                                { label: "Phone", val: "+91 70661638189", icon: "fa-phone" },
+                                { label: "Phone", val: "+91 7061638189", icon: "fa-phone" },
                                 { label: "Location", val: "Purnea, Bihar, India", icon: "fa-location-dot" }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100/50 group hover:bg-white hover:shadow-md transition-all">

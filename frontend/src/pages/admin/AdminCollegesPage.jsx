@@ -51,6 +51,24 @@ export function AdminCollegesPage({ adminUser, onLogout }) {
 
   const submitCollege = async (e) => {
     e.preventDefault();
+
+    // Validation
+    if (form.phone) {
+      const phoneClean = form.phone.replace(/\D/g, "");
+      if (phoneClean.length !== 10 || !/^[6789]/.test(phoneClean)) {
+        setMsg("College phone number must be a valid 10-digit number starting with 6, 7, 8, or 9.");
+        return;
+      }
+    }
+    if (form.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(form.email)) {
+      setMsg("Please enter a valid college email address (e.g. contact@college.com).");
+      return;
+    }
+    if (form.admin_email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(form.admin_email)) {
+      setMsg("Please enter a valid college admin email address.");
+      return;
+    }
+
     try {
       setInviteInfo(null);
       const payload = {

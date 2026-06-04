@@ -75,8 +75,8 @@ class VolunteerRegisterSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def validate_phone(self, value):
-        if not value.isdigit() or len(value) != 10:
-            raise serializers.ValidationError("Enter a valid 10-digit mobile number")
+        if not value.isdigit() or len(value) != 10 or value[0] not in "6789":
+            raise serializers.ValidationError("Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9")
         return value
 
     def validate_email(self, value):
@@ -130,13 +130,14 @@ class VolunteerSerializer(serializers.ModelSerializer):
             "avatar",
             "is_verified",
             "has_participated",
+            "total_hours",
             "created_at",
         ]
-        read_only_fields = ["id", "email", "is_verified", "has_participated", "created_at"]
+        read_only_fields = ["id", "email", "is_verified", "has_participated", "total_hours", "created_at"]
 
     def validate_phone(self, value):
-        if not value.isdigit() or len(value) != 10:
-            raise serializers.ValidationError("Enter a valid 10-digit mobile number")
+        if not value.isdigit() or len(value) != 10 or value[0] not in "6789":
+            raise serializers.ValidationError("Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9")
         return value
 
     def to_representation(self, instance):
@@ -171,9 +172,10 @@ class VolunteerOtpRequestSerializer(serializers.Serializer):
     phone = serializers.CharField()
 
     def validate_phone(self, value):
-        if not value.isdigit() or len(value) != 10:
-            raise serializers.ValidationError("Enter a valid 10-digit mobile number")
+        if not value.isdigit() or len(value) != 10 or value[0] not in "6789":
+            raise serializers.ValidationError("Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9")
         return value
+
 
 
 class VolunteerOtpVerifySerializer(serializers.Serializer):
@@ -348,8 +350,8 @@ class AdminVolunteerManageSerializer(serializers.ModelSerializer):
         ]
 
     def validate_phone(self, value):
-        if not value.isdigit() or len(value) != 10:
-            raise serializers.ValidationError("Enter a valid 10-digit mobile number")
+        if not value.isdigit() or len(value) != 10 or value[0] not in "6789":
+            raise serializers.ValidationError("Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9")
         return value
 
     def update(self, instance, validated_data):
@@ -407,6 +409,13 @@ class CollegeSerializer(serializers.ModelSerializer):
     def get_nss_units_count(self, obj):
         return obj.nss_units.count()
 
+    def validate_phone(self, value):
+        if value:
+            if not value.isdigit() or len(value) != 10 or value[0] not in "6789":
+                raise serializers.ValidationError("Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9")
+        return value
+
+
 
 class NSSUnitSerializer(serializers.ModelSerializer):
     """Serializer for NSS Unit within a College."""
@@ -448,6 +457,12 @@ class ProgramOfficerSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "unit_info", "created_at"]
+
+    def validate_phone(self, value):
+        if not value.isdigit() or len(value) != 10 or value[0] not in "6789":
+            raise serializers.ValidationError("Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9")
+        return value
+
     
     def get_unit_info(self, obj):
         return {

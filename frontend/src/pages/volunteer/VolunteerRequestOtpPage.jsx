@@ -14,6 +14,18 @@ export function VolunteerRequestOtpPage() {
 
     const submit = async (e) => {
         e.preventDefault();
+        
+        if (!form.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(form.email)) {
+            setMessage({ type: "error", text: "Please enter a valid email address (e.g. name@domain.com)." });
+            return;
+        }
+
+        const phoneClean = form.phone.replace(/\D/g, "");
+        if (phoneClean.length !== 10 || !/^[6789]/.test(phoneClean)) {
+            setMessage({ type: "error", text: "Registered Phone must be a valid 10-digit number starting with 6, 7, 8, or 9." });
+            return;
+        }
+
         setLoading(true);
         setMessage({ type: "", text: "" });
 

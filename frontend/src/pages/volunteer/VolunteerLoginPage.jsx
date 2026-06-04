@@ -16,6 +16,17 @@ export function VolunteerLoginPage({ onLogin }) {
 
     const submit = async (e) => {
         e.preventDefault();
+        
+        // Validation
+        if (!email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(email)) {
+            setMessage({ type: "error", text: "Please enter a valid email address (e.g. name@domain.com)." });
+            return;
+        }
+        if (password.length < 8) {
+            setMessage({ type: "error", text: "Password must be at least 8 characters long." });
+            return;
+        }
+
         setLoading(true);
         setMessage({ type: "", text: "" });
 

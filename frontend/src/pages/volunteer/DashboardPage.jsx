@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiUser, FiAward, FiCalendar, FiLogOut, FiEdit3, FiCheckCircle } from "react-icons/fi";
+import { FiUser, FiAward, FiCalendar, FiLogOut, FiEdit3, FiCheckCircle, FiClock, FiArrowRight } from "react-icons/fi";
 import { api } from "../../api";
 
 export function DashboardPage({ volunteer, onLogout }) {
@@ -43,6 +43,43 @@ export function DashboardPage({ volunteer, onLogout }) {
     };
 
     if (loading) return <div className="min-h-screen flex items-center justify-center font-black text-slate-300 uppercase tracking-[0.3em] animate-pulse">Synchronizing Data...</div>;
+
+    const totalHours = parseFloat(data?.volunteer?.total_hours || 0);
+
+    const tiers = [
+        { name: "Volunteer", hours: 0, color: "text-slate-500 bg-slate-50 border-slate-200" },
+        { name: "Bronze", hours: 20, color: "text-amber-700 bg-amber-50 border-amber-200" },
+        { name: "Silver", hours: 50, color: "text-slate-600 bg-slate-100 border-slate-300" },
+        { name: "Gold", hours: 100, color: "text-yellow-600 bg-yellow-50 border-yellow-200" },
+        { name: "Platinum", hours: 250, color: "text-indigo-600 bg-indigo-50 border-indigo-200" }
+    ];
+
+    let currentTier = tiers[0];
+    let nextTier = null;
+
+    for (let i = 0; i < tiers.length; i++) {
+        if (totalHours >= tiers[i].hours) {
+            currentTier = tiers[i];
+        }
+    }
+
+    const currentTierIndex = tiers.findIndex(t => t.name === currentTier.name);
+    if (currentTierIndex < tiers.length - 1) {
+        nextTier = tiers[currentTierIndex + 1];
+    }
+
+    let progressPercent = 0;
+    let hoursNeededForNext = 0;
+    if (nextTier) {
+        const prevRequired = currentTier.hours;
+        const nextRequired = nextTier.hours;
+        const currentEarnedInStage = totalHours - prevRequired;
+        const stageTotalNeeded = nextRequired - prevRequired;
+        progressPercent = Math.min(100, Math.max(0, (currentEarnedInStage / stageTotalNeeded) * 100));
+        hoursNeededForNext = nextRequired - totalHours;
+    } else {
+        progressPercent = 100;
+    }
 
     return (
         <main className="min-h-screen pb-24 bg-white">
@@ -89,7 +126,7 @@ export function DashboardPage({ volunteer, onLogout }) {
 
             {/* STATS OVERLAP GRID */}
             <section className="max-w-7xl mx-auto px-6 -mt-32 relative z-20">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-[0_15px_40px_rgba(0,0,0,0.04)] flex items-center gap-6">
                         <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
                             <FiCheckCircle />
@@ -97,6 +134,15 @@ export function DashboardPage({ volunteer, onLogout }) {
                         <div>
                             <h2 className="text-3xl font-display font-bold text-slate-900">{data.registration_count}</h2>
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Missions</p>
+                        </div>
+                    </div>
+                    <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-[0_15px_40px_rgba(0,0,0,0.04)] flex items-center gap-6">
+                        <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                            <FiClock />
+                        </div>
+                        <div>
+                            <h2 className="text-3xl font-display font-bold text-slate-900">{totalHours}</h2>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Service Hours</p>
                         </div>
                     </div>
                     <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-[0_15px_40px_rgba(0,0,0,0.04)] flex items-center gap-6">
@@ -119,6 +165,77 @@ export function DashboardPage({ volunteer, onLogout }) {
                     </div>
                 </div>
             </section>
+
+            {/* GAMIFICATION & MILESTONE BANNER */}
+            <motion.section 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="max-w-7xl mx-auto px-6 mt-10"
+            >
+                <div className="bg-slate-50 border border-slate-100 p-8 rounded-[3rem] shadow-[0_15px_40px_rgba(0,0,0,0.01)] flex flex-col lg:flex-row items-center justify-between gap-8">
+                    <div className="flex items-center gap-6">
+                        <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-3xl shadow-md border ${currentTier.color}`}>
+                            <FiAward />
+                        </div>
+                        <div>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Recognition Tier</span>
+                            <h3 className="text-2xl font-display font-bold text-slate-900 mt-1">{currentTier.name} Badge</h3>
+                            <p className="text-xs text-slate-500 font-medium mt-1">
+                                {nextTier ? (
+                                    <>You have completed <span className="font-bold text-slate-700">{totalHours} hours</span>. Earn <span className="font-bold text-emerald-600">{hoursNeededForNext.toFixed(1)} more hours</span> to unlock the <span className="font-bold text-emerald-600">{nextTier.name}</span> tier.</>
+                                ) : (
+                                    <>Amazing! You have achieved the highest tier (<span className="font-bold text-indigo-600">{currentTier.name}</span>) with <span className="font-bold text-slate-700">{totalHours} hours</span>!</>
+                                )}
+                            </p>
+                        </div>
+                    </div>
+
+                    {nextTier && (
+                        <div className="w-full lg:w-96 space-y-2">
+                            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-slate-400">
+                                <span>{currentTier.name} ({currentTier.hours}h)</span>
+                                <span className="text-emerald-600">{progressPercent.toFixed(0)}% to {nextTier.name}</span>
+                            </div>
+                            <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300/30">
+                                <div 
+                                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-1000"
+                                    style={{ width: `${progressPercent}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </motion.section>
+
+            {/* RECOMMENDED ACTIONS BANNER FOR NEW/IDLE VOLUNTEERS */}
+            {data.registration_count === 0 && (
+                <motion.section 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="max-w-7xl mx-auto px-6 mt-8"
+                >
+                    <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-8 md:p-10 rounded-[3rem] shadow-[0_20px_50px_rgba(4,120,87,0.15)] flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-[100px] pointer-events-none" />
+                        <div className="space-y-2 relative z-10">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-[9px] font-black uppercase tracking-wider text-white">
+                                Get Started
+                            </span>
+                            <h3 className="text-2xl font-display font-bold tracking-tight">Ready to make an impact?</h3>
+                            <p className="text-sm text-emerald-100 font-medium max-w-xl">
+                                You haven't registered for any volunteering missions yet. Browse our upcoming NSS drives and register for one to start earning service hours and merit badges!
+                            </p>
+                        </div>
+                        <Link 
+                            to="/events" 
+                            className="px-8 py-4 bg-white text-emerald-800 hover:bg-emerald-50 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg flex items-center gap-2 whitespace-nowrap relative z-10"
+                        >
+                            Browse Events <FiArrowRight />
+                        </Link>
+                    </div>
+                </motion.section>
+            )}
 
             {/* DASHBOARD CONTENT GRID */}
             <section className="max-w-7xl mx-auto px-6 mt-16 grid lg:grid-cols-2 gap-10">

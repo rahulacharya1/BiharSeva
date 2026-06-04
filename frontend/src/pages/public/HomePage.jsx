@@ -3,6 +3,38 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import heroImg from "../../assets/biharseva_hero_cleanup.png";
+
+const AnimatedNumber = ({ value }) => {
+    const [displayValue, setDisplayValue] = useState(0);
+    useEffect(() => {
+        let start = 0;
+        const end = parseInt(value, 10);
+        if (isNaN(end) || end === 0) {
+            setDisplayValue(0);
+            return;
+        }
+        const duration = 1500; // ms
+        const totalFrames = 60;
+        const frameDuration = duration / totalFrames;
+        const increment = end / totalFrames;
+        let frame = 0;
+
+        const timer = setInterval(() => {
+            frame++;
+            if (frame >= totalFrames) {
+                setDisplayValue(end);
+                clearInterval(timer);
+            } else {
+                setDisplayValue(Math.floor(increment * frame));
+            }
+        }, frameDuration);
+
+        return () => clearInterval(timer);
+    }, [value]);
+
+    return <span>{displayValue}</span>;
+};
 
 export function HomePage() {
     const [data, setData] = useState(null);
@@ -50,40 +82,80 @@ export function HomePage() {
         { label: "Certificates", value: data?.stats?.total_certificates ?? 0, icon: "fa-award", color: "text-emerald-600", bg: "bg-emerald-50" },
     ];
 
+    const colleges = [
+        "Patna University",
+        "Purnea University",
+        "Lalit Narayan Mithila University",
+        "Muzaffarpur Institute of Technology",
+        "Bhagalpur College of Engineering",
+        "Nalanda Open University"
+    ];
+
+    const testimonials = [
+        { name: "Amit Kumar", college: "Purnea College", quote: "BiharSeva changed how we coordinate cleanliness drives. Our certificates are issued instantly, keeping volunteers highly motivated!" },
+        { name: "Neha Kumari", college: "Patna Women's College", quote: "Reporting civic issues via photo upload is so effective. Seeing volunteers clean the garbage spot we flagged was amazing!" }
+    ];
+
     return (
         <main className="min-h-screen pb-24 bg-white">
             {/* --- HERO SECTION --- */}
-            <section className="relative bg-slate-50 border-b border-slate-200/60 pt-20 pb-48 px-6 overflow-hidden">
+            <section className="relative bg-slate-50 border-b border-slate-200/60 pt-20 pb-44 px-6 overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none -z-10">
                     <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[60%] bg-emerald-100/30 rounded-full blur-[120px]" />
                     <div className="absolute bottom-0 right-[-5%] w-[40%] h-[50%] bg-blue-100/20 rounded-full blur-[100px]" />
                 </div>
 
-                <div className="max-w-5xl mx-auto text-center space-y-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 shadow-sm"
-                    >
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        Digital Bihar Initiative
-                    </motion.div>
+                <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center relative z-10">
+                    <div className="lg:col-span-7 space-y-8 text-center lg:text-left">
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 shadow-sm"
+                        >
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            Digital Bihar Initiative
+                        </motion.div>
 
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                        className="font-display text-5xl md:text-8xl font-bold text-slate-900 leading-[1.05] tracking-tight"
-                    >
-                        Serve Bihar, Build <br /> <span className="text-emerald-600">Visible Impact.</span>
-                    </motion.h1>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                            className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-slate-900 leading-[1.05] tracking-tight"
+                        >
+                            Serve Bihar, Build <br /> <span className="text-emerald-600">Visible Impact.</span>
+                        </motion.h1>
 
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                        className="max-w-2xl mx-auto text-lg md:text-xl text-slate-500 font-medium leading-relaxed"
-                    >
-                        A modern civic action platform where citizens report issues, volunteers execute field action, and outcomes are tracked in real time.
-                    </motion.p>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                            className="max-w-2xl mx-auto lg:mx-0 text-lg md:text-xl text-slate-500 font-medium leading-relaxed"
+                        >
+                            A modern civic action platform where citizens report local issues, NSS volunteers execute field action, and outcomes are tracked in real time.
+                        </motion.p>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                            className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 pt-2"
+                        >
+                            <Link to="/volunteer/register" className="px-8 py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-100 hover:shadow-emerald-200 active:scale-95 transition-all text-center">
+                                Join as Volunteer
+                            </Link>
+                            <Link to="/report-issue" className="px-8 py-5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-sm active:scale-95 transition-all text-center">
+                                Report an Issue
+                            </Link>
+                        </motion.div>
+                    </div>
+
+                    <div className="lg:col-span-5 flex justify-center">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2, type: "spring" }}
+                            className="relative bg-white p-6 rounded-[3.5rem] border border-slate-100 shadow-[0_30px_60px_rgba(0,0,0,0.06)] overflow-hidden flex items-center justify-center max-w-sm sm:max-w-md"
+                        >
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl" />
+                            <img src={heroImg} alt="BiharSeva Civic Clean Up" className="w-full h-auto object-contain rounded-2xl" />
+                        </motion.div>
+                    </div>
                 </div>
             </section>
 
@@ -103,7 +175,9 @@ export function HomePage() {
                                 <i className={`fas ${item.icon}`}></i>
                             </div>
                             <div>
-                                <h2 className="text-4xl font-display font-bold text-slate-900 tracking-tight">{item.value}</h2>
+                                <h2 className="text-4xl font-display font-bold text-slate-900 tracking-tight">
+                                    <AnimatedNumber value={item.value} />
+                                </h2>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{item.label}</p>
                             </div>
                         </motion.div>
@@ -148,6 +222,47 @@ export function HomePage() {
                 </div>
             </section>
 
+            {/* --- PARTNERING COLLEGES --- */}
+            <section className="max-w-7xl mx-auto px-6 mt-32 border-t border-slate-100 pt-20">
+                <div className="text-center max-w-xl mx-auto space-y-4 mb-16">
+                    <h2 className="font-display text-3xl font-bold text-slate-900 tracking-tight">Partnering Institutions</h2>
+                    <p className="text-slate-500 text-sm font-medium">BiharSeva powers NSS volunteer operations in leading colleges and universities across Bihar.</p>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                    {colleges.map((college, idx) => (
+                        <div key={idx} className="p-6 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 text-center">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">{college}</span>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* --- TESTIMONIALS --- */}
+            <section className="max-w-7xl mx-auto px-6 mt-32">
+                <div className="bg-slate-50 rounded-[3rem] p-12 md:p-20 border border-slate-100">
+                    <div className="max-w-lg space-y-4 mb-12">
+                        <h2 className="font-display text-3xl font-bold text-slate-900 tracking-tight">Volunteer Stories</h2>
+                        <p className="text-slate-500 text-sm font-medium">Read testimonials from volunteers leading clean-up campaigns across districts.</p>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-8">
+                        {testimonials.map((t, idx) => (
+                            <div key={idx} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
+                                <p className="text-slate-600 text-sm font-medium leading-relaxed italic">"{t.quote}"</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 font-bold rounded-xl flex items-center justify-center text-xs">
+                                        {t.name[0]}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xs font-bold text-slate-900">{t.name}</h4>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t.college}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* --- SPOTLIGHT INFO --- */}
             <section className="max-w-7xl mx-auto px-6 mt-32">
                 <div className="bg-slate-900 rounded-[3.5rem] p-12 md:p-24 text-white relative overflow-hidden shadow-2xl">
@@ -159,7 +274,7 @@ export function HomePage() {
                             <h3 className="font-display text-4xl md:text-5xl font-bold leading-[1.1] tracking-tight">Civic action, <br /> driven by data.</h3>
                             <p className="text-slate-400 text-lg font-medium leading-relaxed">
                                 BiharSeva simplifies complex civic problems by bringing transparency.
-                                Citizens raise issues, volunteers act, and administrators monitor everything via a real-time API dashboard.
+                                Citizens raise issues, volunteers act, and administrators monitor everything via a real-time dashboard.
                             </p>
                         </div>
                         <div className="flex justify-center lg:justify-end">
@@ -184,3 +299,4 @@ export function HomePage() {
         </main>
     );
 }
+

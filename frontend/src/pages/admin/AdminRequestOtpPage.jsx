@@ -14,6 +14,13 @@ export function AdminRequestOtpPage() {
 
     const submit = async (e) => {
         e.preventDefault();
+
+        // Validation
+        if (!email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(email)) {
+            setMessage({ type: "error", text: "Please enter a valid email address (e.g. name@domain.com)." });
+            return;
+        }
+
         setLoading(true);
         setMessage({ type: "", text: "" });
 
