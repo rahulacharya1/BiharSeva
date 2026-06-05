@@ -59,10 +59,6 @@ export function CollegeDashboardPage({ adminUser, onLogout }) {
   }
 
   const role = adminContext?.role || adminUser?.admin_role;
-  if (role === "platform_admin") {
-    return <Navigate to="/admin/panel" replace />;
-  }
-
   const modules = [
     { title: "Events & Missions", path: "/college/events", count: stats ? stats.total_events : "0", icon: <FiCalendar />, color: "text-blue-700", bg: "bg-blue-50" },
     { title: "Volunteers Directory", path: "/college/volunteers", count: stats ? stats.total_volunteers : "0", icon: <FiUsers />, color: "text-emerald-700", bg: "bg-emerald-50" },

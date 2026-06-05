@@ -82,20 +82,6 @@ export function HomePage() {
         { label: "Certificates", value: data?.stats?.total_certificates ?? 0, icon: "fa-award", color: "text-emerald-600", bg: "bg-emerald-50" },
     ];
 
-    const colleges = [
-        "Patna University",
-        "Purnea University",
-        "Lalit Narayan Mithila University",
-        "Muzaffarpur Institute of Technology",
-        "Bhagalpur College of Engineering",
-        "Nalanda Open University"
-    ];
-
-    const testimonials = [
-        { name: "Amit Kumar", college: "Purnea College", quote: "BiharSeva changed how we coordinate cleanliness drives. Our certificates are issued instantly, keeping volunteers highly motivated!" },
-        { name: "Neha Kumari", college: "Patna Women's College", quote: "Reporting civic issues via photo upload is so effective. Seeing volunteers clean the garbage spot we flagged was amazing!" }
-    ];
-
     return (
         <main className="min-h-screen pb-24 bg-white">
             {/* --- HERO SECTION --- */}
@@ -228,39 +214,20 @@ export function HomePage() {
                     <h2 className="font-display text-3xl font-bold text-slate-900 tracking-tight">Partnering Institutions</h2>
                     <p className="text-slate-500 text-sm font-medium">BiharSeva powers NSS volunteer operations in leading colleges and universities across Bihar.</p>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                    {colleges.map((college, idx) => (
-                        <div key={idx} className="p-6 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 text-center">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">{college}</span>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* --- TESTIMONIALS --- */}
-            <section className="max-w-7xl mx-auto px-6 mt-32">
-                <div className="bg-slate-50 rounded-[3rem] p-12 md:p-20 border border-slate-100">
-                    <div className="max-w-lg space-y-4 mb-12">
-                        <h2 className="font-display text-3xl font-bold text-slate-900 tracking-tight">Volunteer Stories</h2>
-                        <p className="text-slate-500 text-sm font-medium">Read testimonials from volunteers leading clean-up campaigns across districts.</p>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-8">
-                        {testimonials.map((t, idx) => (
-                            <div key={idx} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
-                                <p className="text-slate-600 text-sm font-medium leading-relaxed italic">"{t.quote}"</p>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 font-bold rounded-xl flex items-center justify-center text-xs">
-                                        {t.name[0]}
-                                    </div>
-                                    <div>
-                                        <h4 className="text-xs font-bold text-slate-900">{t.name}</h4>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t.college}</p>
-                                    </div>
-                                </div>
+                {data?.colleges && data.colleges.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                        {data.colleges.map((c) => (
+                            <div key={c.id} className="p-6 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 text-center">
+                                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">{c.name}</span>
                             </div>
                         ))}
                     </div>
-                </div>
+                ) : (
+                    <div className="text-center p-8 bg-slate-50 rounded-3xl border border-slate-100 max-w-md mx-auto">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">No partnering institutions registered yet</p>
+                        <p className="text-xs text-slate-400 mt-2">Colleges can register by contacting the platform administrator.</p>
+                    </div>
+                )}
             </section>
 
             {/* --- SPOTLIGHT INFO --- */}

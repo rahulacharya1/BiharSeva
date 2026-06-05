@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "./context/AuthContext";
 import { useToast } from "./context/ToastContext";
 import { setupInterceptors } from "./api";
@@ -27,6 +27,7 @@ import { AdminLoginPage } from "./pages/admin/AdminLoginPage";
 import { AdminRequestOtpPage } from "./pages/admin/AdminRequestOtpPage";
 import { AdminVerifyOtpPage } from "./pages/admin/AdminVerifyOtpPage";
 import { AdminPanelPage } from "./pages/admin/AdminPanelPage";
+import { AdminAddCollegePage } from "./pages/admin/AdminAddCollegePage";
 import { AdminCollegesPage } from "./pages/admin/AdminCollegesPage";
 import { CollegeDashboardPage } from "./pages/college/CollegeDashboardPage";
 import { AdminReportsPage } from "./pages/college/AdminReportsPage";
@@ -47,34 +48,21 @@ import { Footer } from "./app/Footer";
 import { Header } from "./app/Header";
 import { AdminLayout } from "./components/AdminLayout";
 
-function Layout({ children, pathname }) {
+// Public sections layout shell
+function PublicLayout({ children, pathname }) {
   const { volunteer, adminUser } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const closeMenu = () => setMobileOpen(false);
-
-  const isAdminRoute = (pathname.startsWith("/college/") || pathname.startsWith("/admin/")) && 
-                       !["/admin/login", "/admin/request-otp", "/admin/verify-otp"].includes(pathname);
-
-  if (isAdminRoute) {
-    return (
-      <div className="app-shell admin-shell">
-        <main>
-          <PageTransition pageKey={pathname}>{children}</PageTransition>
-        </main>
-      </div>
-    );
-  }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell flex flex-col min-h-screen">
       <Header
         volunteer={volunteer}
         adminUser={adminUser}
         mobileOpen={mobileOpen}
         onToggleMobile={() => setMobileOpen((prev) => !prev)}
-        onCloseMobile={closeMenu}
+        onCloseMobile={() => setMobileOpen(false)}
       />
-      <main>
+      <main className="flex-grow">
         <PageTransition pageKey={pathname}>{children}</PageTransition>
       </main>
       <Footer />
@@ -102,50 +90,26 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 animate-pulse">
-        <div className="h-20 bg-white border-b border-slate-100" />
-        <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
-          <div className="h-10 w-64 bg-slate-200 rounded-xl" />
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="h-36 bg-white border border-slate-100 rounded-2xl" />
-            <div className="h-36 bg-white border border-slate-100 rounded-2xl" />
-            <div className="h-36 bg-white border border-slate-100 rounded-2xl" />
-          </div>
-          <div className="h-72 bg-white border border-slate-100 rounded-3xl" />
-          <div className="h-48 bg-white border border-slate-100 rounded-3xl" />
-        </div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
       </div>
     );
   }
 
+  const isAdminPanelActive = (location.pathname.startsWith("/college/") || location.pathname.startsWith("/admin/")) && 
+                             !["/admin/login", "/admin/request-otp", "/admin/verify-otp"].includes(location.pathname);
+
   return (
     <ErrorBoundary>
-      <Layout pathname={location.pathname}>
+      {isAdminPanelActive ? (
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/report-issue" element={<ReportIssuePage />} />
-          <Route path="/report-gallery" element={<ReportGalleryPage />} />
-          <Route path="/track-report" element={<TrackReportPage />} />
-          <Route path="/volunteers" element={<VolunteersPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/volunteer/register" element={<VolunteerRegisterPage />} />
-          <Route path="/volunteer/login" element={<VolunteerLoginPage onLogin={handleVolunteerLogin} />} />
-          <Route path="/volunteer/profile" element={<PrivateRoute role="volunteer"><VolunteerProfilePage /></PrivateRoute>} />
-          <Route path="/volunteer/request-otp" element={<VolunteerRequestOtpPage />} />
-          <Route path="/volunteer/verify-otp" element={<VolunteerVerifyOtpPage />} />
-          <Route path="/dashboard" element={<PrivateRoute role="volunteer"><DashboardPage volunteer={volunteer} onLogout={handleVolunteerLogout} /></PrivateRoute>} />
-          <Route path="/events" element={<EventsPage volunteer={volunteer} />} />
-          <Route path="/certificates" element={<PrivateRoute role="volunteer"><CertificatesPage volunteer={volunteer} /></PrivateRoute>} />
-          <Route path="/admin/login" element={<AdminLoginPage onLogin={handleAdminLogin} />} />
-          <Route path="/admin/request-otp" element={<AdminRequestOtpPage />} />
-          <Route path="/admin/verify-otp" element={<AdminVerifyOtpPage />} />
           <Route element={<PrivateRoute role="admin"><AdminLayout /></PrivateRoute>}>
+            {/* PLATFORM ADMIN CHANNELS */}
             <Route path="/admin/panel" element={<AdminPanelPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+            <Route path="/admin/colleges/add" element={<AdminAddCollegePage />} />
             <Route path="/admin/colleges" element={<AdminCollegesPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+            
+            {/* COLLEGE LEVEL ADMIN CHANNELS */}
             <Route path="/college/dashboard" element={<CollegeDashboardPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
             <Route path="/college/reports" element={<AdminReportsPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
             <Route path="/college/events" element={<AdminEventsPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
@@ -160,10 +124,36 @@ export default function App() {
             <Route path="/college/impact-analytics" element={<ImpactAnalyticsPage onLogout={handleAdminLogout} />} />
             <Route path="/college/profile" element={<CollegeProfilePage onLogout={handleAdminLogout} />} />
           </Route>
-
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </Layout>
+      ) : (
+        <PublicLayout pathname={location.pathname}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/report-issue" element={<ReportIssuePage />} />
+            <Route path="/report-gallery" element={<ReportGalleryPage />} />
+            <Route path="/track-report" element={<TrackReportPage />} />
+            <Route path="/volunteers" element={<VolunteersPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/volunteer/register" element={<VolunteerRegisterPage />} />
+            <Route path="/volunteer/login" element={<VolunteerLoginPage onLogin={handleVolunteerLogin} />} />
+            <Route path="/volunteer/profile" element={<PrivateRoute role="volunteer"><VolunteerProfilePage /></PrivateRoute>} />
+            <Route path="/volunteer/request-otp" element={<VolunteerRequestOtpPage />} />
+            <Route path="/volunteer/verify-otp" element={<VolunteerVerifyOtpPage />} />
+            <Route path="/dashboard" element={<PrivateRoute role="volunteer"><DashboardPage volunteer={volunteer} onLogout={handleVolunteerLogout} /></PrivateRoute>} />
+            <Route path="/events" element={<EventsPage volunteer={volunteer} />} />
+            <Route path="/certificates" element={<PrivateRoute role="volunteer"><CertificatesPage volunteer={volunteer} /></PrivateRoute>} />
+            <Route path="/admin/login" element={<AdminLoginPage onLogin={handleAdminLogin} />} />
+            <Route path="/admin/request-otp" element={<AdminRequestOtpPage />} />
+            <Route path="/admin/verify-otp" element={<AdminVerifyOtpPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </PublicLayout>
+      )}
     </ErrorBoundary>
   );
 }

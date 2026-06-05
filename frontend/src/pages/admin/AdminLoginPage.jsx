@@ -34,6 +34,7 @@ export function AdminLoginPage({ onLogin }) {
         try {
             const res = await adminApi.post("/admin/auth/login/", { username, password });
             const isPlatform = res.data.admin_role === "platform_admin";
+            const targetPath = accessMode === "college" ? "/college/dashboard" : "/admin/panel";
             onLogin?.({
                 token: res.data.token,
                 refresh_token: res.data.refresh_token,
@@ -45,7 +46,7 @@ export function AdminLoginPage({ onLogin }) {
                 }
             });
             setMessage({ type: "success", text: isPlatform ? "Welcome to Platform Admin Command Center." : "Welcome to College Management Dashboard." });
-            navigate(isPlatform ? "/admin/panel" : "/college/dashboard");
+            navigate(targetPath);
         } catch (err) {
             const isNetworkError = !err.response;
             setMessage({

@@ -30,7 +30,10 @@ def api_home_stats(request):
     top_districts = list(
         Report.objects.values("district").annotate(count=Count("id")).order_by("-count")[:5]
     )
-    return Response({"stats": stats, "top_districts": top_districts})
+    colleges = list(
+        College.objects.all().order_by("name").values("id", "name")
+    )
+    return Response({"stats": stats, "top_districts": top_districts, "colleges": colleges})
 
 
 @api_view(["GET"])
