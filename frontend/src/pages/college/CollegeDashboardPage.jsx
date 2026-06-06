@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiLogOut, FiArrowRight, FiCalendar, FiUsers, FiAward, FiLayers, FiUserPlus, FiFileText, FiClock, FiBarChart2, FiUser } from "react-icons/fi";
+import { FiLogOut, FiArrowRight, FiCalendar, FiUsers, FiAward, FiUserPlus, FiFileText, FiClock, FiBarChart2, FiUser } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 
@@ -63,7 +63,6 @@ export function CollegeDashboardPage({ adminUser, onLogout }) {
     { title: "Events & Missions", path: "/college/events", count: stats ? stats.total_events : "0", icon: <FiCalendar />, color: "text-blue-700", bg: "bg-blue-50" },
     { title: "Volunteers Directory", path: "/college/volunteers", count: stats ? stats.total_volunteers : "0", icon: <FiUsers />, color: "text-emerald-700", bg: "bg-emerald-50" },
     { title: "Certificates Portal", path: "/college/certificates", count: stats ? stats.total_certificates : "0", icon: <FiAward />, color: "text-amber-700", bg: "bg-amber-50" },
-    { title: "NSS Units", path: "/college/nss-units", count: "NSS", icon: <FiLayers />, color: "text-teal-700", bg: "bg-teal-50" },
     { title: "Program Officers", path: "/college/program-officers", count: "PO", icon: <FiUserPlus />, color: "text-indigo-700", bg: "bg-indigo-50" },
     { title: "Activity Proposals", path: "/college/activity-proposals", count: "PROP", icon: <FiFileText />, color: "text-orange-700", bg: "bg-orange-50" },
     { title: "Volunteer Hours", path: "/college/volunteer-hours", count: "LOG", icon: <FiClock />, color: "text-slate-700", bg: "bg-slate-100" },

@@ -112,6 +112,16 @@ export function AdminReportsPage({ adminUser, onLogout }) {
         }
     };
 
+    const claimReport = async (reportId) => {
+        try {
+            await adminApi.post(`/admin/reports/${reportId}/assign/`, { action: 'claim' });
+            toast.success('Report claimed');
+            loadReports();
+        } catch (err) {
+            toast.error(err?.response?.data?.detail || 'Failed to claim report');
+        }
+    };
+
     const getStatusStyle = (status) => {
         switch (status) {
             case 'cleaned': return 'bg-emerald-100 text-emerald-700';
@@ -247,13 +257,32 @@ export function AdminReportsPage({ adminUser, onLogout }) {
                                                 </button>
                                             </div>
                                         </td>
-                                        <td className="px-10 py-6 border-b border-slate-50 text-right">
-                                            <button
-                                                onClick={() => triggerDelete(r)}
-                                                className="w-10 h-10 bg-red-50 text-red-400 rounded-xl inline-flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm"
-                                            >
-                                                <FiTrash2 />
-                                            </button>
+                                        <td className="px-10 py-6 border-b border-slate-50">
+                                            <div className="flex items-center justify-end gap-3">
+                                                {r.assigned_admin ? (
+                                                    <div className="text-[10px] font-black text-slate-500 uppercase">Assigned: {r.assigned_admin}</div>
+                                                ) : r.assigned_college ? (
+                                                    <div className="text-[10px] font-black text-slate-500 uppercase">Assigned College: {r.assigned_college}</div>
+                                                ) : (
+                                                    <div className="text-[10px] font-black text-slate-300 uppercase">Unassigned</div>
+                                                )}
+
+                                                {(adminUser?.admin_role === 'college_admin' || adminUser?.admin_role === 'platform_admin') && !r.assigned_admin && (
+                                                    <button
+                                                        onClick={() => claimReport(r.id)}
+                                                        className="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2 justify-center"
+                                                    >
+                                                        Claim
+                                                    </button>
+                                                )}
+
+                                                <button
+                                                    onClick={() => triggerDelete(r)}
+                                                    className="w-10 h-10 bg-red-50 text-red-400 rounded-xl inline-flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                                >
+                                                    <FiTrash2 />
+                                                </button>
+                                            </div>
                                         </td>
                                     </motion.tr>
                                 ))}

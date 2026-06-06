@@ -173,6 +173,11 @@ class Report(models.Model):
     photo = models.ImageField(upload_to='reports_images/')
     after_photo = models.ImageField(upload_to='reports_images/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    # Assignment fields: which college/admin will handle cleanup
+    assigned_college = models.ForeignKey(College, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_reports')
+    assigned_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_reports')
+    assigned_at = models.DateTimeField(null=True, blank=True)
+    target_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

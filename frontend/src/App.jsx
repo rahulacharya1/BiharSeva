@@ -34,7 +34,6 @@ import { AdminReportsPage } from "./pages/college/AdminReportsPage";
 import { AdminEventsPage } from "./pages/college/AdminEventsPage";
 import { AdminVolunteersPage } from "./pages/college/AdminVolunteersPage";
 import { AdminCertificatesPage } from "./pages/college/AdminCertificatesPage";
-import { AdminNssUnitsPage } from "./pages/college/AdminNssUnitsPage";
 import { AdminProgramOfficersPage } from "./pages/college/AdminProgramOfficersPage";
 import { AdminActivityProposalsPage } from "./pages/college/AdminActivityProposalsPage";
 import { AdminVolunteerHoursPage } from "./pages/college/AdminVolunteerHoursPage";
@@ -47,6 +46,7 @@ import { PageTransition } from "./components/PageTransition";
 import { Footer } from "./app/Footer";
 import { Header } from "./app/Header";
 import { AdminLayout } from "./components/AdminLayout";
+import { CollegeLayout } from "./components/CollegeLayout";
 
 // Public sections layout shell
 function PublicLayout({ children, pathname }) {
@@ -103,19 +103,21 @@ export default function App() {
     <ErrorBoundary>
       {isAdminPanelActive ? (
         <Routes>
-          <Route element={<PrivateRoute role="admin"><AdminLayout /></PrivateRoute>}>
+          <Route element={<PrivateRoute role="admin" allowedAdminRoles={["platform_admin"]}><AdminLayout /></PrivateRoute>}>
             {/* PLATFORM ADMIN CHANNELS */}
             <Route path="/admin/panel" element={<AdminPanelPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
             <Route path="/admin/colleges/add" element={<AdminAddCollegePage />} />
             <Route path="/admin/colleges" element={<AdminCollegesPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
-            
+
+          </Route>
+
+          <Route element={<PrivateRoute role="admin" allowedAdminRoles={["platform_admin", "college_admin"]}><CollegeLayout /></PrivateRoute>}>
             {/* COLLEGE LEVEL ADMIN CHANNELS */}
             <Route path="/college/dashboard" element={<CollegeDashboardPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
             <Route path="/college/reports" element={<AdminReportsPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
             <Route path="/college/events" element={<AdminEventsPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
             <Route path="/college/volunteers" element={<AdminVolunteersPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
             <Route path="/college/certificates" element={<AdminCertificatesPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
-            <Route path="/college/nss-units" element={<AdminNssUnitsPage onLogout={handleAdminLogout} />} />
             <Route path="/college/program-officers" element={<AdminProgramOfficersPage onLogout={handleAdminLogout} />} />
             <Route path="/college/activity-proposals" element={<AdminActivityProposalsPage onLogout={handleAdminLogout} />} />
             <Route path="/college/volunteer-hours" element={<AdminVolunteerHoursPage onLogout={handleAdminLogout} />} />
@@ -124,6 +126,7 @@ export default function App() {
             <Route path="/college/impact-analytics" element={<ImpactAnalyticsPage onLogout={handleAdminLogout} />} />
             <Route path="/college/profile" element={<CollegeProfilePage onLogout={handleAdminLogout} />} />
           </Route>
+
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       ) : (

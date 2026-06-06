@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext";
  * @param {React.ReactNode} children - The page component to render
  * @param {string} [redirectTo] - Override the default redirect path
  */
-export function PrivateRoute({ role = "volunteer", children, redirectTo }) {
+export function PrivateRoute({ role = "volunteer", children, redirectTo, allowedAdminRoles }) {
   const { volunteer, adminUser, loading } = useAuth();
   const location = useLocation();
 
@@ -37,6 +37,16 @@ export function PrivateRoute({ role = "volunteer", children, redirectTo }) {
     return (
       <Navigate
         to={redirectTo || "/admin/login"}
+        state={{ from: location.pathname }}
+        replace
+      />
+    );
+  }
+
+  if (role === "admin" && adminUser && Array.isArray(allowedAdminRoles) && !allowedAdminRoles.includes(adminUser.admin_role)) {
+    return (
+      <Navigate
+        to={redirectTo || (adminUser.admin_role === "college_admin" ? "/college/dashboard" : "/admin/panel")}
         state={{ from: location.pathname }}
         replace
       />

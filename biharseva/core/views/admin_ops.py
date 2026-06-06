@@ -4,6 +4,7 @@ import uuid
 from decimal import Decimal
 
 from django.conf import settings
+from django.utils import timezone
 from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
@@ -502,3 +503,94 @@ def api_admin_audit_logs(request):
         "has_next": page_obj.has_next(),
         "has_previous": page_obj.has_previous(),
     })
+
+
+
+@api_view(["POST"])
+def api_admin_report_assign(request, report_id):
+    """Assign reports to a college/admin or allow college admins to claim a report.
+    POST payload may contain:
+      - action: 'claim' (college admin claims), 'auto_assign' (platform admin auto-assign by district)
+      - assigned_college: <college_id> (platform admin)
+      - assigned_admin: <user_id> (platform admin)
+      - target_date: YYYY-MM-DD
+    """
+    admin_user = require_staff_api(request)
+    if isinstance(admin_user, Response):
+        return admin_user
+
+    report = get_object_or_404(Report, id=report_id)
+
+    action = (request.data.get("action") or "").strip()
+
+    # Claim action: college admins may claim reports for their college/district
+    if action == "claim":
+        if getattr(admin_user, "admin_role", None) not in ("college_admin", "platform_admin"):
+            return Response({"detail": "Only college or platform admins may claim reports."}, status=403)
+
+        # college admins must belong to a college and district match
+        if getattr(admin_user, "admin_role", None) == "college_admin":
+            college = admin_user.admin_college
+            if not college:
+                return Response({"detail": "Your admin profile is not assigned to a college."}, status=403)
+            # allow claim if report.district matches college.district
+            if report.district != college.district:
+                return Response({"detail": "This report does not belong to your college district."}, status=403)
+            report.assigned_college = college
+
+        # set assigned_admin to this admin user
+        report.assigned_admin = admin_user
+        report.assigned_at = timezone.now()
+        report.status = "assigned"
+        report.save(update_fields=["assigned_college", "assigned_admin", "assigned_at", "status"])
+        log_admin_action(request, admin_user, "report.claim", "Report", report.id, f"Claimed by {admin_user.username}")
+        return Response(ReportSerializer(report, context={"request": request}).data)
+
+    # Auto-assign by district (platform admin only)
+    if action == "auto_assign":
+        if not is_platform_admin(admin_user):
+            return Response({"detail": "Only platform admin may auto-assign reports."}, status=403)
+        # find college in same district (first match)
+        college = College.objects.filter(district=report.district).order_by("name").first()
+        if college:
+            report.assigned_college = college
+            report.assigned_at = timezone.now()
+            report.status = "assigned"
+            report.save(update_fields=["assigned_college", "assigned_at", "status"])
+            log_admin_action(request, admin_user, "report.auto_assign", "Report", report.id, f"Auto-assigned to {college.name}")
+            return Response(ReportSerializer(report, context={"request": request}).data)
+        return Response({"detail": "No matching college found for district."}, status=404)
+
+    # Explicit assignment/override (platform admin only)
+    if not is_platform_admin(admin_user):
+        return Response({"detail": "Only platform admin may assign or override assignments."}, status=403)
+
+    changed = False
+    assigned_college_id = request.data.get("assigned_college")
+    if assigned_college_id is not None:
+        college = College.objects.filter(id=assigned_college_id).first()
+        report.assigned_college = college
+        changed = True
+
+    assigned_admin_id = request.data.get("assigned_admin")
+    if assigned_admin_id is not None:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        u = User.objects.filter(id=assigned_admin_id).first()
+        report.assigned_admin = u
+        changed = True
+
+    target_date = request.data.get("target_date")
+    if target_date is not None:
+        report.target_date = target_date
+        changed = True
+
+    if changed:
+        report.assigned_at = timezone.now()
+        if report.assigned_college and report.assigned_admin:
+            report.status = "assigned"
+        report.save()
+        log_admin_action(request, admin_user, "report.assign", "Report", report.id, f"Assigned to college={report.assigned_college} admin={report.assigned_admin}")
+        return Response(ReportSerializer(report, context={"request": request}).data)
+
+    return Response({"detail": "No valid action provided."}, status=400)

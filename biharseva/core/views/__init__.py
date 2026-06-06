@@ -60,6 +60,7 @@ from .admin_auth import (
 from .admin_ops import (
     api_admin_dashboard,
     api_admin_reports,
+    api_admin_report_assign,
     api_admin_volunteers,
     api_admin_events,
     api_admin_event_detail,

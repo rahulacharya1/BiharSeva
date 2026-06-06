@@ -40,6 +40,10 @@ class ReportSerializer(serializers.ModelSerializer):
             "photo",
             "after_photo",
             "status",
+            "assigned_college",
+            "assigned_admin",
+            "assigned_at",
+            "target_date",
             "created_at",
         ]
         read_only_fields = ["id", "status", "created_at"]
@@ -288,7 +292,7 @@ class AdminReportStatusSerializer(serializers.Serializer):
 class AdminReportManageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
-        fields = ["reporter_name", "district", "location", "description", "status", "after_photo"]
+        fields = ["reporter_name", "district", "location", "description", "status", "after_photo", "assigned_college", "assigned_admin", "assigned_at", "target_date"]
 
 
 class AdminVolunteerActionSerializer(serializers.Serializer):

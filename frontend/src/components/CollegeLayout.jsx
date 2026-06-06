@@ -1,0 +1,241 @@
+import { useState } from "react";
+import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
+import {
+  FiGrid,
+  FiCalendar,
+  FiUsers,
+  FiAward,
+  FiUserPlus,
+  FiFileText,
+  FiClock,
+  FiBarChart2,
+  FiUser,
+  FiLogOut,
+  FiMenu,
+  FiChevronDown,
+  FiX,
+} from "react-icons/fi";
+import { useAuth } from "../context/AuthContext";
+
+export function CollegeLayout() {
+  const { adminUser, handleAdminLogout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+  const logout = async () => {
+    await handleAdminLogout();
+    navigate("/admin/login");
+  };
+
+  const navLinks = [
+    { path: "/college/dashboard", label: "Dashboard", icon: <FiGrid /> },
+    { path: "/college/reports", label: "Reports", icon: <FiFileText /> },
+    { path: "/college/events", label: "Events", icon: <FiCalendar /> },
+    { path: "/college/volunteers", label: "Volunteers", icon: <FiUsers /> },
+    { path: "/college/certificates", label: "Certificates", icon: <FiAward /> },
+    { path: "/college/program-officers", label: "Program Officers", icon: <FiUserPlus /> },
+    { path: "/college/activity-proposals", label: "Activity Proposals", icon: <FiFileText /> },
+    { path: "/college/volunteer-hours", label: "Volunteer Hours", icon: <FiClock /> },
+    { path: "/college/badges", label: "Badges", icon: <FiAward /> },
+    { path: "/college/coordinator-dashboard", label: "Coordinator", icon: <FiUsers /> },
+    { path: "/college/impact-analytics", label: "Analytics", icon: <FiBarChart2 /> },
+    { path: "/college/profile", label: "Profile", icon: <FiUser /> },
+  ];
+
+  const getBreadcrumbs = () => {
+    const trailMap = {
+      "/college/dashboard": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Dashboard", path: "/college/dashboard" },
+      ],
+      "/college/reports": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Reports", path: "/college/reports" },
+      ],
+      "/college/events": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Events", path: "/college/events" },
+      ],
+      "/college/volunteers": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Volunteers", path: "/college/volunteers" },
+      ],
+      "/college/certificates": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Certificates", path: "/college/certificates" },
+      ],
+      "/college/program-officers": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Program Officers", path: "/college/program-officers" },
+      ],
+      "/college/activity-proposals": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Activity Proposals", path: "/college/activity-proposals" },
+      ],
+      "/college/volunteer-hours": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Volunteer Hours", path: "/college/volunteer-hours" },
+      ],
+      "/college/badges": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Badges", path: "/college/badges" },
+      ],
+      "/college/coordinator-dashboard": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Coordinator", path: "/college/coordinator-dashboard" },
+      ],
+      "/college/impact-analytics": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Analytics", path: "/college/impact-analytics" },
+      ],
+      "/college/profile": [
+        { label: "College Portal", path: "/college/dashboard" },
+        { label: "Profile", path: "/college/profile" },
+      ],
+    };
+
+    return trailMap[location.pathname] ?? [
+      { label: "College Portal", path: "/college/dashboard" },
+    ];
+  };
+
+  return (
+    <div className="fixed inset-0 w-screen h-screen bg-slate-50 flex overflow-hidden font-sans antialiased">
+      <div
+        style={{ width: sidebarCollapsed ? "88px" : "280px" }}
+        className="hidden lg:flex flex-col bg-slate-950 border-r border-slate-900 text-white h-full shrink-0 transition-all duration-300 ease-in-out relative z-30"
+      >
+        <div className="p-6 flex items-center justify-between border-b border-slate-800/60 h-20 shrink-0">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-9 h-9 bg-emerald-500 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-[0_0_20px_rgba(16,185,129,0.3)] shrink-0">
+              C
+            </div>
+            {!sidebarCollapsed && (
+              <a href="/college/dashboard" className="font-display font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent truncate">
+                College Portal
+              </a>
+            )}
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.path;
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-black uppercase tracking-wider transition-all duration-150 ${
+                  isActive
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                    : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+                }`}
+              >
+                <span className="text-xl shrink-0">{link.icon}</span>
+                {!sidebarCollapsed && <span className="whitespace-nowrap text-[11px] tracking-widest">{link.label}</span>}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-slate-800/60 bg-slate-950/20 shrink-0">
+          <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="w-full py-3 bg-slate-800/40 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+            {sidebarCollapsed ? "→" : "← Collapse"}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-grow flex flex-col h-full overflow-hidden relative">
+        <header className="bg-white border-b border-slate-200/80 px-6 py-4 flex items-center justify-between h-20 relative z-20 shrink-0">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 text-slate-600 hover:bg-slate-50 border border-slate-200/60 rounded-xl">
+              <FiMenu size={22} />
+            </button>
+
+            <nav className="hidden sm:flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {getBreadcrumbs().map((bc, idx, arr) => {
+                const isCurrent = idx === arr.length - 1;
+                return (
+                  <div key={`${bc.path}-${bc.label}-${idx}`} className="flex items-center gap-2">
+                    {idx > 0 && <span className="text-slate-300">/</span>}
+                    {isCurrent ? (
+                      <span className="text-slate-900 font-black">{bc.label}</span>
+                    ) : (
+                      <Link to={bc.path} className="hover:text-slate-600 transition-colors">
+                        {bc.label}
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <button onClick={() => setProfileDropdownOpen(!profileDropdownOpen)} className="flex items-center gap-2 p-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full transition-all">
+                <div className="w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center font-black text-xs border border-slate-800">
+                  {adminUser?.username?.substring(0, 2).toUpperCase() || "CO"}
+                </div>
+                <span className="hidden sm:inline text-xs font-black text-slate-800 uppercase tracking-wider pr-1 pl-0.5">{adminUser?.username || "College Admin"}</span>
+                <FiChevronDown className="hidden sm:inline text-slate-400 text-xs mr-1" />
+              </button>
+
+              {profileDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setProfileDropdownOpen(false)} />
+                  <div className="absolute right-0 mt-3 w-60 bg-white border border-slate-100 rounded-[2rem] shadow-2xl py-4 z-40 overflow-hidden">
+                    <div className="px-6 py-3 border-b border-slate-50 mb-2">
+                      <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Signed in as</p>
+                      <p className="text-sm font-black text-slate-900 truncate mt-0.5">{adminUser?.username || "College Admin"}</p>
+                    </div>
+                    <button onClick={logout} className="w-full flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-colors text-left">
+                      <FiLogOut /> Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-grow overflow-y-auto bg-white relative z-10">
+          <Outlet />
+        </div>
+      </div>
+
+      {mobileOpen && (
+        <>
+          <div onClick={() => setMobileOpen(false)} className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden" />
+          <div className="fixed top-0 bottom-0 left-0 w-[280px] bg-slate-950 text-white z-50 p-6 flex flex-col lg:hidden shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-6 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-emerald-500 text-white rounded-xl flex items-center justify-center font-black text-lg">C</div>
+                <span className="font-display font-extrabold text-lg tracking-tight text-white">College Portal</span>
+              </div>
+              <button onClick={() => setMobileOpen(false)} className="p-2 bg-slate-800 text-slate-400 rounded-xl">
+                <FiX size={20} />
+              </button>
+            </div>
+            <nav className="flex-1 space-y-2 overflow-y-auto">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-black uppercase tracking-wider text-slate-400 hover:bg-slate-800"
+                >
+                  <span className="text-xl">{link.icon}</span>
+                  <span className="text-[11px]">{link.label}</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
