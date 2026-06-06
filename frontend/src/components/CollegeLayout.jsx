@@ -7,8 +7,6 @@ import {
   FiAward,
   FiUserPlus,
   FiFileText,
-  FiClock,
-  FiBarChart2,
   FiUser,
   FiLogOut,
   FiMenu,
@@ -37,11 +35,6 @@ export function CollegeLayout() {
     { path: "/college/volunteers", label: "Volunteers", icon: <FiUsers /> },
     { path: "/college/certificates", label: "Certificates", icon: <FiAward /> },
     { path: "/college/program-officers", label: "Program Officers", icon: <FiUserPlus /> },
-    { path: "/college/activity-proposals", label: "Activity Proposals", icon: <FiFileText /> },
-    { path: "/college/volunteer-hours", label: "Volunteer Hours", icon: <FiClock /> },
-    { path: "/college/badges", label: "Badges", icon: <FiAward /> },
-    { path: "/college/coordinator-dashboard", label: "Coordinator", icon: <FiUsers /> },
-    { path: "/college/impact-analytics", label: "Analytics", icon: <FiBarChart2 /> },
     { path: "/college/profile", label: "Profile", icon: <FiUser /> },
   ];
 
@@ -70,26 +63,6 @@ export function CollegeLayout() {
       "/college/program-officers": [
         { label: "College Portal", path: "/college/dashboard" },
         { label: "Program Officers", path: "/college/program-officers" },
-      ],
-      "/college/activity-proposals": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Activity Proposals", path: "/college/activity-proposals" },
-      ],
-      "/college/volunteer-hours": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Volunteer Hours", path: "/college/volunteer-hours" },
-      ],
-      "/college/badges": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Badges", path: "/college/badges" },
-      ],
-      "/college/coordinator-dashboard": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Coordinator", path: "/college/coordinator-dashboard" },
-      ],
-      "/college/impact-analytics": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Analytics", path: "/college/impact-analytics" },
       ],
       "/college/profile": [
         { label: "College Portal", path: "/college/dashboard" },

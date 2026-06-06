@@ -79,14 +79,6 @@ from .admin_college import (
     api_admin_nss_unit_detail,
     api_admin_program_officers,
     api_admin_program_officer_detail,
-    api_admin_activity_proposals,
-    api_admin_activity_proposal_detail,
-    api_admin_volunteer_hours,
-    api_admin_volunteer_hour_detail,
-    api_admin_badges,
-    api_admin_badge_detail,
-    api_admin_coordinator_dashboard,
-    api_admin_impact_analytics,
 )
 
 # Admin export views

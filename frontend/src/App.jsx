@@ -35,11 +35,6 @@ import { AdminEventsPage } from "./pages/college/AdminEventsPage";
 import { AdminVolunteersPage } from "./pages/college/AdminVolunteersPage";
 import { AdminCertificatesPage } from "./pages/college/AdminCertificatesPage";
 import { AdminProgramOfficersPage } from "./pages/college/AdminProgramOfficersPage";
-import { AdminActivityProposalsPage } from "./pages/college/AdminActivityProposalsPage";
-import { AdminVolunteerHoursPage } from "./pages/college/AdminVolunteerHoursPage";
-import { AdminBadgesPage } from "./pages/college/AdminBadgesPage";
-import { CoordinatorDashboardPage } from "./pages/college/CoordinatorDashboardPage";
-import { ImpactAnalyticsPage } from "./pages/college/ImpactAnalyticsPage";
 import { CollegeProfilePage } from "./pages/college/CollegeProfilePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PageTransition } from "./components/PageTransition";
@@ -119,11 +114,6 @@ export default function App() {
             <Route path="/college/volunteers" element={<AdminVolunteersPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
             <Route path="/college/certificates" element={<AdminCertificatesPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
             <Route path="/college/program-officers" element={<AdminProgramOfficersPage onLogout={handleAdminLogout} />} />
-            <Route path="/college/activity-proposals" element={<AdminActivityProposalsPage onLogout={handleAdminLogout} />} />
-            <Route path="/college/volunteer-hours" element={<AdminVolunteerHoursPage onLogout={handleAdminLogout} />} />
-            <Route path="/college/badges" element={<AdminBadgesPage onLogout={handleAdminLogout} />} />
-            <Route path="/college/coordinator-dashboard" element={<CoordinatorDashboardPage onLogout={handleAdminLogout} />} />
-            <Route path="/college/impact-analytics" element={<ImpactAnalyticsPage onLogout={handleAdminLogout} />} />
             <Route path="/college/profile" element={<CollegeProfilePage onLogout={handleAdminLogout} />} />
           </Route>
 

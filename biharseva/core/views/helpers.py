@@ -16,7 +16,6 @@ from ..auth_utils import (
     issue_token,
 )
 from ..models import (
-    ActivityProposal,
     AdminProfile,
     AuditLog,
     Badge,
@@ -202,7 +201,6 @@ def scoped_badges_queryset(admin_user):
         return qs
     college = admin_user.admin_college
     return qs.filter(Q(volunteer__college=college) | Q(volunteer__nss_unit__college=college)).distinct()
-
 
 def ensure_college_admin_owns_unit(admin_user, unit):
     from rest_framework.response import Response
