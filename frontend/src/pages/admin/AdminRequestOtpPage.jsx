@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiSmartphone, FiArrowRight, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AdminRequestOtpPage() {
+  useSEO({ title: "Admin Password Reset", description: "Request an OTP to reset your BiharSeva admin password.", keywords: "admin password reset, OTP", noIndex: true });
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);

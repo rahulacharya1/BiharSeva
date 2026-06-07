@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiUser, FiHome, FiMapPin, FiAward, FiSearch, FiUsers } from "react-icons/fi";
 import { api } from "../../api";
+import { useSEO } from "../../hooks/useSEO";
 
 export function VolunteersPage() {
+  useSEO({ title: "Our Volunteers", description: "Meet the verified NSS volunteers making Bihar cleaner. Browse the volunteer directory.", keywords: "volunteers, NSS, Bihar volunteer directory" });
     const [volunteers, setVolunteers] = useState([]);
     const [loading, setLoading] = useState(true);
 

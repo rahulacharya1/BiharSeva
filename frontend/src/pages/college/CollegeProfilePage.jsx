@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiArrowLeft, FiUser, FiMail, FiShield, FiSave } from "react-icons/fi";
 import { adminApi } from "../../api";
+import { useSEO } from "../../hooks/useSEO";
 
 export function CollegeProfilePage({ onLogout }) {
+  useSEO({ title: "College Profile", description: "View and update your college administration profile.", keywords: "college profile, admin profile", noIndex: true });
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", email: "", admin_role: "", college_name: "" });
   const [message, setMessage] = useState("");

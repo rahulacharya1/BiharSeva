@@ -8,6 +8,7 @@ __pycache__/
 
 media/
 reports_images/
+logs/
 
 
 server/

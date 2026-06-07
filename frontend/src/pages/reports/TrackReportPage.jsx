@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../../api";
 import { useToast } from "../../context/ToastContext";
+import { useSEO } from "../../hooks/useSEO";
 
 const statusConfig = {
     pending: { color: "bg-amber-100 text-amber-700 border-amber-200", icon: "fa-clock", label: "Pending Review" },
@@ -11,6 +12,7 @@ const statusConfig = {
 };
 
 export function TrackReportPage() {
+  useSEO({ title: "Track Your Report", description: "Track the status of your submitted civic report. Check if verified, assigned, or resolved.", keywords: "track report, report status" });
     const [tracking, setTracking] = useState("");
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);

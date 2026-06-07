@@ -5,6 +5,7 @@ import { FiArrowRight, FiArrowLeft, FiBriefcase, FiCheckCircle, FiLock, FiMail, 
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
+import { useSEO } from "../../hooks/useSEO";
 
 const districts = [
     "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar",
@@ -15,6 +16,7 @@ const districts = [
 ];
 
 export function VolunteerRegisterPage() {
+  useSEO({ title: "Volunteer Registration", description: "Register as an NSS volunteer on BiharSeva. Join the civic action force and earn certificates.", keywords: "register volunteer, NSS registration, join BiharSeva" });
     const [step, setStep] = useState(1);
     const [form, setForm] = useState({
         name: "",

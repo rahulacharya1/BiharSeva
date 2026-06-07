@@ -6,6 +6,7 @@ from .models import (
     Certificate, Event, EventRegistration, Report, Volunteer, DISTRICT_CHOICES,
     College, NSSUnit, ProgramOfficer, VolunteerHours, Badge, ActivityProposal
 )
+from .sanitize import sanitize_text, sanitize_name
 
 class PublicVolunteerSerializer(serializers.ModelSerializer):
     """Serializer for public volunteer directory - excludes sensitive contact info."""
@@ -57,6 +58,15 @@ class ReportSerializer(serializers.ModelSerializer):
         if value and value.size > 5 * 1024 * 1024:
             raise serializers.ValidationError("After image must be less than 5MB")
         return value
+
+    def validate_reporter_name(self, value):
+        return sanitize_name(value)
+
+    def validate_description(self, value):
+        return sanitize_text(value)
+
+    def validate_location(self, value):
+        return sanitize_text(value)
 
 
 class VolunteerRegisterSerializer(serializers.ModelSerializer):
@@ -309,8 +319,14 @@ class ContactMessageSerializer(serializers.Serializer):
     subject = serializers.CharField(max_length=150)
     message = serializers.CharField(max_length=3000)
 
+    def validate_name(self, value):
+        return sanitize_name(value)
+
+    def validate_subject(self, value):
+        return sanitize_text(value)
+
     def validate_message(self, value):
-        value = value.strip()
+        value = sanitize_text(value)
         if not value:
             raise serializers.ValidationError("Message cannot be empty")
         return value

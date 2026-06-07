@@ -5,8 +5,10 @@ import { FiArrowLeft, FiPlus, FiEdit2, FiTrash2, FiCheckCircle } from "react-ico
 import { adminApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AdminEventsPage({ adminUser, onLogout }) {
+  useSEO({ title: "Manage Events", description: "Create, edit, and manage NSS events. Track attendance and issue certificates.", keywords: "manage events, admin events", noIndex: true });
     const navigate = useNavigate();
     const toast = useToast();
     const today = useMemo(() => new Date().toISOString().split("T")[0], []);

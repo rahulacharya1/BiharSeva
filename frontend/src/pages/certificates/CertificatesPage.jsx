@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiAward, FiDownload, FiExternalLink, FiCalendar, FiShield, FiAlertCircle } from "react-icons/fi";
 import { api } from "../../api";
+import { useSEO } from "../../hooks/useSEO";
 
 export function CertificatesPage({ volunteer }) {
+  useSEO({ title: "My Certificates", description: "View and download your BiharSeva participation certificates.", keywords: "certificates, download certificate, participation", noIndex: true });
     const [certs, setCerts] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);

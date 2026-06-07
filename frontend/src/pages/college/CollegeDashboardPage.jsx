@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 import { FiLogOut, FiArrowRight, FiCalendar, FiUsers, FiAward, FiUserPlus, FiFileText, FiClock, FiBarChart2, FiUser } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { useSEO } from "../../hooks/useSEO";
 
 export function CollegeDashboardPage({ adminUser, onLogout }) {
+  useSEO({ title: "College Dashboard", description: "College administration dashboard — overview of volunteers, events, reports, and certificates.", keywords: "college dashboard, admin", noIndex: true });
   const navigate = useNavigate();
   const [adminContext, setAdminContext] = useState(null);
   const [stats, setStats] = useState(null);

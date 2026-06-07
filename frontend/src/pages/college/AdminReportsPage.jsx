@@ -5,8 +5,10 @@ import { FiArrowLeft, FiTrash2, FiMapPin, FiUser, FiActivity, FiSearch, FiUpload
 import { adminApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AdminReportsPage({ adminUser, onLogout }) {
+  useSEO({ title: "Manage Reports", description: "Review, assign, and update civic reports in your jurisdiction.", keywords: "manage reports, admin reports", noIndex: true });
     const navigate = useNavigate();
     const toast = useToast();
     const [reports, setReports] = useState([]);

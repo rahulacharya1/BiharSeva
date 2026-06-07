@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiPlusCircle, FiLayers, FiArrowRight } from "react-icons/fi";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AdminPanelPage() {
+  useSEO({ title: "Admin Panel", description: "BiharSeva platform administration panel. Manage colleges, volunteers, and settings.", keywords: "admin panel, administration", noIndex: true });
     const adminModules = [
         { 
             title: "Add New College", 

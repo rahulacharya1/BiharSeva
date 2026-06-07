@@ -5,8 +5,10 @@ import { FiShield, FiLock, FiHash, FiArrowRight, FiCheckCircle, FiAlertCircle } 
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
+import { useSEO } from "../../hooks/useSEO";
 
 export function VolunteerVerifyOtpPage() {
+  useSEO({ title: "Verify OTP & Reset Password", description: "Enter your OTP and set a new password for your BiharSeva volunteer account.", keywords: "verify OTP, reset password" });
   const location = useLocation();
   const navigate = useNavigate();
 

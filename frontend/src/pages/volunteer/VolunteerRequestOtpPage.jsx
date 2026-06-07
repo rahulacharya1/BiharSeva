@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiPhone, FiSmartphone, FiArrowRight, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
+import { useSEO } from "../../hooks/useSEO";
 
 export function VolunteerRequestOtpPage() {
+  useSEO({ title: "Request Password Reset", description: "Request an OTP to reset your BiharSeva volunteer account password.", keywords: "forgot password, reset password, OTP" });
     const navigate = useNavigate();
     const [form, setForm] = useState({ email: "", phone: "" });
     const [loading, setLoading] = useState(false);

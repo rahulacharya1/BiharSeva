@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { api } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { compressImage } from "../../utils/compressImage";
+import { useSEO } from "../../hooks/useSEO";
 
 const initialFormState = { 
     reporter_name: "", 
@@ -18,6 +19,7 @@ const districts = [
 ];
 
 export function ReportIssuePage() {
+  useSEO({ title: "Report a Civic Issue", description: "Report civic issues in Bihar with photo evidence. Track cleanup progress in your district.", keywords: "report issue, civic problem, Bihar cleanup" });
     const [form, setForm] = useState(initialFormState);
     const [loading, setLoading] = useState(false);
     const [compressing, setCompressing] = useState(false);

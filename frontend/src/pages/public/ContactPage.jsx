@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../../api";
+import { useSEO } from "../../hooks/useSEO";
 
 export function ContactPage() {
+  useSEO({ title: "Contact Us", description: "Get in touch with the BiharSeva team. Send us your queries, feedback, or partnership proposals.", keywords: "contact BiharSeva, support, feedback" });
     const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
     const [status, setStatus] = useState({ type: "idle", text: "" });
     const [loading, setLoading] = useState(false);

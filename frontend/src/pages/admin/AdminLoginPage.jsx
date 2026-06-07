@@ -5,8 +5,10 @@ import { FiShield, FiUser, FiLock, FiArrowRight, FiCheckCircle, FiAlertCircle, F
 import { adminApi } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AdminLoginPage({ onLogin }) {
+  useSEO({ title: "Admin Login", description: "Log in to the BiharSeva administration panel.", keywords: "admin login", noIndex: true });
     const navigate = useNavigate();
     const [accessMode, setAccessMode] = useState("admin");
     const [username, setUsername] = useState("");

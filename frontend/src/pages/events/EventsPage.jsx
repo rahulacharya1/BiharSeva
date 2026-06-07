@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCalendar, FiMapPin, FiCheckCircle, FiLock, FiInfo } from "react-icons/fi";
 import { api } from "../../api";
+import { useSEO } from "../../hooks/useSEO";
 
 export function EventsPage({ volunteer }) {
+  useSEO({ title: "Upcoming Events", description: "Browse and register for upcoming NSS volunteer events across Bihar.", keywords: "events, NSS events, volunteer events, Bihar" });
     const [data, setData] = useState({ events: [], registered_event_ids: [] });
     const [msg, setMsg] = useState({ type: "", text: "" });
     const [loading, setLoading] = useState(true);

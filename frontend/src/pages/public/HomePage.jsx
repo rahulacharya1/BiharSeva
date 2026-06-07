@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import heroImg from "../../assets/biharseva_hero_cleanup.png";
+import { useSEO } from "../../hooks/useSEO";
 
 const AnimatedNumber = ({ value }) => {
     const [displayValue, setDisplayValue] = useState(0);
@@ -37,6 +38,7 @@ const AnimatedNumber = ({ value }) => {
 };
 
 export function HomePage() {
+  useSEO({ title: "Home — Civic Engagement Platform", description: "Bihar's leading civic engagement platform. Report issues, volunteer for NSS events, earn certificates.", keywords: "BiharSeva, Bihar, civic engagement, NSS, volunteer, report issue" });
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");

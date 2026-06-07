@@ -3,8 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiArrowLeft, FiLayers, FiMapPin, FiCpu, FiSearch } from "react-icons/fi";
 import { adminApi } from "../../api";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AdminCollegesPage({ adminUser, onLogout }) {
+  useSEO({ title: "Manage Colleges", description: "View and manage registered colleges on the BiharSeva platform.", keywords: "manage colleges, admin", noIndex: true });
     const navigate = useNavigate();
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);

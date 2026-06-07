@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useSEO } from "../../hooks/useSEO";
 
 const privacyPoints = [
     { title: "Data Collected", desc: "Name, contact details, district, submitted reports, and participation records.", icon: "fa-database", color: "text-indigo-600", bg: "bg-indigo-50" },
@@ -8,6 +9,7 @@ const privacyPoints = [
 ];
 
 export function PrivacyPage() {
+  useSEO({ title: "Privacy Policy", description: "BiharSeva privacy policy — how we collect, use, and protect your personal data.", keywords: "privacy policy, data protection, BiharSeva" });
     return (
         <main className="min-h-screen pb-24 bg-white overflow-hidden">
             {/* --- HERO SECTION --- */}

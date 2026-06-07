@@ -5,8 +5,10 @@ import { FiArrowLeft, FiTrash2, FiAward, FiUser, FiEye } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AdminCertificatesPage({ adminUser, onLogout }) {
+  useSEO({ title: "Manage Certificates", description: "Issue, view, and manage volunteer participation certificates.", keywords: "manage certificates, issue certificates", noIndex: true });
     const navigate = useNavigate();
     const toast = useToast();
     const [certificates, setCertificates] = useState([]);

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useSEO } from "../../hooks/useSEO";
 
 const services = [
     {
@@ -64,6 +65,7 @@ const adminServices = [
 ];
 
 export function ServicesPage() {
+  useSEO({ title: "Our Services", description: "Explore BiharSeva services: issue reporting, volunteer management, event coordination, and certificate generation.", keywords: "services, reporting, volunteer management, certificates" });
     return (
         <main className="min-h-screen pb-24 bg-white overflow-hidden">
             {/* --- HERO SECTION --- */}

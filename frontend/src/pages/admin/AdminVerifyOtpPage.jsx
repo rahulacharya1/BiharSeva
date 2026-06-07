@@ -5,8 +5,10 @@ import { FiShield, FiLock, FiHash, FiArrowRight, FiCheckCircle, FiAlertCircle } 
 import { adminApi } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AdminVerifyOtpPage() {
+  useSEO({ title: "Admin Verify OTP", description: "Verify OTP and set a new admin password.", keywords: "admin verify OTP", noIndex: true });
     const location = useLocation();
     const navigate = useNavigate();
 

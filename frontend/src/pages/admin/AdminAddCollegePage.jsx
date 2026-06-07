@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiArrowLeft, FiPlusCircle, FiCheckCircle, FiAlertCircle, FiInfo, FiKey, FiGlobe, FiPhone, FiMail, FiMapPin, FiBriefcase, FiUser } from "react-icons/fi";
 import { adminApi } from "../../api";
+import { useSEO } from "../../hooks/useSEO";
 
 const initialForm = {
   name: "",
@@ -19,6 +20,7 @@ const initialForm = {
 const districts = ["Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", "Saharsa"];
 
 export function AdminAddCollegePage() {
+  useSEO({ title: "Add New College", description: "Register a new college and create an admin account on BiharSeva.", keywords: "add college, register college", noIndex: true });
   const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
   const [msg, setMsg] = useState({ type: "", text: "" });

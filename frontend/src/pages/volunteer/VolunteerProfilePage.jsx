@@ -5,8 +5,10 @@ import { FiUser, FiHome, FiPhone, FiMapPin, FiLock, FiCheckCircle, FiAlertCircle
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
+import { useSEO } from "../../hooks/useSEO";
 
 export function VolunteerProfilePage() {
+  useSEO({ title: "My Profile", description: "Manage your BiharSeva volunteer profile, update contact info, and change your password.", keywords: "profile, account settings", noIndex: true });
     const navigate = useNavigate();
     const [form, setForm] = useState({ name: "", college: "", phone: "", district: "Purnea", new_password: "" });
     const [message, setMessage] = useState({ type: "", text: "" });

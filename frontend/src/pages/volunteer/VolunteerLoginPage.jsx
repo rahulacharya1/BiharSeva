@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
+import { useSEO } from "../../hooks/useSEO";
 
 export function VolunteerLoginPage({ onLogin }) {
+  useSEO({ title: "Volunteer Login", description: "Log in to your BiharSeva volunteer account to access your dashboard, events, and certificates.", keywords: "volunteer login, sign in" });
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

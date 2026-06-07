@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../../api";
 import { SkeletonList } from "../../components/Skeleton";
+import { useSEO } from "../../hooks/useSEO";
 
 const districts = ["", "Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", "Saharsa"];
 
@@ -13,6 +14,7 @@ const badgeColors = {
 };
 
 export function LeaderboardPage() {
+  useSEO({ title: "Volunteer Leaderboard", description: "See top-performing BiharSeva volunteers ranked by service hours and badges earned.", keywords: "leaderboard, top volunteers, service hours, badges" });
     const [leaderboard, setLeaderboard] = useState([]);
     const [totalActive, setTotalActive] = useState(0);
     const [loading, setLoading] = useState(true);

@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiUser, FiAward, FiCalendar, FiLogOut, FiEdit3, FiCheckCircle, FiClock, FiArrowRight } from "react-icons/fi";
 import { api } from "../../api";
+import { useSEO } from "../../hooks/useSEO";
 
 export function DashboardPage({ volunteer, onLogout }) {
+  useSEO({ title: "Volunteer Dashboard", description: "Your BiharSeva volunteer dashboard — view service hours, badges, upcoming events, and certificates.", keywords: "dashboard, volunteer dashboard, service hours", noIndex: true });
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 

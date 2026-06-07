@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useSEO } from "../hooks/useSEO";
 
 export function NotFoundPage() {
+  useSEO({ title: "Page Not Found", description: "The page you are looking for does not exist.", noIndex: true });
   return (
     <main className="min-h-screen flex items-center justify-center bg-white px-6">
       <div className="max-w-lg w-full text-center space-y-10">

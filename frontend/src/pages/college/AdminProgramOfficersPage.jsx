@@ -3,10 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { adminApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { useSEO } from "../../hooks/useSEO";
 
 const initialForm = { nss_unit: "", name: "", email: "", phone: "", designation: "NSS Program Officer" };
 
 export function AdminProgramOfficersPage({ onLogout }) {
+  useSEO({ title: "Program Officers", description: "Manage NSS program officers and coordinators for your college.", keywords: "program officers, NSS coordinators", noIndex: true });
   const navigate = useNavigate();
   const toast = useToast();
   const [rows, setRows] = useState([]);

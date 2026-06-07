@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../../api";
 import { SkeletonGrid } from "../../components/Skeleton";
+import { useSEO } from "../../hooks/useSEO";
 
 const districts = ["", "Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", "Saharsa"];
 const statuses = ["", "verified", "in_progress", "cleaned"];
 
 export function ReportGalleryPage() {
+  useSEO({ title: "Report Gallery", description: "Browse submitted civic reports across Bihar districts. View before and after cleanup photos.", keywords: "report gallery, civic reports, cleanup photos" });
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({ district: "", status: "", search: "" });

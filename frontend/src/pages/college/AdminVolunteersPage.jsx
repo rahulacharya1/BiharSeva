@@ -5,8 +5,10 @@ import { FiArrowLeft, FiUserCheck, FiUserMinus, FiTrash2, FiMail, FiPhone, FiHom
 import { adminApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AdminVolunteersPage({ adminUser, onLogout }) {
+  useSEO({ title: "Manage Volunteers", description: "Review, verify, and manage registered volunteers at your college.", keywords: "manage volunteers, verify volunteers", noIndex: true });
     const navigate = useNavigate();
     const toast = useToast();
     const [volunteers, setVolunteers] = useState([]);

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../../api";
+import { useSEO } from "../../hooks/useSEO";
 
 export function AboutPage() {
+  useSEO({ title: "About Us", description: "Learn about BiharSeva's mission to make Bihar cleaner through citizen reporting and NSS volunteer coordination.", keywords: "about BiharSeva, mission, NSS volunteering, Bihar" });
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
