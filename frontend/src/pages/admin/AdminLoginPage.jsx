@@ -15,6 +15,9 @@ export function AdminLoginPage({ onLogin }) {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
+    const [mfaRequired, setMfaRequired] = useState(false);
+    const [mfaPendingToken, setMfaPendingToken] = useState("");
+    const [mfaCode, setMfaCode] = useState("");
     useAutoDismissMessage(message, setMessage, 2500);
 
     const submit = async (e) => {
@@ -35,6 +38,12 @@ export function AdminLoginPage({ onLogin }) {
 
         try {
             const res = await adminApi.post("/admin/auth/login/", { username, password });
+            if (res.data.mfa_required) {
+                setMfaRequired(true);
+                setMfaPendingToken(res.data.mfa_pending_token);
+                return;
+            }
+
             const isPlatform = res.data.admin_role === "platform_admin";
             const targetPath = accessMode === "college" ? "/college/dashboard" : "/admin/panel";
             onLogin?.({
@@ -56,6 +65,45 @@ export function AdminLoginPage({ onLogin }) {
                 text: isNetworkError
                     ? "Cannot reach API server. Check Django is running on port 8000 and CORS is configured."
                     : (err.response?.data?.detail || "Admin authentication failed.")
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const submitMfa = async (e) => {
+        e.preventDefault();
+        if (mfaCode.trim().length !== 6 || !/^\d+$/.test(mfaCode)) {
+            setMessage({ type: "error", text: "Please enter a 6-digit verification code." });
+            return;
+        }
+
+        setLoading(true);
+        setMessage({ type: "", text: "" });
+
+        try {
+            const res = await adminApi.post("/admin/auth/mfa/verify/", {
+                mfa_pending_token: mfaPendingToken,
+                code: mfaCode,
+            });
+            const isPlatform = res.data.admin_role === "platform_admin";
+            const targetPath = accessMode === "college" ? "/college/dashboard" : "/admin/panel";
+            onLogin?.({
+                token: res.data.token,
+                refresh_token: res.data.refresh_token,
+                adminUser: {
+                    username: res.data.username,
+                    admin_role: res.data.admin_role,
+                    admin_college_id: res.data.admin_college_id,
+                    admin_college_name: res.data.admin_college_name,
+                }
+            });
+            setMessage({ type: "success", text: isPlatform ? "Welcome to Platform Admin Command Center." : "Welcome to College Management Dashboard." });
+            navigate(targetPath);
+        } catch (err) {
+            setMessage({
+                type: "error",
+                text: err.response?.data?.detail || "2FA verification failed. Please try again.",
             });
         } finally {
             setLoading(false);
@@ -118,48 +166,106 @@ export function AdminLoginPage({ onLogin }) {
                         </div>
                     </div>
 
-                    <form onSubmit={submit} className="p-10 md:p-14 space-y-6">
-                        <div className="relative group">
-                            <FiUser className={iconClasses} />
-                            <input
-                                placeholder={accessMode === "admin" ? "Admin Username or Email" : "College Admin Username or Email"}
-                                className={inputClasses}
-                                onChange={(e) => setUsername(e.target.value)}
+                    {mfaRequired ? (
+                        <form onSubmit={submitMfa} className="p-10 md:p-14 space-y-6">
+                            <div className="text-center space-y-2">
+                                <h3 className="text-lg font-bold text-slate-800">Two-Factor Authentication</h3>
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-relaxed">
+                                    Enter the 6-digit code from your authenticator app.
+                                </p>
+                            </div>
+                            <div className="relative group">
+                                <FiShield className={iconClasses} />
+                                <input
+                                    type="text"
+                                    maxLength="6"
+                                    placeholder="Enter 6-digit code"
+                                    className={`${inputClasses} text-center tracking-[0.3em] font-bold text-xl`}
+                                    value={mfaCode}
+                                    onChange={(e) => setMfaCode(e.target.value)}
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="pt-4 space-y-6">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-slate-900 hover:bg-slate-800 text-white py-6 rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 group disabled:opacity-50"
+                                >
+                                    {loading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>Verify & Access <FiArrowRight className="group-hover:translate-x-1 transition-transform" /></>}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setMfaRequired(false);
+                                        setMfaPendingToken("");
+                                        setMfaCode("");
+                                    }}
+                                    className="w-full py-2 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors text-center"
+                                >
+                                    Cancel & Sign In Again
+                                </button>
+
+                                <AnimatePresence>
+                                    {message.text && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                                            className={`p-5 rounded-2xl flex items-center justify-center gap-3 text-xs font-bold ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}
+                                        >
+                                            {message.type === 'success' ? <FiCheckCircle /> : <FiAlertCircle />}
+                                            {message.text}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </form>
+                    ) : (
+                        <form onSubmit={submit} className="p-10 md:p-14 space-y-6">
+                            <div className="relative group">
+                                <FiUser className={iconClasses} />
+                                <input
+                                    placeholder={accessMode === "admin" ? "Admin Username or Email" : "College Admin Username or Email"}
+                                    className={inputClasses}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <PasswordInput
+                                leftIcon={<FiLock className={iconClasses} />}
+                                placeholder={accessMode === "admin" ? "Admin Password" : "College Admin Password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 required
+                                autoComplete="current-password"
+                                inputClassName={inputClasses.replace("pr-6", "pr-16")}
                             />
-                        </div>
-                        <PasswordInput
-                            leftIcon={<FiLock className={iconClasses} />}
-                            placeholder={accessMode === "admin" ? "Admin Password" : "College Admin Password"}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            autoComplete="current-password"
-                            inputClassName={inputClasses.replace("pr-6", "pr-16")}
-                        />
 
-                        <div className="pt-4 space-y-6">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-6 rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 group disabled:opacity-50"
-                            >
-                                {loading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>{accessMode === "admin" ? "Enter Admin" : "Enter College"} <FiArrowRight className="group-hover:translate-x-1 transition-transform" /></>}
-                            </button>
+                            <div className="pt-4 space-y-6">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-slate-900 hover:bg-slate-800 text-white py-6 rounded-2xl font-black text-xs tracking-[0.2em] uppercase transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 group disabled:opacity-50"
+                                >
+                                    {loading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>{accessMode === "admin" ? "Enter Admin" : "Enter College"} <FiArrowRight className="group-hover:translate-x-1 transition-transform" /></>}
+                                </button>
 
-                            <AnimatePresence>
-                                {message.text && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                                        className={`p-5 rounded-2xl flex items-center justify-center gap-3 text-xs font-bold ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}
-                                    >
-                                        {message.type === 'success' ? <FiCheckCircle /> : <FiAlertCircle />}
-                                        {message.text}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    </form>
+                                <AnimatePresence>
+                                    {message.text && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                                            className={`p-5 rounded-2xl flex items-center justify-center gap-3 text-xs font-bold ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}
+                                        >
+                                            {message.type === 'success' ? <FiCheckCircle /> : <FiAlertCircle />}
+                                            {message.text}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </form>
+                    )}
                 </motion.div>
 
                 <p className="text-center mt-10 text-slate-400 text-[10px] font-black uppercase tracking-widest">

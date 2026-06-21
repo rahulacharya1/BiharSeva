@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta, timezone
+import hashlib
 
 import jwt
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-from .models import Volunteer
+from .models import Volunteer, BlacklistedToken
 
 ACCESS_TOKEN_EXPIRY_MINUTES = 30
 REFRESH_TOKEN_EXPIRY_MINUTES = 7 * 24 * 60  # 7 days
@@ -46,10 +47,18 @@ def refresh_access_token(refresh_token_str):
 
 
 def decode_token(token):
+    if is_token_blacklisted(token):
+        raise jwt.InvalidTokenError("Token has been blacklisted (logged out).")
     return jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
 
 
 def extract_bearer_token(request):
+    # Check httpOnly cookie first
+    token = request.COOKIES.get("access_token")
+    if token:
+        return token
+
+    # Fallback to Authorization header
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         return None
@@ -95,4 +104,59 @@ def get_admin_from_request(request):
 
     User = get_user_model()
     return User.objects.filter(id=user_id, is_staff=True, is_active=True).first()
+
+
+def hash_token(token_str):
+    return hashlib.sha256(token_str.encode()).hexdigest()
+
+
+def is_token_blacklisted(token_str):
+    if not token_str:
+        return False
+    h = hash_token(token_str)
+    return BlacklistedToken.objects.filter(token_hash=h).exists()
+
+
+def blacklist_token(token_str):
+    if not token_str:
+        return
+    try:
+        # Decode without validation to inspect the expiration claim
+        payload = jwt.decode(token_str, options={"verify_signature": False})
+        exp = payload.get("exp")
+        if exp:
+            expires_at = datetime.fromtimestamp(exp, tz=timezone.utc)
+        else:
+            expires_at = datetime.now(timezone.utc) + timedelta(days=1)
+    except Exception:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=1)
+
+    h = hash_token(token_str)
+    BlacklistedToken.objects.get_or_create(token_hash=h, defaults={"expires_at": expires_at})
+
+
+def set_auth_cookies(response, tokens):
+    # Set access token cookie (expires in 30 mins)
+    response.set_cookie(
+        key="access_token",
+        value=tokens["access_token"],
+        max_age=30 * 60,
+        httponly=True,
+        secure=not settings.DEBUG,
+        samesite="Lax",
+    )
+    # Set refresh token cookie (expires in 7 days)
+    response.set_cookie(
+        key="refresh_token",
+        value=tokens["refresh_token"],
+        max_age=7 * 24 * 60 * 60,
+        httponly=True,
+        secure=not settings.DEBUG,
+        samesite="Lax",
+    )
+
+
+def delete_auth_cookies(response):
+    response.delete_cookie("access_token", samesite="Lax")
+    response.delete_cookie("refresh_token", samesite="Lax")
 

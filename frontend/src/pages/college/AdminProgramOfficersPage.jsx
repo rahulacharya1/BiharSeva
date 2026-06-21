@@ -49,8 +49,8 @@ export function AdminProgramOfficersPage({ onLogout }) {
         setForm((prev) => ({ ...prev, nss_unit: unitsRes.data[0].id }));
       }
     } catch (err) {
-      if ([401, 403].includes(err?.response?.status)) return clearSession();
-      toast.error("Failed to load program officers");
+      if (err?.response?.status === 401) return clearSession();
+      toast.error(err?.response?.data?.detail || "Failed to load program officers");
     } finally {
       setLoading(false);
     }

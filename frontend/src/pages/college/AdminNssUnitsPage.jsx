@@ -43,7 +43,7 @@ export function AdminNssUnitsPage({ onLogout }) {
       }
       if (!form.college && c.data?.length) setForm((prev) => ({ ...prev, college: c.data[0].id }));
     } catch (err) {
-      if ([401, 403].includes(err?.response?.status)) return clearSession();
+      if (err?.response?.status === 401) return clearSession();
       toast.error("Failed to load NSS units");
     } finally {
       setLoading(false);

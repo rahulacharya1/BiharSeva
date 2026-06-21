@@ -28,11 +28,11 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
             const certRes = await adminApi.get("/admin/certificates/");
             setCertificates(certRes.data);
         } catch (err) {
-            if ([401, 403].includes(err?.response?.status)) {
+            if (err?.response?.status === 401) {
                 clearSession();
                 return;
             }
-            toast.error("Failed to load registry data");
+            toast.error(err?.response?.data?.detail || "Failed to load registry data");
         } finally {
             setLoading(false);
         }
@@ -185,4 +185,3 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
         </main>
     );
 }
-

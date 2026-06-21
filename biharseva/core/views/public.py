@@ -210,7 +210,7 @@ def api_volunteer_leaderboard(request):
 @api_view(["POST"])
 def api_token_refresh(request):
     """Refresh an access token using a valid refresh token."""
-    refresh_token = request.data.get("refresh_token")
+    refresh_token = request.COOKIES.get("refresh_token") or request.data.get("refresh_token")
     if not refresh_token:
         return Response({"detail": "refresh_token is required."}, status=400)
 
@@ -218,7 +218,19 @@ def api_token_refresh(request):
     if not new_access_token:
         return Response({"detail": "Invalid or expired refresh token. Please log in again."}, status=401)
 
-    return Response({"token": new_access_token})
+    response = Response({"token": new_access_token})
+
+    # If using cookie-based auth, set the new access token cookie
+    if request.COOKIES.get("refresh_token"):
+        response.set_cookie(
+            key="access_token",
+            value=new_access_token,
+            max_age=30 * 60,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite="Lax",
+        )
+    return response
 
 
 @api_view(["GET"])

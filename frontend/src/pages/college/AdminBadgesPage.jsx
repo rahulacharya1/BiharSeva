@@ -36,8 +36,8 @@ export function AdminBadgesPage({ onLogout }) {
         setForm((prev) => ({ ...prev, volunteer: v.data[0].id }));
       }
     } catch (err) {
-      if ([401, 403].includes(err?.response?.status)) return clearSession();
-      toast.error("Failed to load badges");
+      if (err?.response?.status === 401) return clearSession();
+      toast.error(err?.response?.data?.detail || "Failed to load badges");
     }
   };
 

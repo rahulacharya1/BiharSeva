@@ -50,7 +50,7 @@ export function CoordinatorDashboardPage({ onLogout }) {
       setOfficers(res.data || []);
       if (res.data?.length) setSelectedOfficer(String(res.data[0].id));
     } catch (err) {
-      if ([401, 403].includes(err?.response?.status)) return clearSession();
+      if (err?.response?.status === 401) return clearSession();
       setMsg("Failed to load officers");
     }
   };

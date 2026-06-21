@@ -145,6 +145,8 @@ class AdminProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="admin_profile")
     role = models.CharField(max_length=30, choices=ADMIN_ROLE_CHOICES, default="college_admin")
     college = models.ForeignKey(College, on_delete=models.SET_NULL, null=True, blank=True, related_name="admin_profiles")
+    mfa_secret = models.CharField(max_length=32, blank=True, null=True)
+    mfa_enabled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -368,4 +370,14 @@ class AuditLog(models.Model):
     def __str__(self):
         user = self.admin_user.username if self.admin_user else "Unknown"
         return f"[{self.created_at:%Y-%m-%d %H:%M}] {user}: {self.action}"
+
+
+class BlacklistedToken(models.Model):
+    """Stores hashed values of blacklisted access and refresh tokens after logout."""
+    token_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    blacklisted_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def __str__(self):
+        return f"Blacklisted at {self.blacklisted_at} (expires {self.expires_at})"
 

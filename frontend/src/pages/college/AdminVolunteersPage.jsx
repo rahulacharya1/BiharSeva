@@ -39,7 +39,7 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
             const res = await adminApi.get("/admin/volunteers/");
             setVolunteers(res.data);
         } catch (err) {
-            if ([401, 403].includes(err?.response?.status)) {
+            if (err?.response?.status === 401) {
                 localStorage.removeItem("admin_token");
                 onLogout?.();
                 navigate("/admin/login");

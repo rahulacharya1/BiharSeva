@@ -50,10 +50,15 @@ from .events import (
 # Admin auth views
 from .admin_auth import (
     api_admin_login,
+    api_admin_logout,
     api_admin_request_otp,
     api_admin_verify_otp,
     api_admin_me,
     api_admin_profile,
+    api_admin_mfa_verify,
+    api_admin_mfa_setup,
+    api_admin_mfa_enable,
+    api_admin_mfa_disable,
 )
 
 # Admin operations views

@@ -76,7 +76,7 @@ export function AdminVolunteerHoursPage({ onLogout }) {
         setForm((prev) => ({ ...prev, event: e.data[0].id }));
       }
     } catch (err) {
-      if ([401, 403].includes(err?.response?.status)) return clearSession();
+      if (err?.response?.status === 401) return clearSession();
       toast.error("Failed to load hour records");
     }
   };

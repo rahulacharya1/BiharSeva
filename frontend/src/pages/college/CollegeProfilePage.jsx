@@ -12,8 +12,15 @@ export function CollegeProfilePage({ onLogout }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // MFA states
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaSetupData, setMfaSetupData] = useState(null);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [mfaStep, setMfaStep] = useState("idle");
+  const [mfaMessage, setMfaMessage] = useState("");
+  const [mfaLoading, setMfaLoading] = useState(false);
+
   const clearSession = () => {
-    localStorage.removeItem("admin_token");
     onLogout?.();
     navigate("/admin/login");
   };
@@ -28,8 +35,9 @@ export function CollegeProfilePage({ onLogout }) {
           admin_role: res.data?.admin_role || "",
           college_name: res.data?.college_name || "",
         });
+        setMfaEnabled(res.data?.mfa_enabled || false);
       } catch (err) {
-        if ([401, 403].includes(err?.response?.status)) return clearSession();
+        if (err?.response?.status === 401) return clearSession();
         setMessage("Failed to load profile.");
       } finally {
         setLoading(false);
@@ -66,6 +74,56 @@ export function CollegeProfilePage({ onLogout }) {
       setMessage("Profile updated successfully.");
     } catch (err) {
       setMessage(err?.response?.data?.detail || "Could not update profile.");
+    }
+  };
+
+  const initMfaSetup = async () => {
+    setMfaLoading(true);
+    setMfaMessage("");
+    try {
+      const res = await adminApi.get("/admin/auth/mfa/setup/");
+      setMfaSetupData(res.data);
+      setMfaStep("setup");
+    } catch (err) {
+      setMfaMessage(err.response?.data?.detail || "Failed to initialize 2FA setup.");
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
+  const handleEnableMfa = async (e) => {
+    e.preventDefault();
+    if (verificationCode.trim().length !== 6) return;
+    setMfaLoading(true);
+    setMfaMessage("");
+    try {
+      await adminApi.post("/admin/auth/mfa/enable/", { code: verificationCode });
+      setMfaEnabled(true);
+      setMfaStep("idle");
+      setVerificationCode("");
+      setMfaMessage("Two-factor authentication has been successfully enabled!");
+    } catch (err) {
+      setMfaMessage(err.response?.data?.detail || "Verification failed. Check the code.");
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
+  const handleDisableMfa = async (e) => {
+    e.preventDefault();
+    if (verificationCode.trim().length !== 6) return;
+    setMfaLoading(true);
+    setMfaMessage("");
+    try {
+      await adminApi.post("/admin/auth/mfa/disable/", { code: verificationCode });
+      setMfaEnabled(false);
+      setMfaStep("idle");
+      setVerificationCode("");
+      setMfaMessage("Two-factor authentication has been disabled.");
+    } catch (err) {
+      setMfaMessage(err.response?.data?.detail || "Failed to disable 2FA. Check the code.");
+    } finally {
+      setMfaLoading(false);
     }
   };
 
@@ -173,6 +231,127 @@ export function CollegeProfilePage({ onLogout }) {
               </Link>
             </div>
           </form>
+        </motion.div>
+
+        {/* 2-FACTOR AUTHENTICATION CARD */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-10 md:p-12 rounded-[1.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-slate-100"
+        >
+          <div className="flex items-center gap-3 mb-8 border-b border-slate-50 pb-6">
+              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg shadow-inner"><FiLock /></div>
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                  Two-Factor Authentication (2FA)
+              </h3>
+          </div>
+
+          <div className="space-y-6">
+            {mfaMessage && (
+              <div className="p-4 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-semibold border border-indigo-100">
+                {mfaMessage}
+              </div>
+            )}
+
+            {mfaEnabled ? (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 p-6 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-black">✓</div>
+                  <div>
+                    <h4 className="text-sm font-bold text-emerald-900">2FA is Enabled</h4>
+                    <p className="text-xs font-medium text-emerald-700">Your account is secured with time-based codes.</p>
+                  </div>
+                </div>
+
+                {mfaStep === "disabling" ? (
+                  <form onSubmit={handleDisableMfa} className="space-y-4 max-w-md">
+                    <label className="space-y-2 block">
+                      <span className="text-xs font-black uppercase tracking-widest text-slate-500">Confirm Authenticator Code</span>
+                      <input
+                        type="text"
+                        maxLength="6"
+                        placeholder="Enter 6-digit code"
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500/50 transition-all font-medium text-slate-900 placeholder:text-slate-400 text-sm"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        required
+                      />
+                    </label>
+                    <div className="flex gap-4">
+                      <button type="submit" disabled={mfaLoading} className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-colors">
+                        {mfaLoading ? "Disabling..." : "Confirm Disable"}
+                      </button>
+                      <button type="button" onClick={() => { setMfaStep("idle"); setVerificationCode(""); }} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest transition-colors">
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <button onClick={() => setMfaStep("disabling")} className="px-6 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all">
+                    Disable 2FA
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                  Protect your admin account by requiring a temporary verification code from an authenticator app (like Google Authenticator, Duo, or Authy) on login.
+                </p>
+
+                {mfaStep === "setup" && mfaSetupData ? (
+                  <div className="space-y-6 p-6 border border-slate-100 rounded-3xl bg-slate-50/50">
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                      <div className="bg-white p-4 border border-slate-100 rounded-2xl shadow-sm">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(mfaSetupData.qr_code_uri)}`}
+                          alt="2FA QR Code"
+                          className="w-44 h-44"
+                        />
+                      </div>
+                      <div className="space-y-4 flex-1">
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-bold text-slate-900">1. Scan the QR Code</h4>
+                          <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                            Scan the QR code with your authenticator app. If you cannot scan it, enter the secret key manually:
+                          </p>
+                        </div>
+                        <div className="p-3 bg-white border border-slate-200 rounded-xl font-mono text-xs select-all text-slate-700 font-bold tracking-wider inline-block">
+                          {mfaSetupData.mfa_secret}
+                        </div>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleEnableMfa} className="space-y-4 border-t border-slate-200/60 pt-6 max-w-md">
+                      <label className="space-y-2 block">
+                        <span className="text-xs font-black uppercase tracking-widest text-slate-500">2. Enter 6-digit Code to Activate</span>
+                        <input
+                          type="text"
+                          maxLength="6"
+                          placeholder="Enter code from app"
+                          className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500/50 transition-all font-medium text-slate-900 placeholder:text-slate-400 text-sm"
+                          value={verificationCode}
+                          onChange={(e) => setVerificationCode(e.target.value)}
+                          required
+                        />
+                      </label>
+                      <div className="flex gap-4">
+                        <button type="submit" disabled={mfaLoading} className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-colors">
+                          {mfaLoading ? "Activating..." : "Activate & Enable"}
+                        </button>
+                        <button type="button" onClick={() => { setMfaStep("idle"); setVerificationCode(""); }} className="px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest transition-colors">
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                ) : (
+                  <button onClick={initMfaSetup} className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all">
+                    Enable 2FA
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </motion.div>
 
       </section>

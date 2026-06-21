@@ -10,6 +10,7 @@ import { Footer } from "./app/Footer";
 import { Header } from "./app/Header";
 import { AdminLayout } from "./components/AdminLayout";
 import { CollegeLayout } from "./components/CollegeLayout";
+import { PageLoader } from "./components/PageLoader";
 
 // ─── Lazy-loaded page components (code splitting) ──────────────────
 // Public pages
@@ -58,18 +59,6 @@ const CollegeProfilePage = lazy(() => import("./pages/college/CollegeProfilePage
 // 404 page
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 
-// ─── Suspense loading fallback ─────────────────────────────────────
-function PageLoader() {
-  return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading…</p>
-      </div>
-    </div>
-  );
-}
-
 // Public sections layout shell
 function PublicLayout({ children, pathname }) {
   const { volunteer, adminUser } = useAuth();
@@ -85,7 +74,11 @@ function PublicLayout({ children, pathname }) {
         onCloseMobile={() => setMobileOpen(false)}
       />
       <main className="flex-grow">
-        <PageTransition pageKey={pathname}>{children}</PageTransition>
+        <PageTransition pageKey={pathname}>
+          <Suspense fallback={<PageLoader />}>
+            {children}
+          </Suspense>
+        </PageTransition>
       </main>
       <Footer />
     </div>

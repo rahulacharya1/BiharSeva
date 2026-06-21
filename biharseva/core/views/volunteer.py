@@ -11,7 +11,15 @@ from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 from rest_framework.throttling import SimpleRateThrottle
 
-from ..auth_utils import decode_token, get_volunteer_from_request, issue_token, issue_token_pair
+from ..auth_utils import (
+    decode_token,
+    get_volunteer_from_request,
+    issue_token,
+    issue_token_pair,
+    set_auth_cookies,
+    delete_auth_cookies,
+    blacklist_token,
+)
 from ..models import Certificate, Event, EventRegistration, Volunteer
 from ..serializers import (
     CertificateSerializer,
@@ -72,12 +80,14 @@ def api_volunteer_login(request):
         return Response({"detail": "Registration exists, but admin verification is pending."}, status=403)
 
     tokens = issue_token_pair({"role": "volunteer", "volunteer_id": volunteer.id})
-    return Response({
+    response = Response({
         "message": "Login successful.",
         "token": tokens["access_token"],
         "refresh_token": tokens["refresh_token"],
         "volunteer": VolunteerSerializer(volunteer).data,
     })
+    set_auth_cookies(response, tokens)
+    return response
 
 
 @api_view(["POST"])
@@ -111,12 +121,14 @@ def api_volunteer_google_auth(request):
             return Response({"detail": "Registration exists, but admin verification is pending."}, status=403)
 
         tokens = issue_token_pair({"role": "volunteer", "volunteer_id": volunteer.id})
-        return Response({
+        response = Response({
             "message": "Login successful.",
             "token": tokens["access_token"],
             "refresh_token": tokens["refresh_token"],
             "volunteer": VolunteerSerializer(volunteer).data,
         })
+        set_auth_cookies(response, tokens)
+        return response
 
     return Response(
         {
@@ -129,7 +141,21 @@ def api_volunteer_google_auth(request):
 
 @api_view(["POST"])
 def api_volunteer_logout(request):
-    return Response({"message": "Logout is handled on client by deleting token."})
+    access_token = request.COOKIES.get("access_token")
+    if not access_token:
+        # Fallback to Authorization header
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            access_token = auth_header.split(" ", 1)[1].strip()
+
+    refresh_token = request.COOKIES.get("refresh_token") or request.data.get("refresh_token")
+
+    blacklist_token(access_token)
+    blacklist_token(refresh_token)
+
+    response = Response({"message": "Logout successful on server."})
+    delete_auth_cookies(response)
+    return response
 
 
 @api_view(["GET", "PATCH"])

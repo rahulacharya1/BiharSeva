@@ -46,7 +46,7 @@ export function AdminReportsPage({ adminUser, onLogout }) {
             const res = await adminApi.get("/admin/reports/");
             setReports(res.data);
         } catch (err) {
-            if ([401, 403].includes(err?.response?.status)) {
+            if (err?.response?.status === 401) {
                 clearSession();
                 return;
             }

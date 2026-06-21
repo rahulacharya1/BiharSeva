@@ -6,7 +6,15 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 
-from ..auth_utils import decode_token, issue_token, issue_token_pair
+from ..auth_utils import (
+    decode_token,
+    issue_token,
+    issue_token_pair,
+    set_auth_cookies,
+    delete_auth_cookies,
+    blacklist_token,
+)
+from ..totp import generate_totp_secret, get_totp_uri, verify_totp
 from ..models import AdminProfile
 from ..serializers import AdminOtpRequestSerializer, AdminOtpVerifySerializer
 from .helpers import (
@@ -52,6 +60,23 @@ def api_admin_login(request):
     if admin_role == "college_admin" and not admin_college_id:
         return Response({"detail": "College admin account must be assigned to a college."}, status=403)
 
+    # Check if MFA is enabled
+    if profile and profile.mfa_enabled:
+        mfa_pending_token = issue_token(
+            {
+                "role": "admin",
+                "purpose": "mfa_pending",
+                "user_id": user.id,
+                "admin_role": admin_role,
+                "admin_college_id": admin_college_id,
+            },
+            expires_minutes=5,
+        )
+        return Response({
+            "mfa_required": True,
+            "mfa_pending_token": mfa_pending_token,
+        })
+
     tokens = issue_token_pair(
         {
             "role": "admin",
@@ -60,7 +85,7 @@ def api_admin_login(request):
             "admin_college_id": admin_college_id,
         }
     )
-    return Response(
+    response = Response(
         {
             "message": "Admin login successful.",
             "token": tokens["access_token"],
@@ -71,6 +96,8 @@ def api_admin_login(request):
             "admin_college_name": profile.college.name if (profile and profile.college_id) else None,
         }
     )
+    set_auth_cookies(response, tokens)
+    return response
 
 
 @api_view(["POST"])
@@ -206,6 +233,9 @@ def api_admin_profile(request):
         return admin_user
 
     profile = AdminProfile.objects.select_related("college").filter(user=admin_user).first()
+    if not profile and admin_user.is_superuser:
+        profile = AdminProfile.objects.create(user=admin_user, role="platform_admin")
+
     if not profile:
         return Response({"detail": "Admin profile is not configured for this account."}, status=403)
 
@@ -217,6 +247,7 @@ def api_admin_profile(request):
                 "admin_role": admin_user.admin_role,
                 "college_id": admin_user.admin_college_id,
                 "college_name": admin_user.admin_college.name if admin_user.admin_college else None,
+                "mfa_enabled": profile.mfa_enabled,
             }
         )
 
@@ -247,6 +278,151 @@ def api_admin_profile(request):
                 "admin_role": admin_user.admin_role,
                 "college_id": admin_user.admin_college_id,
                 "college_name": admin_user.admin_college.name if admin_user.admin_college else None,
+                "mfa_enabled": profile.mfa_enabled,
             },
         }
     )
+
+
+@api_view(["POST"])
+def api_admin_logout(request):
+    access_token = request.COOKIES.get("access_token")
+    if not access_token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            access_token = auth_header.split(" ", 1)[1].strip()
+
+    refresh_token = request.COOKIES.get("refresh_token") or request.data.get("refresh_token")
+
+    blacklist_token(access_token)
+    blacklist_token(refresh_token)
+
+    response = Response({"message": "Logout successful on server."})
+    delete_auth_cookies(response)
+    return response
+
+
+@api_view(["POST"])
+def api_admin_mfa_verify(request):
+    mfa_pending_token = request.data.get("mfa_pending_token")
+    code = (request.data.get("code") or "").strip()
+
+    if not mfa_pending_token or not code:
+        return Response({"detail": "mfa_pending_token and verification code are required."}, status=400)
+
+    try:
+        payload = decode_token(mfa_pending_token)
+    except Exception:
+        return Response({"detail": "Login session expired or invalid. Please log in again."}, status=401)
+
+    if payload.get("role") != "admin" or payload.get("purpose") != "mfa_pending":
+        return Response({"detail": "Invalid login session state."}, status=400)
+
+    user_id = payload.get("user_id")
+    admin_role = payload.get("admin_role")
+    admin_college_id = payload.get("admin_college_id")
+
+    User = get_user_model()
+    user = User.objects.filter(id=user_id, is_staff=True, is_active=True).first()
+    if not user:
+        return Response({"detail": "User not found or is inactive."}, status=404)
+
+    profile = AdminProfile.objects.select_related("college").filter(user=user).first()
+    if not profile or not profile.mfa_enabled or not profile.mfa_secret:
+        return Response({"detail": "MFA configuration mismatch."}, status=400)
+
+    if verify_totp(profile.mfa_secret, code):
+        tokens = issue_token_pair(
+            {
+                "role": "admin",
+                "user_id": user.id,
+                "admin_role": admin_role,
+                "admin_college_id": admin_college_id,
+            }
+        )
+        response = Response(
+            {
+                "message": "MFA verification successful. Admin login successful.",
+                "token": tokens["access_token"],
+                "refresh_token": tokens["refresh_token"],
+                "username": user.username,
+                "admin_role": admin_role,
+                "admin_college_id": admin_college_id,
+                "admin_college_name": profile.college.name if (profile and profile.college_id) else None,
+            }
+        )
+        set_auth_cookies(response, tokens)
+        return response
+    else:
+        return Response({"detail": "Invalid verification code. Please check your authenticator app."}, status=400)
+
+
+@api_view(["GET"])
+def api_admin_mfa_setup(request):
+    admin_user = require_staff_api(request)
+    if isinstance(admin_user, Response):
+        return admin_user
+
+    profile = AdminProfile.objects.filter(user=admin_user).first()
+    if not profile and admin_user.is_superuser:
+        profile = AdminProfile.objects.create(user=admin_user, role="platform_admin")
+
+    if not profile:
+        return Response({"detail": "Admin profile not found."}, status=404)
+
+    if not profile.mfa_secret or not profile.mfa_enabled:
+        profile.mfa_secret = generate_totp_secret()
+        profile.save(update_fields=["mfa_secret"])
+
+    qr_code_uri = get_totp_uri(profile.mfa_secret, admin_user.email or admin_user.username)
+
+    return Response({
+        "mfa_secret": profile.mfa_secret,
+        "qr_code_uri": qr_code_uri,
+        "mfa_enabled": profile.mfa_enabled,
+    })
+
+
+@api_view(["POST"])
+def api_admin_mfa_enable(request):
+    admin_user = require_staff_api(request)
+    if isinstance(admin_user, Response):
+        return admin_user
+
+    code = (request.data.get("code") or "").strip()
+    if not code:
+        return Response({"detail": "MFA code is required."}, status=400)
+
+    profile = AdminProfile.objects.filter(user=admin_user).first()
+    if not profile or not profile.mfa_secret:
+        return Response({"detail": "MFA setup has not been initialized. Request setup first."}, status=400)
+
+    if verify_totp(profile.mfa_secret, code):
+        profile.mfa_enabled = True
+        profile.save(update_fields=["mfa_enabled"])
+        return Response({"message": "Two-factor authentication enabled successfully."})
+    else:
+        return Response({"detail": "Invalid verification code. Please check your authenticator app."}, status=400)
+
+
+@api_view(["POST"])
+def api_admin_mfa_disable(request):
+    admin_user = require_staff_api(request)
+    if isinstance(admin_user, Response):
+        return admin_user
+
+    code = (request.data.get("code") or "").strip()
+    if not code:
+        return Response({"detail": "MFA verification code is required to disable 2FA."}, status=400)
+
+    profile = AdminProfile.objects.filter(user=admin_user).first()
+    if not profile or not profile.mfa_enabled:
+        return Response({"detail": "MFA is not enabled for this account."}, status=400)
+
+    if verify_totp(profile.mfa_secret, code):
+        profile.mfa_enabled = False
+        profile.mfa_secret = None
+        profile.save(update_fields=["mfa_enabled", "mfa_secret"])
+        return Response({"message": "Two-factor authentication disabled successfully."})
+    else:
+        return Response({"detail": "Invalid verification code."}, status=400)

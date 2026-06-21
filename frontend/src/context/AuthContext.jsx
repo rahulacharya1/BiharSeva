@@ -8,67 +8,59 @@ export function AuthProvider({ children }) {
   const [adminUser, setAdminUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Bootstrap auth state from stored tokens on mount
+  // Bootstrap auth state from cookies on mount
   useEffect(() => {
     const promises = [];
 
-    const volunteerToken = localStorage.getItem("volunteer_token");
-    if (volunteerToken) {
-      promises.push(
-        api
-          .get("/volunteers/me/")
-          .then((res) => setVolunteer(res.data.volunteer))
-          .catch(() => {
-            localStorage.removeItem("volunteer_token");
-            setVolunteer(null);
-          })
-      );
-    }
+    // Fetch volunteer profile
+    promises.push(
+      api
+        .get("/volunteers/me/")
+        .then((res) => setVolunteer(res.data.volunteer))
+        .catch(() => setVolunteer(null))
+    );
 
-    const adminToken = localStorage.getItem("admin_token");
-    if (adminToken) {
-      promises.push(
-        adminApi
-          .get("/admin/auth/me/")
-          .then((res) =>
-            setAdminUser({
-              username: res.data.username,
-              admin_role: res.data.admin_role,
-              admin_college_id: res.data.admin_college_id,
-              admin_college_name: res.data.admin_college_name,
-            })
-          )
-          .catch(() => {
-            localStorage.removeItem("admin_token");
-            setAdminUser(null);
+    // Fetch admin profile
+    promises.push(
+      adminApi
+        .get("/admin/auth/me/")
+        .then((res) =>
+          setAdminUser({
+            username: res.data.username,
+            admin_role: res.data.admin_role,
+            admin_college_id: res.data.admin_college_id,
+            admin_college_name: res.data.admin_college_name,
           })
-      );
-    }
+        )
+        .catch(() => setAdminUser(null))
+    );
 
     Promise.allSettled(promises).finally(() => setLoading(false));
   }, []);
 
   const handleVolunteerLogin = useCallback((payload) => {
-    localStorage.setItem("volunteer_token", payload.token);
-    localStorage.setItem("volunteer_refresh_token", payload.refresh_token);
     setVolunteer(payload.volunteer);
   }, []);
 
-  const handleVolunteerLogout = useCallback(() => {
-    localStorage.removeItem("volunteer_token");
-    localStorage.removeItem("volunteer_refresh_token");
+  const handleVolunteerLogout = useCallback(async () => {
+    try {
+      await api.post("/volunteers/logout/");
+    } catch (err) {
+      console.error("Volunteer logout failed on server", err);
+    }
     setVolunteer(null);
   }, []);
 
   const handleAdminLogin = useCallback((payload) => {
-    localStorage.setItem("admin_token", payload.token);
-    localStorage.setItem("admin_refresh_token", payload.refresh_token);
     setAdminUser(payload.adminUser);
   }, []);
 
-  const handleAdminLogout = useCallback(() => {
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("admin_refresh_token");
+  const handleAdminLogout = useCallback(async () => {
+    try {
+      await adminApi.post("/admin/auth/logout/");
+    } catch (err) {
+      console.error("Admin logout failed on server", err);
+    }
     setAdminUser(null);
   }, []);
 

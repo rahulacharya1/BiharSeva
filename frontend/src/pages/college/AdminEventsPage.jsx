@@ -53,7 +53,7 @@ export function AdminEventsPage({ adminUser, onLogout }) {
             setUnits(unitsRes.data || []);
             setAdminRole(meRes.data?.admin_role || "platform_admin");
         } catch (err) {
-            if ([401, 403].includes(err?.response?.status)) {
+            if (err?.response?.status === 401) {
                 clearSession();
                 return;
             }

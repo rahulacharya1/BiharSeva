@@ -80,8 +80,8 @@ export function AdminActivityProposalsPage({ onLogout }) {
       }
       if (!form.nss_unit && u.data?.length) setForm((prev) => ({ ...prev, nss_unit: u.data[0].id }));
     } catch (err) {
-      if ([401, 403].includes(err?.response?.status)) return clearSession();
-      toast.error("Failed to load proposals");
+      if (err?.response?.status === 401) return clearSession();
+      toast.error(err?.response?.data?.detail || "Failed to load proposals");
     }
   };
 

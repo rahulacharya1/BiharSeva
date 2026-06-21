@@ -21,10 +21,12 @@ const API_BASE = getApiBase();
 
 export const api = axios.create({
   baseURL: API_BASE,
+  withCredentials: true,
 });
 
 export const adminApi = axios.create({
   baseURL: API_BASE,
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
@@ -105,22 +107,10 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
         }
 
         isRefreshingVolunteer = true;
-        const refreshToken = localStorage.getItem("volunteer_refresh_token");
-
-        if (!refreshToken) {
-          isRefreshingVolunteer = false;
-          volunteerLogout();
-          toast.error("Session expired. Please log in again.");
-          return Promise.reject(error);
-        }
 
         try {
-          const res = await axios.post(`${API_BASE}/token/refresh/`, {
-            refresh_token: refreshToken,
-          });
+          const res = await axios.post(`${API_BASE}/token/refresh/`, {}, { withCredentials: true });
           const newToken = res.data.token;
-          localStorage.setItem("volunteer_token", newToken);
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
           
           processVolunteerQueue(null, newToken);
           isRefreshingVolunteer = false;
@@ -177,22 +167,10 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
         }
 
         isRefreshingAdmin = true;
-        const refreshToken = localStorage.getItem("admin_refresh_token");
-
-        if (!refreshToken) {
-          isRefreshingAdmin = false;
-          adminLogout();
-          toast.error("Admin session expired. Please log in again.");
-          return Promise.reject(error);
-        }
 
         try {
-          const res = await axios.post(`${API_BASE}/token/refresh/`, {
-            refresh_token: refreshToken,
-          });
+          const res = await axios.post(`${API_BASE}/token/refresh/`, {}, { withCredentials: true });
           const newToken = res.data.token;
-          localStorage.setItem("admin_token", newToken);
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
           
           processAdminQueue(null, newToken);
           isRefreshingAdmin = false;

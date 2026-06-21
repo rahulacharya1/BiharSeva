@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { FiCpu, FiPlusCircle, FiLayers, FiLogOut, FiMenu, FiChevronDown, FiX } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
+import { PageLoader } from "./PageLoader";
 
 export function AdminLayout() {
     const { adminUser, handleAdminLogout } = useAuth();
@@ -53,9 +54,9 @@ export function AdminLayout() {
                     <div className="flex items-center gap-3 overflow-hidden">
                         <div className="w-9 h-9 bg-emerald-500 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-[0_0_20px_rgba(16,185,129,0.3)] shrink-0">B</div>
                         {!sidebarCollapsed && (
-                            <a href="/" className="font-display font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent truncate">
+                            <Link to="/" className="font-display font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent truncate">
                                 BiharSeva
-                            </a>
+                            </Link>
                         )}
                     </div>
                 </div>
@@ -150,7 +151,9 @@ export function AdminLayout() {
 
                 {/* ONLY THIS AREA WILL SWITCH RE-RENDER */}
                 <div className="flex-grow overflow-y-auto bg-white relative z-10">
-                    <Outlet />
+                    <Suspense fallback={<PageLoader />}>
+                        <Outlet />
+                    </Suspense>
                 </div>
             </div>
 

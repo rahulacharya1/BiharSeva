@@ -13,8 +13,7 @@ export function CertificatesPage({ volunteer }) {
     const [selectedCert, setSelectedCert] = useState(null);
 
     useEffect(() => {
-        const token = localStorage.getItem("volunteer_token");
-        if (!token || !volunteer) {
+        if (!volunteer) {
             setError("Login required to view your certificates.");
             setLoading(false);
             return;
@@ -26,9 +25,6 @@ export function CertificatesPage({ volunteer }) {
                 setLoading(false);
             })
             .catch((err) => {
-                if (err?.response?.status === 401) {
-                    localStorage.removeItem("volunteer_token");
-                }
                 setError("Login required to view your certificates.");
                 setLoading(false);
             });

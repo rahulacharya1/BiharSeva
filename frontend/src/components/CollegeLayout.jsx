@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   FiGrid,
@@ -14,6 +14,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
+import { PageLoader } from "./PageLoader";
 
 export function CollegeLayout() {
   const { adminUser, handleAdminLogout } = useAuth();
@@ -87,9 +88,9 @@ export function CollegeLayout() {
               C
             </div>
             {!sidebarCollapsed && (
-              <a href="/college/dashboard" className="font-display font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent truncate">
+              <Link to="/college/dashboard" className="font-display font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent truncate">
                 College Portal
-              </a>
+              </Link>
             )}
           </div>
         </div>
@@ -176,7 +177,9 @@ export function CollegeLayout() {
         </header>
 
         <div className="flex-grow overflow-y-auto bg-white relative z-10">
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </div>
       </div>
 
