@@ -36,6 +36,7 @@ from ..serializers import (
     ReportSerializer,
     VolunteerSerializer,
 )
+from ..filters import EventFilter, ReportFilter, VolunteerFilter
 from .certificates import build_certificate_pdf_response
 from .helpers import (
     award_badges_for_volunteer,
@@ -122,6 +123,9 @@ def api_admin_reports(request, report_id=None):
 
     if request.method == "GET":
         reports = Report.objects.all().order_by("-created_at")
+        filter_set = ReportFilter(request.GET, queryset=reports)
+        if filter_set.is_valid():
+            reports = filter_set.qs
         return Response(ReportSerializer(reports, many=True, context={"request": request}).data)
 
     report = get_object_or_404(Report, id=report_id)
@@ -156,6 +160,9 @@ def api_admin_volunteers(request, volunteer_id=None):
 
     if request.method == "GET":
         volunteers = scoped_volunteers_queryset(admin_user).order_by("-created_at")
+        filter_set = VolunteerFilter(request.GET, queryset=volunteers)
+        if filter_set.is_valid():
+            volunteers = filter_set.qs
         return Response(VolunteerSerializer(volunteers, many=True).data)
 
     if is_platform_admin(admin_user):
@@ -202,6 +209,9 @@ def api_admin_events(request):
 
     if request.method == "GET":
         events = scoped_events_queryset(admin_user).order_by("-date")
+        filter_set = EventFilter(request.GET, queryset=events)
+        if filter_set.is_valid():
+            events = filter_set.qs
         return Response(EventSerializer(events, many=True).data)
 
     if is_platform_admin(admin_user):

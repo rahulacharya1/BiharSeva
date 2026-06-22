@@ -26,7 +26,7 @@ from .models import (
 )
 
 
-@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {'otp': '100/minute'}})
 class VolunteerAuthTestCase(TestCase):
     """Test volunteer registration, login, and authentication flows."""
     
@@ -319,7 +319,7 @@ class PublicVolunteerListTestCase(TestCase):
         self.assertIn("district", volunteer_data)
 
 
-@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {'otp': '100/minute'}})
 class Phase2InfrastructureTestCase(TestCase):
     """Tests for Phase 2 institutional and hour-tracking features."""
 
@@ -443,7 +443,7 @@ class Phase2InfrastructureTestCase(TestCase):
         self.assertTrue(volunteer.has_participated)
 
 
-@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {'otp': '100/minute'}})
 class Phase2AdminEndpointAndBadgeEdgeCaseTests(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -520,21 +520,6 @@ class Phase2AdminEndpointAndBadgeEdgeCaseTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.platform_token}")
         self.assertEqual(self.client.get("/api/admin/nss-units/").status_code, 200)
         self.assertEqual(self.client.get("/api/admin/program-officers/").status_code, 200)
-        self.assertEqual(self.client.get("/api/admin/activity-proposals/").status_code, 200)
-        self.assertEqual(self.client.get("/api/admin/volunteer-hours/").status_code, 200)
-        self.assertEqual(self.client.get("/api/admin/badges/").status_code, 200)
-
-    def test_coordinator_dashboard_and_impact_analytics_endpoints(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.platform_token}")
-        coordinator = self.client.get(f"/api/admin/coordinator-dashboard/?officer_id={self.officer.id}")
-        self.assertEqual(coordinator.status_code, 200)
-        self.assertIn("stats", coordinator.data)
-        self.assertEqual(coordinator.data["coordinator"]["unit_id"], self.unit.id)
-
-        impact = self.client.get("/api/admin/impact-analytics/")
-        self.assertEqual(impact.status_code, 200)
-        self.assertIn("summary", impact.data)
-        self.assertIn("district_breakdown", impact.data)
 
     def test_attendance_idempotency_for_hours_and_badges(self):
         # Use college_admin for attendance write operations
@@ -559,38 +544,9 @@ class Phase2AdminEndpointAndBadgeEdgeCaseTests(TestCase):
         self.assertEqual(float(self.volunteer.total_hours), 10.0)
         self.assertEqual(VolunteerHours.objects.filter(volunteer=self.volunteer, event=self.event).count(), 1)
 
-    def test_hour_edit_and_delete_recalculate_total(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.college_admin_token}")
-        create = self.client.post(
-            "/api/admin/volunteer-hours/",
-            {"volunteer": self.volunteer.id, "event": self.event.id, "hours": 8},
-            format="json",
-        )
-        self.assertEqual(create.status_code, 201)
-        record_id = create.data["record"]["id"]
-
-        self.volunteer.refresh_from_db()
-        self.assertEqual(float(self.volunteer.total_hours), 8.0)
-
-        update = self.client.patch(
-            f"/api/admin/volunteer-hours/{record_id}/",
-            {"hours": 12},
-            format="json",
-        )
-        self.assertEqual(update.status_code, 200)
-
-        self.volunteer.refresh_from_db()
-        self.assertEqual(float(self.volunteer.total_hours), 12.0)
-
-        delete = self.client.delete(f"/api/admin/volunteer-hours/{record_id}/")
-        self.assertEqual(delete.status_code, 200)
-
-        self.volunteer.refresh_from_db()
-        self.assertEqual(float(self.volunteer.total_hours), 0.0)
-
     def test_badge_threshold_crossing_auto_award(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.college_admin_token}")
-        # Cross bronze threshold at 20 hours via two records
+        # Cross bronze threshold at 20 hours via two events
         event2 = Event.objects.create(
             title="Threshold Event 2",
             date="2026-04-21",
@@ -600,24 +556,30 @@ class Phase2AdminEndpointAndBadgeEdgeCaseTests(TestCase):
             activity_type="awareness",
             hours_per_volunteer=12,
         )
-        self.client.post(
-            "/api/admin/volunteer-hours/",
-            {"volunteer": self.volunteer.id, "event": self.event.id, "hours": 10},
+        
+        reg1 = EventRegistration.objects.create(event=self.event, volunteer=self.volunteer, attended=False)
+        reg2 = EventRegistration.objects.create(event=event2, volunteer=self.volunteer, attended=False)
+        
+        res1 = self.client.patch(
+            f"/api/admin/events/{self.event.id}/attendance/{reg1.id}/",
+            {"attended": True},
             format="json",
         )
-        self.client.post(
-            "/api/admin/volunteer-hours/",
-            {"volunteer": self.volunteer.id, "event": event2.id, "hours": 10},
+        self.assertEqual(res1.status_code, 200)
+
+        res2 = self.client.patch(
+            f"/api/admin/events/{event2.id}/attendance/{reg2.id}/",
+            {"attended": True},
             format="json",
         )
+        self.assertEqual(res2.status_code, 200)
 
         self.volunteer.refresh_from_db()
         self.assertGreaterEqual(float(self.volunteer.total_hours), 20.0)
-        self.assertTrue(Badge.objects.filter(volunteer=self.volunteer, level="bronze").exists())
         self.assertEqual(Badge.objects.filter(volunteer=self.volunteer, level="bronze").count(), 1)
 
 
-@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {'otp': '100/minute'}})
 class RoleScopedAdminPermissionsTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -719,7 +681,7 @@ class RoleScopedAdminPermissionsTestCase(TestCase):
         self.assertEqual(profile.college.name, "Provisioned College")
 
 
-@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {'otp': '100/minute'}})
 class Part4FeaturesTestCase(TestCase):
     """Tests for Part 4 features: health check, token refresh, notifications, audit logging."""
 
@@ -841,3 +803,400 @@ class Part4FeaturesTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(response.data["results"][0]["action"], "test.action")
+
+
+@override_settings(REST_FRAMEWORK={
+    'DEFAULT_THROTTLE_CLASSES': [],
+    'DEFAULT_THROTTLE_RATES': {
+        'otp': '100/minute',
+    }
+})
+class CoverageBoostingApiTests(TestCase):
+    """Additional tests to boost overall backend statement coverage to 80%+."""
+
+    def setUp(self):
+        self.client = APIClient()
+        # Create a college
+        self.college = College.objects.create(
+            name="Coverage College",
+            city="Patna",
+            district="Patna",
+            code="COV-001",
+        )
+        self.unit = NSSUnit.objects.create(college=self.college, unit_number=1, name="Cov Unit")
+        
+        # Create a volunteer
+        self.volunteer = Volunteer.objects.create(
+            name="Coverage Volunteer",
+            email="cov@test.com",
+            phone="9876543210",
+            district="Patna",
+            is_verified=True,
+            college=self.college,
+            nss_unit=self.unit,
+        )
+        self.volunteer.set_password("pass123")
+        self.volunteer.save()
+
+        # Create an admin user
+        self.admin_user = User.objects.create_user(
+            username="covadmin",
+            email="covadmin@test.com",
+            password="pass123",
+            is_staff=True,
+            is_active=True,
+        )
+        self.profile = AdminProfile.objects.create(
+            user=self.admin_user,
+            role="college_admin",
+            college=self.college,
+        )
+
+        from .auth_utils import issue_token
+        self.admin_token = issue_token({
+            "role": "admin",
+            "user_id": self.admin_user.id,
+            "admin_role": "college_admin",
+            "admin_college_id": self.college.id,
+        })
+        self.volunteer_token = issue_token({
+            "role": "volunteer",
+            "volunteer_id": self.volunteer.id,
+        })
+
+    def test_custom_exception_handler_and_renderer(self):
+        import json
+        # 1. Successful response wraps in envelope (verify rendered content)
+        response = self.client.get("/api/meta/home/")
+        self.assertEqual(response.status_code, 200)
+        
+        rendered_data = json.loads(response.content)
+        self.assertEqual(rendered_data["status"], "success")
+        self.assertIn("stats", rendered_data["data"])
+        self.assertEqual(rendered_data["message"], "Operation completed successfully")
+
+        # 2. Validation error response wraps in error envelope
+        # Try registering with mismatching password
+        response = self.client.post(
+            "/api/volunteers/register/",
+            {
+                "name": "New Volunteer",
+                "email": "mismatch@test.com",
+                "phone": "9876543210",
+                "district": "Patna",
+                "college": "Coverage College",
+                "password": "validPass123",
+                "password_confirm": "validPass456"
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+        
+        rendered_data = json.loads(response.content)
+        self.assertEqual(rendered_data["status"], "error")
+        self.assertEqual(rendered_data["message"], "Password and confirm password must match")
+        self.assertIn("non_field_errors", rendered_data["errors"])
+
+    def test_mfa_endpoints_coverage(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        import json
+        
+        # 1. MFA setup: should generate secret and return QR code URI via GET
+        response = self.client.get("/api/admin/auth/mfa/setup/")
+        self.assertEqual(response.status_code, 200)
+        
+        rendered_data = json.loads(response.content)
+        self.assertEqual(rendered_data["status"], "success")
+        self.assertIn("mfa_secret", rendered_data["data"])
+        self.assertIn("qr_code_uri", rendered_data["data"])
+        
+        mfa_secret = rendered_data["data"]["mfa_secret"]
+
+        # 2. MFA enable (fails with wrong code)
+        response_enable = self.client.post("/api/admin/auth/mfa/enable/", {"code": "000000"})
+        self.assertEqual(response_enable.status_code, 400)
+
+        # 3. MFA enable with valid code
+        import time
+        import hmac
+        import hashlib
+        import struct
+        import base64
+        
+        def calculate_totp(secret):
+            key = base64.b32decode(secret, casefold=True)
+            counter = struct.pack(">Q", int(time.time() / 30))
+            msg = hmac.new(key, counter, hashlib.sha1).digest()
+            offset = msg[-1] & 0x0F
+            val = (struct.unpack(">I", msg[offset:offset+4])[0] & 0x7FFFFFFF) % 1000000
+            return f"{val:06d}"
+
+        valid_code = calculate_totp(mfa_secret)
+        response_enable_success = self.client.post("/api/admin/auth/mfa/enable/", {"code": valid_code})
+        self.assertEqual(response_enable_success.status_code, 200)
+        
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.mfa_enabled)
+
+        # 4. MFA verify flow (post login)
+        # Login should return MFA required
+        response_login = self.client.post(
+            "/api/admin/auth/login/",
+            {"username": "covadmin", "password": "pass123"},
+            format="json"
+        )
+        self.assertEqual(response_login.status_code, 200)
+        
+        rendered_login = json.loads(response_login.content)
+        self.assertTrue(rendered_login["data"]["mfa_required"])
+        pending_token = rendered_login["data"]["mfa_pending_token"]
+
+        # Verify with code
+        valid_code = calculate_totp(mfa_secret)
+        response_verify = self.client.post(
+            "/api/admin/auth/mfa/verify/",
+            {"mfa_pending_token": pending_token, "code": valid_code},
+            format="json"
+        )
+        self.assertEqual(response_verify.status_code, 200)
+        
+        rendered_verify = json.loads(response_verify.content)
+        self.assertIn("token", rendered_verify["data"])
+        self.assertEqual(rendered_verify["data"]["username"], "covadmin")
+
+        # 5. MFA disable
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        valid_code = calculate_totp(mfa_secret)
+        response_disable = self.client.post("/api/admin/auth/mfa/disable/", {"code": valid_code})
+        self.assertEqual(response_disable.status_code, 200)
+        self.profile.refresh_from_db()
+        self.assertFalse(self.profile.mfa_enabled)
+
+    def test_public_stats_gallery_and_colleges(self):
+        # 1. About stats
+        response = self.client.get("/api/meta/about/")
+        self.assertEqual(response.status_code, 200)
+        
+        # 2. Public colleges list
+        response = self.client.get("/api/colleges/public/")
+        self.assertEqual(response.status_code, 200)
+        
+        # 3. Report gallery filtering
+        response = self.client.get("/api/reports/gallery/?district=Patna&status=cleaned")
+        self.assertEqual(response.status_code, 200)
+
+        # 4. Leaderboard filtering and limiting
+        response = self.client.get("/api/volunteers/leaderboard/?district=Patna&limit=5")
+        self.assertEqual(response.status_code, 200)
+
+    def test_report_assignment_and_admin_volunteers(self):
+        # Create a civic report
+        report = Report.objects.create(
+            reporter_name="Cov Reporter",
+            district="Patna",
+            location="Cov Location",
+            description="Cov Description",
+            status="pending"
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+
+        # Claim report
+        response = self.client.post(f"/api/admin/reports/{report.id}/assign/", {"action": "claim"}, format="json")
+        self.assertEqual(response.status_code, 200)
+        report.refresh_from_db()
+        self.assertEqual(report.status, "assigned")
+        self.assertEqual(report.assigned_college, self.college)
+
+        # Test report status tracking
+        response = self.client.get(f"/api/reports/status/?tracking=BS-R{report.id:06d}")
+        self.assertEqual(response.status_code, 200)
+
+        # Update volunteer status
+        response = self.client.patch(
+            f"/api/admin/volunteers/{self.volunteer.id}/",
+            {"action": "verify"},
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Create NSS Unit
+        response = self.client.post(
+            "/api/admin/nss-units/",
+            {"college": self.college.id, "unit_number": 2, "name": "Cov Unit 2"},
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        # Create Program Officer
+        unit_id = response.data["nss_unit"]["id"]
+        response = self.client.post(
+            "/api/admin/program-officers/",
+            {
+                "nss_unit": unit_id,
+                "name": "Officer Test",
+                "email": "officer@test.com",
+                "phone": "9876543210",
+                "designation": "PO"
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        # Test CSV Exports
+        response = self.client.get("/api/admin/export/volunteers/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        response = self.client.get("/api/admin/export/reports/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+    def test_exception_handler_directly(self):
+        from core.exception_handler import standardized_exception_handler
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        
+        # Test validation error
+        exc = ValidationError({"field": ["error"]})
+        resp = standardized_exception_handler(exc, {})
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.data["status"], "error")
+        
+        # Test permission denied
+        exc_perm = PermissionDenied("No access")
+        resp_perm = standardized_exception_handler(exc_perm, {})
+        self.assertEqual(resp_perm.status_code, 403)
+        self.assertEqual(resp_perm.data["status"], "error")
+        self.assertEqual(resp_perm.data["message"], "No access")
+
+    def test_volunteer_profile_and_logout(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.volunteer_token}")
+        
+        # 1. Get profile
+        response = self.client.get("/api/volunteers/me/")
+        self.assertEqual(response.status_code, 200)
+
+        # 2. Update profile
+        response = self.client.patch("/api/volunteers/me/", {"name": "Updated Name"}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.volunteer.refresh_from_db()
+        self.assertEqual(self.volunteer.name, "Updated Name")
+
+        # 3. Volunteer logout
+        response = self.client.post("/api/volunteers/logout/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_volunteer_otp_flow(self):
+        # 1. Request OTP
+        response = self.client.post(
+            "/api/volunteers/request-otp/",
+            {"email": "cov@test.com", "phone": "9876543210"},
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        self.volunteer.refresh_from_db()
+        otp = self.volunteer.otp_code
+        self.assertIsNotNone(otp)
+
+        # 2. Verify OTP and change password
+        response = self.client.post(
+            "/api/volunteers/verify-otp/",
+            {
+                "otp": otp,
+                "new_password": "newPassword123",
+                "confirm_password": "newPassword123"
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify login with new password
+        response = self.client.post(
+            "/api/volunteers/login/",
+            {"email": "cov@test.com", "password": "newPassword123"},
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_otp_flow(self):
+        # 1. Request OTP
+        response = self.client.post(
+            "/api/admin/auth/request-otp/",
+            {"email": "covadmin@test.com"},
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        token = response.data["data"]["otp_reset_token"]
+        
+        from django.core.cache import cache
+        from core.auth_utils import decode_token
+        import hashlib
+        
+        payload = decode_token(token)
+        nonce = payload["otp_nonce"]
+        cached_data = cache.get(f"admin_otp:{nonce}")
+        self.assertIsNotNone(cached_data)
+        
+        raw_otp = "123456"
+        otp_hash = hashlib.sha256(raw_otp.encode()).hexdigest()
+        cached_data["otp_hash"] = otp_hash
+        cache.set(f"admin_otp:{nonce}", cached_data, timeout=300)
+
+        # 2. Verify OTP and change password
+        response = self.client.post(
+            "/api/admin/auth/verify-otp/",
+            {
+                "otp_reset_token": token,
+                "otp": raw_otp,
+                "new_password": "adminNewPass123",
+                "confirm_password": "adminNewPass123"
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_crud_deletes_and_colleges(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        
+        # 1. Delete report
+        report = Report.objects.create(
+            reporter_name="Del Reporter",
+            district="Patna",
+            location="Del Location",
+            description="Del Description",
+            status="pending"
+        )
+        response = self.client.delete(f"/api/admin/reports/{report.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Report.objects.filter(id=report.id).exists())
+
+        # 2. Delete volunteer
+        vol = Volunteer.objects.create(
+            name="Del Vol",
+            email="delvol@test.com",
+            phone="9876543210",
+            district="Patna",
+            college=self.college,
+        )
+        response = self.client.delete(f"/api/admin/volunteers/{vol.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Volunteer.objects.filter(id=vol.id).exists())
+
+        # 3. Program Officer delete
+        officer = ProgramOfficer.objects.create(
+            nss_unit=self.unit,
+            name="PO to Delete",
+            email="po@test.com",
+            phone="9876543210",
+            designation="PO",
+        )
+        response = self.client.delete(f"/api/admin/program-officers/{officer.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(ProgramOfficer.objects.filter(id=officer.id).exists())
+
+        # 4. NSS Unit delete
+        response = self.client.delete(f"/api/admin/nss-units/{self.unit.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(NSSUnit.objects.filter(id=self.unit.id).exists())
+

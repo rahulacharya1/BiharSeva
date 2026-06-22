@@ -61,6 +61,11 @@ from .views import (
     api_notifications_read_all,
     api_public_colleges,
 )
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 
 urlpatterns = [
@@ -141,4 +146,9 @@ urlpatterns = [
 
     # Admin audit logs
     path("admin/audit-log/", api_admin_audit_logs, name="api_admin_audit_logs"),
+
+    # OpenAPI Schema & Swagger Views
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]

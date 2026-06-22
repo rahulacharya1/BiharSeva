@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from ..auth_utils import get_volunteer_from_request
 from ..models import Certificate, Event, EventRegistration
 from ..serializers import CertificateSerializer, EventSerializer
+from ..filters import EventFilter
 from .certificates import build_certificate_pdf_response
 from .helpers import volunteer_auth_required
 
@@ -13,6 +14,12 @@ from .helpers import volunteer_auth_required
 @api_view(["GET"])
 def api_events_list(request):
     events = Event.objects.all().order_by("-date")
+    
+    # Filter query parameters: district, activity_type, is_completed
+    filter_set = EventFilter(request.GET, queryset=events)
+    if filter_set.is_valid():
+        events = filter_set.qs
+
     registered_event_ids = []
     volunteer = get_volunteer_from_request(request)
     if volunteer:

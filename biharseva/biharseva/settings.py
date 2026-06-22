@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'drf_spectacular',
+    'django_filters',
     'core',
 ]
 
@@ -143,6 +145,7 @@ CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', default=DEFAULT_FRONTEND
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
+        'core.renderers.StandardizedJSONRenderer',
         'rest_framework.renderers.JSONRenderer',
     ],
     'DEFAULT_PARSER_CLASSES': [
@@ -161,6 +164,15 @@ REST_FRAMEWORK = {
         'user': '120/minute',
         'otp': '5/minute',
     },
+    'EXCEPTION_HANDLER': 'core.exception_handler.standardized_exception_handler',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'BiharSeva API',
+    'DESCRIPTION': 'API documentation for BiharSeva NSS management and report cleanup platform',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 # Security settings (configure via .env)

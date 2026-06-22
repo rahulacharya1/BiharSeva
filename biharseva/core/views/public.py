@@ -16,6 +16,7 @@ from ..serializers import (
     PublicVolunteerSerializer,
     ReportSerializer,
 )
+from ..filters import ReportFilter, VolunteerFilter
 from .helpers import send_contact_email, send_new_report_alert_email
 
 
@@ -131,14 +132,12 @@ def api_report_gallery(request):
     """
     reports = Report.objects.filter(status__in=["verified", "in_progress", "cleaned"])
 
-    district = request.query_params.get("district")
-    report_status = request.query_params.get("status")
-    search = request.query_params.get("search")
+    # Apply standardized ReportFilter (district, status, assigned_college)
+    filter_set = ReportFilter(request.GET, queryset=reports)
+    if filter_set.is_valid():
+        reports = filter_set.qs
 
-    if district:
-        reports = reports.filter(district__iexact=district)
-    if report_status:
-        reports = reports.filter(status=report_status)
+    search = request.query_params.get("search")
     if search:
         reports = reports.filter(
             Q(location__icontains=search)
@@ -159,11 +158,12 @@ def api_volunteers_list(request):
     """
     volunteers = Volunteer.objects.filter(is_verified=True)
 
-    district = request.query_params.get("district")
-    search = request.query_params.get("search")
+    # Apply standardized VolunteerFilter (district, is_verified, college)
+    filter_set = VolunteerFilter(request.GET, queryset=volunteers)
+    if filter_set.is_valid():
+        volunteers = filter_set.qs
 
-    if district:
-        volunteers = volunteers.filter(district__iexact=district)
+    search = request.query_params.get("search")
     if search:
         volunteers = volunteers.filter(name__icontains=search)
 

@@ -78,11 +78,27 @@ const processAdminQueue = (error, token = null) => {
 export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
   // Response interceptor for volunteer API
   api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      // Unpack standardized success envelope
+      if (response.data && response.data.status === "success" && "data" in response.data) {
+        response.data = response.data.data;
+      }
+      return response;
+    },
     async (error) => {
       const originalRequest = error.config;
       if (!error.response) {
         return Promise.reject(error);
+      }
+
+      // Map standardized error envelope for frontend expectations
+      if (error.response.data && error.response.data.status === "error") {
+        const originalData = error.response.data;
+        error.response.data = {
+          ...originalData.errors,
+          detail: originalData.message,
+          ...originalData
+        };
       }
 
       const status = error.response.status;
@@ -110,7 +126,7 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
 
         try {
           const res = await axios.post(`${API_BASE}/token/refresh/`, {}, { withCredentials: true });
-          const newToken = res.data.token;
+          const newToken = res.data && res.data.status === "success" ? res.data.data.token : res.data.token;
           
           processVolunteerQueue(null, newToken);
           isRefreshingVolunteer = false;
@@ -138,11 +154,27 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
 
   // Response interceptor for admin API
   adminApi.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      // Unpack standardized success envelope
+      if (response.data && response.data.status === "success" && "data" in response.data) {
+        response.data = response.data.data;
+      }
+      return response;
+    },
     async (error) => {
       const originalRequest = error.config;
       if (!error.response) {
         return Promise.reject(error);
+      }
+
+      // Map standardized error envelope for frontend expectations
+      if (error.response.data && error.response.data.status === "error") {
+        const originalData = error.response.data;
+        error.response.data = {
+          ...originalData.errors,
+          detail: originalData.message,
+          ...originalData
+        };
       }
 
       const status = error.response.status;
@@ -170,7 +202,7 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
 
         try {
           const res = await axios.post(`${API_BASE}/token/refresh/`, {}, { withCredentials: true });
-          const newToken = res.data.token;
+          const newToken = res.data && res.data.status === "success" ? res.data.data.token : res.data.token;
           
           processAdminQueue(null, newToken);
           isRefreshingAdmin = false;
