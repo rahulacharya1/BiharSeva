@@ -7,12 +7,16 @@ import { useToast } from "../../context/ToastContext";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { useSEO } from "../../hooks/useSEO";
 
+import { EmptyState } from "../../components/EmptyState";
+
 export function AdminReportsPage({ adminUser, onLogout }) {
   useSEO({ title: "Manage Reports", description: "Review, assign, and update civic reports in your jurisdiction.", keywords: "manage reports, admin reports", noIndex: true });
     const navigate = useNavigate();
     const toast = useToast();
     const [reports, setReports] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [filterStatus, setFilterStatus] = useState("all");
+    const [sortBy, setSortBy] = useState("id-desc");
     const [afterPhotoFiles, setAfterPhotoFiles] = useState({});
     const [uploadingId, setUploadingId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -20,20 +24,40 @@ export function AdminReportsPage({ adminUser, onLogout }) {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [reportToDelete, setReportToDelete] = useState(null);
 
-    const filteredReports = reports.filter((r) => {
-        const q = searchQuery.trim().toLowerCase();
-        if (!q) return true;
+    const processedReports = reports
+        .filter((r) => {
+            const q = searchQuery.trim().toLowerCase();
+            const matchesSearch = !q || [
+                r.reporter_name,
+                r.location,
+                r.district,
+                r.status,
+                String(r.id ?? ""),
+            ]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(q));
 
-        return [
-            r.reporter_name,
-            r.location,
-            r.district,
-            r.status,
-            String(r.id ?? ""),
-        ]
-            .filter(Boolean)
-            .some((value) => String(value).toLowerCase().includes(q));
-    });
+            const matchesStatus =
+                filterStatus === "all" ||
+                r.status === filterStatus;
+
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            if (sortBy === "id-desc") {
+                return (b.id ?? 0) - (a.id ?? 0);
+            }
+            if (sortBy === "id-asc") {
+                return (a.id ?? 0) - (b.id ?? 0);
+            }
+            if (sortBy === "reporter-asc") {
+                return (a.reporter_name || "").localeCompare(b.reporter_name || "");
+            }
+            if (sortBy === "reporter-desc") {
+                return (b.reporter_name || "").localeCompare(a.reporter_name || "");
+            }
+            return 0;
+        });
 
     const clearSession = () => {
         localStorage.removeItem("admin_token");
@@ -168,19 +192,40 @@ export function AdminReportsPage({ adminUser, onLogout }) {
                     {/* Table Header/Toolbar */}
                     <div className="px-10 py-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 bg-slate-50/50">
                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <FiActivity className="text-blue-500" /> Active Registry ({filteredReports.length})
+                            <FiActivity className="text-blue-500" /> Active Registry ({processedReports.length})
                         </h3>
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap items-center gap-3">
                             <div className="relative">
-                                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search Reports..."
+                                    placeholder="Search reports..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all shadow-sm w-64"
+                                    className="pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all shadow-sm w-56"
                                 />
                             </div>
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                            >
+                                <option value="all">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="verified">Verified</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="cleaned">Cleaned</option>
+                            </select>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                            >
+                                <option value="id-desc">Sort: Newest First</option>
+                                <option value="id-asc">Sort: Oldest First</option>
+                                <option value="reporter-asc">Sort: Reporter (A - Z)</option>
+                                <option value="reporter-desc">Sort: Reporter (Z - A)</option>
+                            </select>
                         </div>
                     </div>
 
@@ -197,7 +242,7 @@ export function AdminReportsPage({ adminUser, onLogout }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredReports.map((r, idx) => (
+                                {processedReports.map((r, idx) => (
                                     <motion.tr
                                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.05 }}
                                         key={r.id} className="hover:bg-slate-50/30 transition-colors group"
@@ -293,12 +338,11 @@ export function AdminReportsPage({ adminUser, onLogout }) {
                     </div>
 
                     {/* Empty State */}
-                    {filteredReports.length === 0 && (
-                        <div className="py-20 text-center">
-                            <p className="text-sm font-bold text-slate-400 italic">
-                                {reports.length === 0 ? "No reports found in registry." : "No reports match your search."}
-                            </p>
-                        </div>
+                    {processedReports.length === 0 && (
+                        <EmptyState
+                            title={reports.length === 0 ? "No reports found" : "No reports match"}
+                            description={reports.length === 0 ? "No civic issues have been reported in this registry." : "Adjust your filters or search query to find reports."}
+                        />
                     )}
                 </div>
             </section>

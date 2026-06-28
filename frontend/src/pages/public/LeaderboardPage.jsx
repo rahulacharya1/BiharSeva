@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { api } from "../../api";
 import { SkeletonList } from "../../components/Skeleton";
 import { useSEO } from "../../hooks/useSEO";
+import { FaFilter, FaChevronDown, FaTrophy } from "react-icons/fa";
 
 const districts = ["", "Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", "Saharsa"];
 
@@ -76,7 +77,7 @@ export function LeaderboardPage() {
             <section className="max-w-4xl mx-auto px-6 -mt-24 relative z-20">
                 {/* District filter */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-xl p-4 mb-8 flex items-center gap-4">
-                    <i className="fas fa-filter text-slate-300 ml-2"></i>
+                    <FaFilter className="text-slate-300 ml-2" />
                     <div className="relative flex-1">
                         <select
                             value={district}
@@ -86,7 +87,7 @@ export function LeaderboardPage() {
                             <option value="">All Districts</option>
                             {districts.filter(Boolean).map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
-                        <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                        <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs" />
                     </div>
                 </div>
 
@@ -94,7 +95,7 @@ export function LeaderboardPage() {
                     <SkeletonList count={8} />
                 ) : leaderboard.length === 0 ? (
                     <div className="bg-slate-50 rounded-[3rem] p-20 text-center border-2 border-dashed border-slate-200">
-                        <i className="fas fa-trophy text-4xl text-slate-300 mb-4"></i>
+                        <FaTrophy className="text-4xl text-slate-300 mb-4 mx-auto" />
                         <p className="text-slate-500 font-medium">No volunteers with logged hours yet.</p>
                     </div>
                 ) : (
@@ -123,7 +124,7 @@ export function LeaderboardPage() {
                                     "bg-slate-100 text-slate-500"
                                 }`}>
                                     {v.rank <= 3 ? (
-                                        <i className="fas fa-trophy"></i>
+                                        <FaTrophy />
                                     ) : (
                                         <span>{v.rank}</span>
                                     )}

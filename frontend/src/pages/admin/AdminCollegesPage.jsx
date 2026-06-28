@@ -1,23 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiArrowLeft, FiLayers, FiMapPin, FiCpu, FiSearch } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useSEO } from "../../hooks/useSEO";
+import { EmptyState } from "../../components/EmptyState";
 
 export function AdminCollegesPage({ adminUser, onLogout }) {
-  useSEO({ title: "Manage Colleges", description: "View and manage registered colleges on the BiharSeva platform.", keywords: "manage colleges, admin", noIndex: true });
+    useSEO({ title: "Manage Colleges", description: "View and manage registered colleges on the BiharSeva platform.", keywords: "manage colleges, admin", noIndex: true });
     const navigate = useNavigate();
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filterDistrict, setFilterDistrict] = useState("all");
+    const [sortBy, setSortBy] = useState("name-asc");
 
     const load = async () => {
         try {
             const res = await adminApi.get("/admin/colleges/");
             setRows(res.data || []);
         } catch (err) {
-            if ([401, 403].includes(err?.response?.status)) {
+            if (err?.response?.status === 401) {
                 localStorage.removeItem("admin_token");
                 onLogout?.();
                 navigate("/admin/login");
@@ -30,11 +33,48 @@ export function AdminCollegesPage({ adminUser, onLogout }) {
 
     useEffect(() => { load(); }, []);
 
-    // Soft real-time search filtration filter
-    const filteredRows = rows.filter(r =>
-        r.name?.toLowerCase().includes(search.toLowerCase()) ||
-        r.code?.toLowerCase().includes(search.toLowerCase())
-    );
+    const districts = useMemo(() => {
+        const set = new Set();
+        rows.forEach(r => {
+            if (r.district) set.add(r.district);
+        });
+        return Array.from(set).sort();
+    }, [rows]);
+
+    const processedColleges = useMemo(() => {
+        return rows
+            .filter((r) => {
+                const q = searchQuery.trim().toLowerCase();
+                const matchesSearch = !q || [
+                    r.name,
+                    r.code,
+                    r.city
+                ]
+                    .filter(Boolean)
+                    .some((value) => String(value).toLowerCase().includes(q));
+
+                const matchesDistrict =
+                    filterDistrict === "all" ||
+                    r.district === filterDistrict;
+
+                return matchesSearch && matchesDistrict;
+            })
+            .sort((a, b) => {
+                if (sortBy === "name-asc") {
+                    return (a.name || "").localeCompare(b.name || "");
+                }
+                if (sortBy === "name-desc") {
+                    return (b.name || "").localeCompare(a.name || "");
+                }
+                if (sortBy === "units-desc") {
+                    return (b.nss_units_count ?? 0) - (a.nss_units_count ?? 0);
+                }
+                if (sortBy === "units-asc") {
+                    return (a.nss_units_count ?? 0) - (b.nss_units_count ?? 0);
+                }
+                return 0;
+            });
+    }, [rows, searchQuery, filterDistrict, sortBy]);
 
     if (loading) return <div className="min-h-screen flex items-center justify-center font-black text-slate-300 uppercase tracking-[0.3em] animate-pulse">Accessing Core Database Layers...</div>;
 
@@ -69,19 +109,41 @@ export function AdminCollegesPage({ adminUser, onLogout }) {
                 <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
 
                     {/* Table Header Controls */}
-                    <div className="px-10 py-8 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
+                    <div className="px-10 py-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <FiLayers className="text-blue-500" /> Active Corporate Entities ({filteredRows.length})
+                            <FiLayers className="text-blue-500" /> Active Corporate Entities ({processedColleges.length})
                         </h3>
-                        <div className="relative">
-                            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search by Code or Entity Title..."
-                                className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all w-64 shadow-sm"
-                            />
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative">
+                                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search by Code or Title..."
+                                    className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all w-64 shadow-sm"
+                                />
+                            </div>
+                            <select
+                                value={filterDistrict}
+                                onChange={(e) => setFilterDistrict(e.target.value)}
+                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                            >
+                                <option value="all">All Districts</option>
+                                {districts.map((d) => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                            >
+                                <option value="name-asc">Sort: Name (A-Z)</option>
+                                <option value="name-desc">Sort: Name (Z-A)</option>
+                                <option value="units-desc">Sort: NSS Units (High-Low)</option>
+                                <option value="units-asc">Sort: NSS Units (Low-High)</option>
+                            </select>
                         </div>
                     </div>
 
@@ -98,7 +160,7 @@ export function AdminCollegesPage({ adminUser, onLogout }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredRows.map((r, idx) => (
+                                {processedColleges.map((r, idx) => (
                                     <tr key={r.id} className="hover:bg-slate-50/40 transition-colors group">
                                         <td className="px-10 py-6 border-b border-slate-50">
                                             <p className="text-sm font-black text-slate-900 tracking-wide">{r.name}</p>
@@ -124,15 +186,16 @@ export function AdminCollegesPage({ adminUser, onLogout }) {
                                         </td>
                                     </tr>
                                 ))}
-                                {!filteredRows.length && (
-                                    <tr>
-                                        <td colSpan={5} className="px-10 py-16 text-center text-sm font-medium text-slate-400 italic">No corresponding institutional registries matched or found.</td>
-                                    </tr>
-                                )}
                             </tbody>
                         </table>
                     </div>
 
+                    {processedColleges.length === 0 && (
+                        <EmptyState
+                            title={rows.length === 0 ? "No colleges found" : "No colleges match"}
+                            description={rows.length === 0 ? "No colleges are registered on the platform yet." : "Adjust your filters or search query to find colleges."}
+                        />
+                    )}
                 </div>
             </section>
         </main>

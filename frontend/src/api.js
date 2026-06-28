@@ -81,7 +81,20 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
     (response) => {
       // Unpack standardized success envelope
       if (response.data && response.data.status === "success" && "data" in response.data) {
-        response.data = response.data.data;
+        const envelope = response.data;
+        const payload = envelope.data;
+        const msg = envelope.message;
+
+        if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+          if (!("message" in payload) && msg) {
+            payload.message = msg;
+          }
+          response.data = payload;
+        } else if (payload === null || payload === undefined) {
+          response.data = { message: msg };
+        } else {
+          response.data = payload;
+        }
       }
       return response;
     },
@@ -105,7 +118,7 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
 
       // Handle 401 Unauthorized - Attempt Token Refresh
       if (status === 401 && !originalRequest._retry) {
-        if (originalRequest.url.includes("/token/refresh/")) {
+        if (originalRequest.url.includes("/token/refresh/") || originalRequest._skipRefresh) {
           return Promise.reject(error);
         }
 
@@ -125,7 +138,11 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
         isRefreshingVolunteer = true;
 
         try {
-          const res = await axios.post(`${API_BASE}/token/refresh/`, {}, { withCredentials: true });
+          const res = await axios.post(
+            `${API_BASE}/token/refresh/`,
+            { refresh_token: localStorage.getItem("volunteer_refresh_token") },
+            { withCredentials: true }
+          );
           const newToken = res.data && res.data.status === "success" ? res.data.data.token : res.data.token;
           
           processVolunteerQueue(null, newToken);
@@ -136,14 +153,18 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
           processVolunteerQueue(refreshErr, null);
           isRefreshingVolunteer = false;
           volunteerLogout();
-          toast.error("Session expired. Please log in again.");
+          if (!originalRequest?.skipToast && !originalRequest?.url?.includes("/volunteers/me/")) {
+            toast.error("Session expired. Please log in again.");
+          }
           return Promise.reject(refreshErr);
         }
       }
 
       // Handle other global error codes
       if (status === 403) {
-        toast.error(error.response.data?.detail || "You do not have permission to perform this action.");
+        if (!originalRequest?.skipToast && !originalRequest?.url?.includes("/volunteers/me/")) {
+          toast.error(error.response.data?.detail || "You do not have permission to perform this action.");
+        }
       } else if (status >= 500) {
         toast.error("A server error occurred. Please try again later.");
       }
@@ -157,7 +178,20 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
     (response) => {
       // Unpack standardized success envelope
       if (response.data && response.data.status === "success" && "data" in response.data) {
-        response.data = response.data.data;
+        const envelope = response.data;
+        const payload = envelope.data;
+        const msg = envelope.message;
+
+        if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+          if (!("message" in payload) && msg) {
+            payload.message = msg;
+          }
+          response.data = payload;
+        } else if (payload === null || payload === undefined) {
+          response.data = { message: msg };
+        } else {
+          response.data = payload;
+        }
       }
       return response;
     },
@@ -181,7 +215,7 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
 
       // Handle 401 Unauthorized - Attempt Token Refresh
       if (status === 401 && !originalRequest._retry) {
-        if (originalRequest.url.includes("/token/refresh/")) {
+        if (originalRequest.url.includes("/token/refresh/") || originalRequest._skipRefresh) {
           return Promise.reject(error);
         }
 
@@ -201,7 +235,11 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
         isRefreshingAdmin = true;
 
         try {
-          const res = await axios.post(`${API_BASE}/token/refresh/`, {}, { withCredentials: true });
+          const res = await axios.post(
+            `${API_BASE}/token/refresh/`,
+            { refresh_token: localStorage.getItem("admin_refresh_token") },
+            { withCredentials: true }
+          );
           const newToken = res.data && res.data.status === "success" ? res.data.data.token : res.data.token;
           
           processAdminQueue(null, newToken);
@@ -212,14 +250,18 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
           processAdminQueue(refreshErr, null);
           isRefreshingAdmin = false;
           adminLogout();
-          toast.error("Admin session expired. Please log in again.");
+          if (!originalRequest?.skipToast && !originalRequest?.url?.includes("/admin/auth/me/")) {
+            toast.error("Admin session expired. Please log in again.");
+          }
           return Promise.reject(refreshErr);
         }
       }
 
       // Handle other global error codes
       if (status === 403) {
-        toast.error(error.response.data?.detail || "You do not have permission to perform this action.");
+        if (!originalRequest?.skipToast && !originalRequest?.url?.includes("/admin/auth/me/")) {
+          toast.error(error.response.data?.detail || "You do not have permission to perform this action.");
+        }
       } else if (status >= 500) {
         toast.error("A server error occurred. Please try again later.");
       }

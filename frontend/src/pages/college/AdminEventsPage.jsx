@@ -7,6 +7,8 @@ import { useToast } from "../../context/ToastContext";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { useSEO } from "../../hooks/useSEO";
 
+import { EmptyState } from "../../components/EmptyState";
+
 export function AdminEventsPage({ adminUser, onLogout }) {
   useSEO({ title: "Manage Events", description: "Create, edit, and manage NSS events. Track attendance and issue certificates.", keywords: "manage events, admin events", noIndex: true });
     const navigate = useNavigate();
@@ -35,6 +37,57 @@ export function AdminEventsPage({ adminUser, onLogout }) {
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [eventToDelete, setEventToDelete] = useState(null);
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filterStatus, setFilterStatus] = useState("all");
+    const [filterUnit, setFilterUnit] = useState("all");
+    const [sortBy, setSortBy] = useState("date-desc");
+
+    const processedEvents = useMemo(() => {
+        return events
+            .filter((e) => {
+                const q = searchQuery.trim().toLowerCase();
+                const matchesSearch = !q || [
+                    e.title,
+                    e.location,
+                    e.description
+                ]
+                    .filter(Boolean)
+                    .some((value) => String(value).toLowerCase().includes(q));
+
+                const matchesStatus =
+                    filterStatus === "all" ||
+                    (filterStatus === "active" && !e.is_completed) ||
+                    (filterStatus === "completed" && e.is_completed);
+
+                const matchesUnit =
+                    filterUnit === "all" ||
+                    String(e.nss_unit) === String(filterUnit);
+
+                return matchesSearch && matchesStatus && matchesUnit;
+            })
+            .sort((a, b) => {
+                if (sortBy === "date-desc") {
+                    return new Date(b.date || 0) - new Date(a.date || 0);
+                }
+                if (sortBy === "date-asc") {
+                    return new Date(a.date || 0) - new Date(b.date || 0);
+                }
+                if (sortBy === "title-asc") {
+                    return (a.title || "").localeCompare(b.title || "");
+                }
+                if (sortBy === "title-desc") {
+                    return (b.title || "").localeCompare(a.title || "");
+                }
+                if (sortBy === "hours-desc") {
+                    return (b.hours_per_volunteer || 0) - (a.hours_per_volunteer || 0);
+                }
+                if (sortBy === "hours-asc") {
+                    return (a.hours_per_volunteer || 0) - (b.hours_per_volunteer || 0);
+                }
+                return 0;
+            });
+    }, [events, searchQuery, filterStatus, filterUnit, sortBy]);
 
     const clearSession = () => {
         localStorage.removeItem("admin_token");
@@ -247,6 +300,56 @@ export function AdminEventsPage({ adminUser, onLogout }) {
                 {/* Event List Table */}
                 <div className="space-y-4">
                     <div className="bg-white rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
+                        {/* Toolbar */}
+                        <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row gap-4 md:items-center justify-between">
+                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                                Event Registry ({processedEvents.length})
+                            </h3>
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="relative">
+                                    <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder="Search title, location..."
+                                        className="pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-500 transition-all w-56 shadow-sm"
+                                    />
+                                </div>
+                                <select
+                                    value={filterStatus}
+                                    onChange={(e) => setFilterStatus(e.target.value)}
+                                    className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-500 transition-all shadow-sm"
+                                >
+                                    <option value="all">All Statuses</option>
+                                    <option value="active">Active</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                                <select
+                                    value={filterUnit}
+                                    onChange={(e) => setFilterUnit(e.target.value)}
+                                    className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-500 transition-all shadow-sm"
+                                >
+                                    <option value="all">All Units</option>
+                                    {units.map((u) => (
+                                        <option key={u.id} value={u.id}>Unit {u.unit_number} ({u.college_name?.substring(0, 15)}...)</option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-500 transition-all shadow-sm"
+                                >
+                                    <option value="date-desc">Sort: Date (Newest)</option>
+                                    <option value="date-asc">Sort: Date (Oldest)</option>
+                                    <option value="title-asc">Sort: Title (A - Z)</option>
+                                    <option value="title-desc">Sort: Title (Z - A)</option>
+                                    <option value="hours-desc">Sort: Hours (Highest)</option>
+                                    <option value="hours-asc">Sort: Hours (Lowest)</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
@@ -262,7 +365,7 @@ export function AdminEventsPage({ adminUser, onLogout }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {events.map((e, index) => (
+                                    {processedEvents.map((e, index) => (
                                         <motion.tr
                                             key={e.id}
                                             initial={{ opacity: 0 }}
@@ -303,10 +406,11 @@ export function AdminEventsPage({ adminUser, onLogout }) {
                             </table>
                         </div>
 
-                        {events.length === 0 && (
-                            <div className="py-14 text-center">
-                                <p className="text-sm font-bold text-slate-400 italic">No events found.</p>
-                            </div>
+                        {processedEvents.length === 0 && (
+                            <EmptyState
+                                title={events.length === 0 ? "No events found" : "No events match"}
+                                description={events.length === 0 ? "No NSS events have been registered yet." : "Adjust your filters or search query to find events."}
+                            />
                         )}
                     </div>
                 </div>

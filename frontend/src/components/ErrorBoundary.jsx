@@ -1,5 +1,6 @@
 import { Component } from "react";
 import { Link } from "react-router-dom";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 export class ErrorBoundary extends Component {
   constructor(props) {
@@ -21,7 +22,7 @@ export class ErrorBoundary extends Component {
         <div className="min-h-screen flex items-center justify-center bg-slate-50 px-6">
           <div className="max-w-md w-full bg-white p-12 rounded-[3rem] border border-slate-100 shadow-xl text-center space-y-8">
             <div className="w-20 h-20 mx-auto bg-red-50 text-red-500 rounded-3xl flex items-center justify-center text-3xl">
-              <i className="fas fa-exclamation-triangle"></i>
+              <FaExclamationTriangle />
             </div>
             <div>
               <h1 className="font-display text-3xl font-bold text-slate-900 mb-3">Something went wrong</h1>

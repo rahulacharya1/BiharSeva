@@ -45,9 +45,13 @@ export function VolunteerRequestOtpPage() {
                 },
             });
         } catch (err) {
+            const responseData = err.response?.data || {};
+            const validationErrors = responseData.errors || {};
+            const firstFieldError = Object.values(validationErrors).flat()[0];
+            const errMsg = firstFieldError || responseData.detail || "OTP request failed. Please check your credentials.";
             setMessage({ 
                 type: "error", 
-                text: err.response?.data?.detail || "OTP request failed. Please check your credentials." 
+                text: errMsg
             });
         } finally {
             setLoading(false);

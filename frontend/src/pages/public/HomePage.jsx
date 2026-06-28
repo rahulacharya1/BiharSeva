@@ -5,6 +5,7 @@ import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import heroImg from "../../assets/biharseva_hero_cleanup.png";
 import { useSEO } from "../../hooks/useSEO";
+import { FaBullhorn, FaUserShield, FaCalendarCheck, FaAward, FaCameraRetro, FaHandsHelping, FaChartPie, FaArrowRight, FaMapMarkerAlt, FaBolt, FaFilePdf, FaShieldAlt } from "react-icons/fa";
 
 const AnimatedNumber = ({ value }) => {
     const [displayValue, setDisplayValue] = useState(0);
@@ -78,10 +79,10 @@ export function HomePage() {
     }
 
     const metrics = [
-        { label: "Total Reports", value: data?.stats?.total_reports ?? 0, icon: "fa-bullhorn", color: "text-orange-600", bg: "bg-orange-50" },
-        { label: "Verified Volunteers", value: data?.stats?.total_volunteers ?? 0, icon: "fa-user-shield", color: "text-purple-600", bg: "bg-purple-50" },
-        { label: "Total Events", value: data?.stats?.total_events ?? 0, icon: "fa-calendar-check", color: "text-blue-600", bg: "bg-blue-50" },
-        { label: "Certificates", value: data?.stats?.total_certificates ?? 0, icon: "fa-award", color: "text-emerald-600", bg: "bg-emerald-50" },
+        { label: "Total Reports", value: data?.stats?.total_reports ?? 0, icon: FaBullhorn, color: "text-orange-600", bg: "bg-orange-50" },
+        { label: "Verified Volunteers", value: data?.stats?.total_volunteers ?? 0, icon: FaUserShield, color: "text-purple-600", bg: "bg-purple-50" },
+        { label: "Total Events", value: data?.stats?.total_events ?? 0, icon: FaCalendarCheck, color: "text-blue-600", bg: "bg-blue-50" },
+        { label: "Certificates", value: data?.stats?.total_certificates ?? 0, icon: FaAward, color: "text-emerald-600", bg: "bg-emerald-50" },
     ];
 
     return (
@@ -150,26 +151,29 @@ export function HomePage() {
             {/* --- METRICS GRID (OVERLAP) --- */}
             <section className="max-w-7xl mx-auto px-6 -mt-24 relative z-20">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                    {metrics.map((item, idx) => (
-                        <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center text-center space-y-4 hover:shadow-[0_30px_60px_rgba(16,185,129,0.1)] transition-all duration-500 group"
-                        >
-                            <div className={`w-14 h-14 ${item.bg} ${item.color} rounded-2xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300`}>
-                                <i className={`fas ${item.icon}`}></i>
-                            </div>
-                            <div>
-                                <h2 className="text-4xl font-display font-bold text-slate-900 tracking-tight">
-                                    <AnimatedNumber value={item.value} />
-                                </h2>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{item.label}</p>
-                            </div>
-                        </motion.div>
-                    ))}
+                    {metrics.map((item, idx) => {
+                        const MetricIcon = item.icon;
+                        return (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.1 }}
+                                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center text-center space-y-4 hover:shadow-[0_30px_60px_rgba(16,185,129,0.1)] transition-all duration-500 group"
+                            >
+                                <div className={`w-14 h-14 ${item.bg} ${item.color} rounded-2xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300`}>
+                                    <MetricIcon />
+                                </div>
+                                <div>
+                                    <h2 className="text-4xl font-display font-bold text-slate-900 tracking-tight">
+                                        <AnimatedNumber value={item.value} />
+                                    </h2>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{item.label}</p>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -182,31 +186,34 @@ export function HomePage() {
 
                 <div className="grid md:grid-cols-3 gap-8">
                     {[
-                        { step: "01", title: "Report Issues", desc: "Upload clear evidence, area details and prioritize civic issues.", link: "/report-issue", btn: "Create Report", icon: "fa-camera-retro" },
-                        { step: "02", title: "Volunteer", desc: "Join cleanliness drives and field missions across Bihar districts.", link: "/volunteer/register", btn: "Join Force", icon: "fa-hands-helping" },
-                        { step: "03", title: "Track Outcomes", desc: "View events, participation, and verify generated certificates.", link: "/events", btn: "View Events", icon: "fa-chart-pie" },
-                    ].map((card, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
-                            className="group bg-white p-10 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_60px_rgba(16,185,129,0.1)] transition-all duration-500"
-                        >
-                            <div className="flex justify-between items-start mb-8">
-                                <span className="font-display text-5xl font-black text-slate-100 group-hover:text-emerald-50 transition-colors">{card.step}</span>
-                                <div className="w-14 h-14 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
-                                    <i className={`fas ${card.icon} text-lg`}></i>
+                        { step: "01", title: "Report Issues", desc: "Upload clear evidence, area details and prioritize civic issues.", link: "/report-issue", btn: "Create Report", icon: FaCameraRetro },
+                        { step: "02", title: "Volunteer", desc: "Join cleanliness drives and field missions across Bihar districts.", link: "/volunteer/register", btn: "Join Force", icon: FaHandsHelping },
+                        { step: "03", title: "Track Outcomes", desc: "View events, participation, and verify generated certificates.", link: "/events", btn: "View Events", icon: FaChartPie },
+                    ].map((card, i) => {
+                        const CardIcon = card.icon;
+                        return (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                className="group bg-white p-10 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_60px_rgba(16,185,129,0.1)] transition-all duration-500"
+                            >
+                                <div className="flex justify-between items-start mb-8">
+                                    <span className="font-display text-5xl font-black text-slate-100 group-hover:text-emerald-50 transition-colors">{card.step}</span>
+                                    <div className="w-14 h-14 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 text-lg">
+                                        <CardIcon />
+                                    </div>
                                 </div>
-                            </div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">{card.title}</h3>
-                            <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">{card.desc}</p>
-                            <Link to={card.link} className="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 group-hover:gap-x-4 transition-all">
-                                {card.btn} <i className="fas fa-arrow-right ml-2"></i>
-                            </Link>
-                        </motion.div>
-                    ))}
+                                <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">{card.title}</h3>
+                                <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">{card.desc}</p>
+                                <Link to={card.link} className="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 group-hover:gap-x-4 transition-all">
+                                    {card.btn} <FaArrowRight className="ml-2" />
+                                </Link>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -249,17 +256,20 @@ export function HomePage() {
                         <div className="flex justify-center lg:justify-end">
                             <div className="grid grid-cols-2 gap-4 text-center">
                                 {[
-                                    { label: "Districts", value: "38", icon: "fa-map-marker-alt" },
-                                    { label: "Live Tracking", value: "24/7", icon: "fa-bolt" },
-                                    { label: "Certified", value: "PDF", icon: "fa-file-pdf" },
-                                    { label: "Transparent", value: "100%", icon: "fa-shield-halved" },
-                                ].map((item, idx) => (
-                                    <div key={idx} className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                                        <i className={`fas ${item.icon} text-emerald-400 text-lg mb-2`}></i>
-                                        <p className="text-white font-display font-bold text-xl">{item.value}</p>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mt-1">{item.label}</p>
-                                    </div>
-                                ))}
+                                    { label: "Districts", value: "38", icon: FaMapMarkerAlt },
+                                    { label: "Live Tracking", value: "24/7", icon: FaBolt },
+                                    { label: "Certified", value: "PDF", icon: FaFilePdf },
+                                    { label: "Transparent", value: "100%", icon: FaShieldAlt },
+                                ].map((item, idx) => {
+                                    const SpotIcon = item.icon;
+                                    return (
+                                        <div key={idx} className="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                                            <SpotIcon className="text-emerald-400 text-lg mb-2 mx-auto" />
+                                            <p className="text-white font-display font-bold text-xl">{item.value}</p>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mt-1">{item.label}</p>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -268,4 +278,3 @@ export function HomePage() {
         </main>
     );
 }
-

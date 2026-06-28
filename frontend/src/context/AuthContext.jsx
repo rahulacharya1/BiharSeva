@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
     // Fetch volunteer profile
     promises.push(
       api
-        .get("/volunteers/me/")
+        .get("/volunteers/me/", { skipToast: true, _skipRefresh: true })
         .then((res) => setVolunteer(res.data.volunteer))
         .catch(() => setVolunteer(null))
     );
@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
     // Fetch admin profile
     promises.push(
       adminApi
-        .get("/admin/auth/me/")
+        .get("/admin/auth/me/", { skipToast: true, _skipRefresh: true })
         .then((res) =>
           setAdminUser({
             username: res.data.username,
@@ -39,6 +39,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const handleVolunteerLogin = useCallback((payload) => {
+    if (payload.token) {
+      localStorage.setItem("volunteer_token", payload.token);
+    }
+    if (payload.refresh_token) {
+      localStorage.setItem("volunteer_refresh_token", payload.refresh_token);
+    }
     setVolunteer(payload.volunteer);
   }, []);
 
@@ -48,10 +54,18 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error("Volunteer logout failed on server", err);
     }
+    localStorage.removeItem("volunteer_token");
+    localStorage.removeItem("volunteer_refresh_token");
     setVolunteer(null);
   }, []);
 
   const handleAdminLogin = useCallback((payload) => {
+    if (payload.token) {
+      localStorage.setItem("admin_token", payload.token);
+    }
+    if (payload.refresh_token) {
+      localStorage.setItem("admin_refresh_token", payload.refresh_token);
+    }
     setAdminUser(payload.adminUser);
   }, []);
 
@@ -61,6 +75,8 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error("Admin logout failed on server", err);
     }
+    localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_refresh_token");
     setAdminUser(null);
   }, []);
 

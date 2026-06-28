@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiArrowLeft, FiTrash2, FiAward, FiUser, FiEye } from "react-icons/fi";
 import { adminApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { useSEO } from "../../hooks/useSEO";
+
+import { EmptyState } from "../../components/EmptyState";
+import { FiArrowLeft, FiTrash2, FiAward, FiUser, FiEye, FiSearch } from "react-icons/fi";
+import { useMemo } from "react";
 
 export function AdminCertificatesPage({ adminUser, onLogout }) {
   useSEO({ title: "Manage Certificates", description: "Issue, view, and manage volunteer participation certificates.", keywords: "manage certificates, issue certificates", noIndex: true });
@@ -16,6 +19,55 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [certToDelete, setCertToDelete] = useState(null);
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filterEvent, setFilterEvent] = useState("all");
+    const [sortBy, setSortBy] = useState("date-desc");
+
+    const events = useMemo(() => {
+        const map = {};
+        certificates.forEach(c => {
+            if (c.event?.id && c.event?.title) {
+                map[c.event.id] = c.event.title;
+            }
+        });
+        return Object.entries(map).map(([id, title]) => ({ id, title }));
+    }, [certificates]);
+
+    const processedCertificates = useMemo(() => {
+        return certificates
+            .filter((c) => {
+                const q = searchQuery.trim().toLowerCase();
+                const matchesSearch = !q || [
+                    c.volunteer?.name,
+                    c.certificate_id,
+                    c.event?.title
+                ]
+                    .filter(Boolean)
+                    .some((value) => String(value).toLowerCase().includes(q));
+
+                const matchesEvent =
+                    filterEvent === "all" ||
+                    String(c.event?.id) === String(filterEvent);
+
+                return matchesSearch && matchesEvent;
+            })
+            .sort((a, b) => {
+                if (sortBy === "date-desc") {
+                    return new Date(b.issued_date || 0) - new Date(a.issued_date || 0);
+                }
+                if (sortBy === "date-asc") {
+                    return new Date(a.issued_date || 0) - new Date(b.issued_date || 0);
+                }
+                if (sortBy === "name-asc") {
+                    return (a.volunteer?.name || "").localeCompare(b.volunteer?.name || "");
+                }
+                if (sortBy === "name-desc") {
+                    return (b.volunteer?.name || "").localeCompare(a.volunteer?.name || "");
+                }
+                return 0;
+            });
+    }, [certificates, searchQuery, filterEvent, sortBy]);
 
     const clearSession = () => {
         localStorage.removeItem("admin_token");
@@ -108,10 +160,43 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
 
                 {/* Certificates Table Registry */}
                 <div className="bg-white rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
-                    <div className="px-10 py-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                    {/* Toolbar */}
+                    <div className="px-10 py-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 bg-slate-50/50">
                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            Master Registry ({certificates.length})
+                            Master Registry ({processedCertificates.length})
                         </h3>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative">
+                                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search recipient, ID..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-500 transition-all shadow-sm w-56"
+                                />
+                            </div>
+                            <select
+                                value={filterEvent}
+                                onChange={(e) => setFilterEvent(e.target.value)}
+                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-500 transition-all shadow-sm"
+                            >
+                                <option value="all">All Events</option>
+                                {events.map((ev) => (
+                                    <option key={ev.id} value={ev.id}>{ev.title}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-500 transition-all shadow-sm"
+                            >
+                                <option value="date-desc">Sort: Issued (Newest)</option>
+                                <option value="date-asc">Sort: Issued (Oldest)</option>
+                                <option value="name-asc">Sort: Recipient (A-Z)</option>
+                                <option value="name-desc">Sort: Recipient (Z-A)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div className="overflow-x-auto">
@@ -125,7 +210,7 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {certificates.map((c, idx) => (
+                                {processedCertificates.map((c, idx) => (
                                     <motion.tr 
                                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.05 }}
                                         key={c.id} className="hover:bg-slate-50/50 transition-colors group"
@@ -172,6 +257,13 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
                             </tbody>
                         </table>
                     </div>
+
+                    {processedCertificates.length === 0 && (
+                        <EmptyState
+                            title={certificates.length === 0 ? "No certificates issued" : "No certificates match"}
+                            description={certificates.length === 0 ? "No NSS certificates have been issued yet." : "Adjust your filters or search query to find certificates."}
+                        />
+                    )}
                 </div>
             </section>
             <ConfirmDialog 

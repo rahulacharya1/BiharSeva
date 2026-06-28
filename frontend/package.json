@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "echo 'Linting configuration can be added with ESLint'",
-    "test": "echo 'Testing framework can be added with Vitest or Jest'"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "axios": "^1.9.0",
@@ -20,10 +21,14 @@
     "recharts": "^3.8.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.5.0",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.14",
     "tailwindcss": "^3.4.19",
-    "vite": "^5.4.19"
+    "vite": "^5.4.19",
+    "vitest": "^4.1.9"
   }
 }

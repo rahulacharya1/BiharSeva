@@ -6,6 +6,7 @@ import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
 import { useSEO } from "../../hooks/useSEO";
+import { FaEnvelope, FaLock, FaSpinner, FaMobileAlt } from "react-icons/fa";
 
 export function VolunteerLoginPage({ onLogin }) {
   useSEO({ title: "Volunteer Login", description: "Log in to your BiharSeva volunteer account to access your dashboard, events, and certificates.", keywords: "volunteer login, sign in" });
@@ -86,7 +87,7 @@ export function VolunteerLoginPage({ onLogin }) {
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Email Address</label>
                             <div className="relative">
-                                <i className="fas fa-envelope absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
+                                <FaEnvelope className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-sm" />
                                 <input 
                                     type="email" 
                                     className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-6 py-4 focus:outline-none focus:border-indigo-500/50 transition-all font-medium text-slate-900"
@@ -100,7 +101,7 @@ export function VolunteerLoginPage({ onLogin }) {
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Password</label>
                             <PasswordInput
-                                leftIcon={<i className="fas fa-lock absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>}
+                                leftIcon={<FaLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-sm" />}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
@@ -117,7 +118,7 @@ export function VolunteerLoginPage({ onLogin }) {
                                 ${loading ? 'bg-slate-400 cursor-not-allowed text-white' : 'bg-slate-900 hover:bg-indigo-600 text-white shadow-indigo-900/10'}
                             `}
                         >
-                            {loading ? <i className="fas fa-circle-notch animate-spin"></i> : "Sign In"}
+                            {loading ? <FaSpinner className="animate-spin" /> : "Sign In"}
                         </button>
 
                         <AnimatePresence>
@@ -139,7 +140,7 @@ export function VolunteerLoginPage({ onLogin }) {
                             className="flex items-center justify-between group p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-slate-200 transition-all"
                         >
                             <span className="text-xs font-bold text-slate-600">Forgot Password? Use OTP</span>
-                            <i className="fas fa-mobile-screen text-[10px] text-slate-300 group-hover:text-indigo-500 transition-all"></i>
+                            <FaMobileAlt className="text-[10px] text-slate-300 group-hover:text-indigo-500 transition-all" />
                         </Link>
                     </div>
                 </div>

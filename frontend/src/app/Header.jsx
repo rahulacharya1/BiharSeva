@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { NAV_GROUPS } from "./navConfig";
 import { NotificationBell } from "../components/NotificationBell";
+import { FaLeaf, FaUserShield, FaUnlock, FaTimes, FaBars } from "react-icons/fa";
 
 // Improved NavItem with micro-indicator
 const NavItem = ({ to, children, end = false, className = "" }) => (
@@ -41,8 +42,8 @@ export function Header({ volunteer, adminUser, mobileOpen, onToggleMobile, onClo
                 {/* Brand Identity */}
                 <NavLink to="/" className="flex items-center space-x-4 group outline-none">
                     <div className="relative">
-                        <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center group-hover:bg-emerald-600 shadow-xl shadow-slate-200 transition-all duration-500 group-hover:rotate-[-6deg]">
-                            <i className="fas fa-leaf text-white text-xl"></i>
+                        <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center group-hover:bg-emerald-600 shadow-xl shadow-slate-200 transition-all duration-500 group-hover:rotate-[-6deg] text-white text-xl">
+                            <FaLeaf />
                         </div>
                         {/* Online Status Indicator */}
                         <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse" />
@@ -93,25 +94,26 @@ export function Header({ volunteer, adminUser, mobileOpen, onToggleMobile, onClo
 
                         <NavLink
                             to={adminHomePath}
-                            className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all border border-slate-100 hover:border-slate-200"
+                            className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-955 transition-all border border-slate-100 hover:border-slate-200 text-sm"
                             title={adminUser ? "Admin Dashboard" : "Admin Login"}
                         >
-                            <i className={`fas ${adminUser ? "fa-user-shield" : "fa-lock-open"} text-sm`}></i>
+                            {adminUser ? <FaUserShield /> : <FaUnlock />}
                         </NavLink>
                     </div>
                 </nav>
 
                 {/* Mobile Toggle Button (App-style) */}
                 <button
-                    className="lg:hidden w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-900 border border-slate-200 active:scale-90 transition-all shadow-sm"
+                    className="lg:hidden w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-900 border border-slate-200 active:scale-90 transition-all shadow-sm text-lg flex items-center justify-center"
                     onClick={onToggleMobile}
                 >
-                    <motion.i
+                    <motion.div
                         key={mobileOpen ? "close" : "open"}
                         initial={{ rotate: -90, opacity: 0 }}
                         animate={{ rotate: 0, opacity: 1 }}
-                        className={`fas ${mobileOpen ? "fa-times" : "fa-bars-staggered"} text-lg`}
-                    />
+                    >
+                        {mobileOpen ? <FaTimes /> : <FaBars />}
+                    </motion.div>
                 </button>
             </div>
 
@@ -136,7 +138,7 @@ export function Header({ volunteer, adminUser, mobileOpen, onToggleMobile, onClo
                             <div className="p-8 pb-32 space-y-10">
                                 <div className="flex items-center justify-between">
                                     <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Menu</span>
-                                    <button onClick={onCloseMobile} className="text-slate-400"><i className="fas fa-times"></i></button>
+                                    <button onClick={onCloseMobile} className="text-slate-400"><FaTimes /></button>
                                 </div>
 
                                 <div className="space-y-10">

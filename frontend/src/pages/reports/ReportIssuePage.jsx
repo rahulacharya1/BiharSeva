@@ -4,6 +4,7 @@ import { api } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { compressImage } from "../../utils/compressImage";
 import { useSEO } from "../../hooks/useSEO";
+import { FaChevronDown, FaCompress, FaCamera, FaSpinner, FaPaperPlane } from "react-icons/fa";
 
 const initialFormState = { 
     reporter_name: "", 
@@ -99,7 +100,11 @@ export function ReportIssuePage() {
             setForm(initialFormState);
             e.target.reset();
         } catch (err) {
-            toast.error(err.response?.data?.detail || "Failed to submit issue. Please try again.");
+            const responseData = err.response?.data || {};
+            const validationErrors = responseData.errors || {};
+            const firstFieldError = Object.values(validationErrors).flat()[0];
+            const errMsg = firstFieldError || responseData.detail || "Failed to submit issue. Please try again.";
+            toast.error(errMsg);
         } finally {
             setLoading(false);
         }
@@ -114,6 +119,7 @@ export function ReportIssuePage() {
                 </div>
 
                 <div className="max-w-5xl mx-auto text-center space-y-8">
+                    {/* Badge */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700 shadow-sm"
@@ -125,6 +131,7 @@ export function ReportIssuePage() {
                         Citizen Action
                     </motion.div>
 
+                    {/* Title */}
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                         className="font-display text-5xl md:text-7xl font-bold tracking-tight text-slate-900 leading-tight"
@@ -170,7 +177,7 @@ export function ReportIssuePage() {
                                     >
                                         {districts.map(d => <option key={d} value={d}>{d}</option>)}
                                     </select>
-                                    <i className="fas fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                    <FaChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs" />
                                 </div>
                             </div>
                         </div>
@@ -216,7 +223,7 @@ export function ReportIssuePage() {
                                     required 
                                 />
                                 <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform ${compressing ? 'bg-amber-50 text-amber-600 animate-pulse' : 'bg-emerald-50 text-emerald-600'}`}>
-                                    <i className={`fas ${compressing ? 'fa-compress' : 'fa-camera'}`}></i>
+                                    {compressing ? <FaCompress /> : <FaCamera />}
                                 </div>
                                 <div className="text-center">
                                     <p className="text-sm font-bold text-slate-700">
@@ -239,7 +246,7 @@ export function ReportIssuePage() {
                                 ${loading || compressing ? 'bg-slate-400 cursor-not-allowed text-white' : 'bg-slate-900 hover:bg-emerald-600 text-white shadow-emerald-900/10'}
                             `}
                         >
-                            {loading ? <i className="fas fa-circle-notch animate-spin"></i> : <i className="fas fa-paper-plane"></i>}
+                            {loading ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
                             {loading ? "Processing..." : "Submit Report"}
                         </button>
                     </form>

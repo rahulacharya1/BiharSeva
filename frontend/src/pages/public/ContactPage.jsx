@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../../api";
 import { useSEO } from "../../hooks/useSEO";
+import { FaEnvelope, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 
 export function ContactPage() {
   useSEO({ title: "Contact Us", description: "Get in touch with the BiharSeva team. Send us your queries, feedback, or partnership proposals.", keywords: "contact BiharSeva, support, feedback" });
@@ -118,20 +119,23 @@ export function ContactPage() {
 
                         <div className="space-y-6">
                             {[
-                                { label: "Email", val: "noreply.biharseva@gmail.com", icon: "fa-envelope" },
-                                { label: "Phone", val: "+91 7061638189", icon: "fa-phone" },
-                                { label: "Location", val: "Purnea, Bihar, India", icon: "fa-location-dot" }
-                            ].map((item, i) => (
-                                <div key={i} className="flex items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100/50 group hover:bg-white hover:shadow-md transition-all">
-                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                                        <i className={`fas ${item.icon}`}></i>
+                                { label: "Email", val: "noreply.biharseva@gmail.com", icon: FaEnvelope },
+                                { label: "Phone", val: "+91 7061638189", icon: FaPhone },
+                                { label: "Location", val: "Purnea, Bihar, India", icon: FaMapMarkerAlt }
+                            ].map((item, i) => {
+                                const ItemIcon = item.icon;
+                                return (
+                                    <div key={i} className="flex items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100/50 group hover:bg-white hover:shadow-md transition-all">
+                                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all text-lg">
+                                            <ItemIcon />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{item.label}</p>
+                                            <p className="font-bold text-slate-900">{item.val}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{item.label}</p>
-                                        <p className="font-bold text-slate-900">{item.val}</p>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </motion.div>
 

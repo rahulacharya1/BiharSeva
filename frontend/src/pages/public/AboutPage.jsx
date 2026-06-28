@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../../api";
 import { useSEO } from "../../hooks/useSEO";
+import { FaBullhorn, FaUsers, FaAward, FaCheckCircle, FaUserShield, FaCalendarAlt, FaLandmark } from "react-icons/fa";
 
 export function AboutPage() {
   useSEO({ title: "About Us", description: "Learn about BiharSeva's mission to make Bihar cleaner through citizen reporting and NSS volunteer coordination.", keywords: "about BiharSeva, mission, NSS volunteering, Bihar" });
@@ -21,9 +22,9 @@ export function AboutPage() {
     }, []);
 
     const features = [
-        { title: "Report", desc: "Citizens submit geo-aware issue reports with evidence.", icon: "fa-bullhorn", color: "text-orange-500", bg: "bg-orange-50" },
-        { title: "Mobilize", desc: "Verified volunteers join local events and drives.", icon: "fa-users", color: "text-blue-500", bg: "bg-blue-50" },
-        { title: "Recognize", desc: "Participation is rewarded through digital certificates.", icon: "fa-award", color: "text-emerald-500", bg: "bg-emerald-50" },
+        { title: "Report", desc: "Citizens submit geo-aware issue reports with evidence.", icon: FaBullhorn, color: "text-orange-500", bg: "bg-orange-50" },
+        { title: "Mobilize", desc: "Verified volunteers join local events and drives.", icon: FaUsers, color: "text-blue-500", bg: "bg-blue-50" },
+        { title: "Recognize", desc: "Participation is rewarded through digital certificates.", icon: FaAward, color: "text-emerald-500", bg: "bg-emerald-50" },
     ];
 
     return (
@@ -71,22 +72,25 @@ export function AboutPage() {
             {/* --- FEATURES GRID (OVERLAP) --- */}
             <section className="max-w-7xl mx-auto px-6 -mt-24 relative z-20">
                 <div className="grid md:grid-cols-3 gap-8">
-                    {features.map((f, i) => (
-                        <motion.article
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
-                            className="group bg-white p-10 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_60px_rgba(16,185,129,0.1)] transition-all duration-500"
-                        >
-                            <div className={`w-14 h-14 ${f.bg} ${f.color} rounded-2xl flex items-center justify-center text-xl mb-8 group-hover:scale-110 transition-transform duration-300`}>
-                                <i className={`fas ${f.icon}`}></i>
-                            </div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">{f.title}</h3>
-                            <p className="text-slate-500 font-medium leading-relaxed italic text-sm">{f.desc}</p>
-                        </motion.article>
-                    ))}
+                    {features.map((f, i) => {
+                        const Icon = f.icon;
+                        return (
+                            <motion.article
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                className="group bg-white p-10 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_60px_rgba(16,185,129,0.1)] transition-all duration-500"
+                            >
+                                <div className={`w-14 h-14 ${f.bg} ${f.color} rounded-2xl flex items-center justify-center text-xl mb-8 group-hover:scale-110 transition-transform duration-300`}>
+                                    <Icon />
+                                </div>
+                                <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">{f.title}</h3>
+                                <p className="text-slate-500 font-medium leading-relaxed italic text-sm">{f.desc}</p>
+                            </motion.article>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -99,27 +103,30 @@ export function AboutPage() {
 
                         <div className="relative z-10 grid md:grid-cols-3 gap-16">
                             {[
-                                { label: "Resolved Reports", value: stats.total_reports, icon: "fa-check-circle", color: "text-emerald-400" },
-                                { label: "Verified Volunteers", value: stats.total_volunteers, icon: "fa-user-shield", color: "text-blue-400" },
-                                { label: "Events Organized", value: stats.total_events, icon: "fa-calendar-alt", color: "text-purple-400" }
-                            ].map((stat, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    whileInView={{ opacity: 1, scale: 1 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: idx * 0.1 }}
-                                    className="space-y-4"
-                                >
-                                    <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto border border-white/10">
-                                        <i className={`fas ${stat.icon} ${stat.color} text-xl`}></i>
-                                    </div>
-                                    <h2 className="font-display text-5xl md:text-6xl font-black text-white tracking-tighter italic">
-                                        {stat.value}
-                                    </h2>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{stat.label}</p>
-                                </motion.div>
-                            ))}
+                                { label: "Resolved Reports", value: stats.total_reports, icon: FaCheckCircle, color: "text-emerald-400" },
+                                { label: "Verified Volunteers", value: stats.total_volunteers, icon: FaUserShield, color: "text-blue-400" },
+                                { label: "Events Organized", value: stats.total_events, icon: FaCalendarAlt, color: "text-purple-400" }
+                            ].map((stat, idx) => {
+                                const StatIcon = stat.icon;
+                                return (
+                                    <motion.div
+                                        key={idx}
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        whileInView={{ opacity: 1, scale: 1 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: idx * 0.1 }}
+                                        className="space-y-4"
+                                    >
+                                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto border border-white/10 text-xl flex items-center justify-center">
+                                            <StatIcon className={stat.color} />
+                                        </div>
+                                        <h2 className="font-display text-5xl md:text-6xl font-black text-white tracking-tighter italic">
+                                            {stat.value}
+                                        </h2>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{stat.label}</p>
+                                    </motion.div>
+                                );
+                            })}
                         </div>
                     </div>
                 </section>
@@ -146,7 +153,7 @@ export function AboutPage() {
                     </div>
 
                     <div className="absolute -bottom-10 -right-10 opacity-[0.03] text-9xl text-slate-900 pointer-events-none">
-                        <i className="fas fa-landmark"></i>
+                        <FaLandmark />
                     </div>
                 </div>
             </section>

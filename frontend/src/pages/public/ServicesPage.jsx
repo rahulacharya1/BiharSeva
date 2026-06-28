@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useSEO } from "../../hooks/useSEO";
+import { FaMapPin, FaUsersCog, FaCalendarDay, FaCertificate, FaUniversity, FaChartLine, FaFileExport, FaMedal, FaArrowRight, FaDatabase, FaExchangeAlt, FaCheckCircle } from "react-icons/fa";
 
 const services = [
     {
         title: "Issue Reporting",
         desc: "Submit civic issues with location details and photographic evidence. Track your report from submission through verification to resolution.",
-        icon: "fa-map-pin",
+        icon: FaMapPin,
         color: "text-blue-600",
         bg: "bg-blue-50",
         link: "/report-issue",
@@ -15,7 +16,7 @@ const services = [
     {
         title: "Volunteer Network",
         desc: "Join Bihar's verified volunteer force. Get matched to local campaigns, earn service hours, and build your civic profile.",
-        icon: "fa-users-gear",
+        icon: FaUsersCog,
         color: "text-indigo-600",
         bg: "bg-indigo-50",
         link: "/volunteer/register",
@@ -24,7 +25,7 @@ const services = [
     {
         title: "Event Operations",
         desc: "Discover upcoming cleanliness drives, awareness campaigns, and field missions. Register, attend, and get your hours tracked automatically.",
-        icon: "fa-calendar-day",
+        icon: FaCalendarDay,
         color: "text-purple-600",
         bg: "bg-purple-50",
         link: "/events",
@@ -33,7 +34,7 @@ const services = [
     {
         title: "Digital Certificates",
         desc: "Receive verifiable PDF certificates for every event you attend. Each certificate has a unique ID that can be verified by anyone.",
-        icon: "fa-certificate",
+        icon: FaCertificate,
         color: "text-emerald-600",
         bg: "bg-emerald-50",
         link: "/certificates",
@@ -45,22 +46,22 @@ const adminServices = [
     {
         title: "College Dashboard",
         desc: "Manage volunteers, events, and certificates scoped to your institution. Track NSS units, program officers, and activity proposals.",
-        icon: "fa-building-columns",
+        icon: FaUniversity,
     },
     {
         title: "Impact Analytics",
         desc: "District-level breakdowns, activity-type distributions, monthly trends, and volunteer leaderboards — all in real time.",
-        icon: "fa-chart-line",
+        icon: FaChartLine,
     },
     {
         title: "Data Export",
         desc: "Export volunteers, reports, and event data as CSV files for reporting to university bodies and NSS cells.",
-        icon: "fa-file-export",
+        icon: FaFileExport,
     },
     {
         title: "Badge & Hours System",
         desc: "Automated service hour tracking with Bronze, Silver, Gold, and Platinum badge thresholds. Gamified volunteer recognition.",
-        icon: "fa-medal",
+        icon: FaMedal,
     },
 ];
 
@@ -76,6 +77,7 @@ export function ServicesPage() {
                 </div>
 
                 <div className="max-w-5xl mx-auto text-center space-y-8">
+                    {/* Badge */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-[10px] font-black uppercase tracking-[0.3em] text-blue-700 shadow-sm"
@@ -87,6 +89,7 @@ export function ServicesPage() {
                         Platform Services
                     </motion.div>
 
+                    {/* Title */}
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                         className="font-display text-5xl md:text-8xl font-bold tracking-tight text-slate-900 leading-[1.05]"
@@ -94,6 +97,7 @@ export function ServicesPage() {
                         Civic Execution <br /> <span className="text-blue-600">Simplified.</span>
                     </motion.h1>
 
+                    {/* Description */}
                     <motion.p
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                         className="max-w-2xl mx-auto text-lg md:text-xl text-slate-500 font-medium leading-relaxed"
@@ -104,32 +108,35 @@ export function ServicesPage() {
                 </div>
             </section>
 
-            {/* --- CITIZEN & VOLUNTEER SERVICES (OVERLAP) --- */}
+            {/* --- CITIZEN & VOLUNTEER SERVICES --- */}
             <section className="max-w-7xl mx-auto px-6 -mt-24 relative z-20">
                 <div className="grid md:grid-cols-2 gap-8">
-                    {services.map((svc, i) => (
-                        <motion.article
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                            className="flex flex-col gap-6 p-10 bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-500 group"
-                        >
-                            <div className="flex items-start gap-6">
-                                <div className={`w-16 h-16 shrink-0 ${svc.bg} ${svc.color} rounded-[1.5rem] flex items-center justify-center text-2xl group-hover:rotate-6 transition-transform`}>
-                                    <i className={`fas ${svc.icon}`}></i>
-                                </div>
-                                <div className="space-y-3">
-                                    <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{svc.title}</h3>
-                                    <p className="text-slate-500 font-medium leading-relaxed">{svc.desc}</p>
-                                </div>
-                            </div>
-                            <Link
-                                to={svc.link}
-                                className="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 group-hover:gap-x-4 transition-all ml-[88px]"
+                    {services.map((svc, i) => {
+                        const SvcIcon = svc.icon;
+                        return (
+                            <motion.article
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                                className="flex flex-col gap-6 p-10 bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-500 group"
                             >
-                                {svc.cta} <i className="fas fa-arrow-right ml-2"></i>
-                            </Link>
-                        </motion.article>
-                    ))}
+                                <div className="flex items-start gap-6">
+                                    <div className={`w-16 h-16 shrink-0 ${svc.bg} ${svc.color} rounded-[1.5rem] flex items-center justify-center text-2xl group-hover:rotate-6 transition-transform`}>
+                                        <SvcIcon />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{svc.title}</h3>
+                                        <p className="text-slate-500 font-medium leading-relaxed">{svc.desc}</p>
+                                    </div>
+                                </div>
+                                <Link
+                                    to={svc.link}
+                                    className="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 group-hover:gap-x-4 transition-all ml-[88px]"
+                                >
+                                    {svc.cta} <FaArrowRight className="ml-2" />
+                                </Link>
+                            </motion.article>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -142,19 +149,22 @@ export function ServicesPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {adminServices.map((svc, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                            className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-500 group space-y-4"
-                        >
-                            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                <i className={`fas ${svc.icon}`}></i>
-                            </div>
-                            <h3 className="text-lg font-bold text-slate-900 tracking-tight">{svc.title}</h3>
-                            <p className="text-sm text-slate-500 font-medium leading-relaxed">{svc.desc}</p>
-                        </motion.div>
-                    ))}
+                    {adminServices.map((svc, i) => {
+                        const AdminIcon = svc.icon;
+                        return (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                                className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-500 group space-y-4"
+                            >
+                                <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                                    <AdminIcon />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 tracking-tight">{svc.title}</h3>
+                                <p className="text-sm text-slate-500 font-medium leading-relaxed">{svc.desc}</p>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -167,21 +177,27 @@ export function ServicesPage() {
 
                 <div className="grid md:grid-cols-3 gap-12">
                     {[
-                        { phase: "Phase 1", title: "Collect", desc: "Citizens and volunteers submit actionable civic data — issue reports with photos, location context, and priority levels.", icon: "fa-database" },
-                        { phase: "Phase 2", title: "Coordinate", desc: "Admins create events, assign NSS units, and manage volunteer teams for on-ground execution across districts.", icon: "fa-shuffle" },
-                        { phase: "Phase 3", title: "Close The Loop", desc: "Attendance is recorded, service hours are tracked, badges are awarded, and verifiable certificates are generated.", icon: "fa-circle-check" }
-                    ].map((step, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                            className="relative space-y-6 group"
-                        >
-                            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600/60">{step.phase}</div>
-                            <h3 className="text-3xl font-display font-bold text-slate-900">{step.title}</h3>
-                            <p className="text-slate-500 font-medium leading-relaxed">{step.desc}</p>
-                            <div className="h-1 w-12 bg-blue-100 group-hover:w-full transition-all duration-700" />
-                        </motion.div>
-                    ))}
+                        { phase: "Phase 1", title: "Collect", desc: "Citizens and volunteers submit actionable civic data — issue reports with photos, location context, and priority levels.", icon: FaDatabase },
+                        { phase: "Phase 2", title: "Coordinate", desc: "Admins create events, assign NSS units, and manage volunteer teams for on-ground execution across districts.", icon: FaExchangeAlt },
+                        { phase: "Phase 3", title: "Close The Loop", desc: "Attendance is recorded, service hours are tracked, badges are awarded, and verifiable certificates are generated.", icon: FaCheckCircle }
+                    ].map((step, i) => {
+                        const StepIcon = step.icon;
+                        return (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                                className="relative space-y-6 group"
+                            >
+                                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600/60 flex items-center gap-2">
+                                    <span>{step.phase}</span>
+                                    <StepIcon />
+                                </div>
+                                <h3 className="text-3xl font-display font-bold text-slate-900">{step.title}</h3>
+                                <p className="text-slate-500 font-medium leading-relaxed">{step.desc}</p>
+                                <div className="h-1 w-12 bg-blue-100 group-hover:w-full transition-all duration-700" />
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </section>
 

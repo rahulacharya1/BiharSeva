@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { useSEO } from "../../hooks/useSEO";
+import { FaDatabase, FaChartLine, FaShieldAlt, FaEnvelopeOpenText, FaHandHoldingHeart } from "react-icons/fa";
 
 const privacyPoints = [
-    { title: "Data Collected", desc: "Name, contact details, district, submitted reports, and participation records.", icon: "fa-database", color: "text-indigo-600", bg: "bg-indigo-50" },
-    { title: "Usage", desc: "Used for verification, event coordination, status tracking, and certificate issuance.", icon: "fa-chart-line", color: "text-blue-600", bg: "bg-blue-50" },
-    { title: "Security", desc: "API access is token-protected and sensitive operations require verified roles.", icon: "fa-shield-halved", color: "text-slate-900", bg: "bg-slate-100" },
-    { title: "Privacy Contact", desc: "For privacy concerns or data requests, contact support@biharseva.org.", icon: "fa-envelope-shield", color: "text-emerald-600", bg: "bg-emerald-50" },
+    { title: "Data Collected", desc: "Name, contact details, district, submitted reports, and participation records.", icon: FaDatabase, color: "text-indigo-600", bg: "bg-indigo-50" },
+    { title: "Usage", desc: "Used for verification, event coordination, status tracking, and certificate issuance.", icon: FaChartLine, color: "text-blue-600", bg: "bg-blue-50" },
+    { title: "Security", desc: "API access is token-protected and sensitive operations require verified roles.", icon: FaShieldAlt, color: "text-slate-900", bg: "bg-slate-100" },
+    { title: "Privacy Contact", desc: "For privacy concerns or data requests, contact support@biharseva.org.", icon: FaEnvelopeOpenText, color: "text-emerald-600", bg: "bg-emerald-50" },
 ];
 
 export function PrivacyPage() {
@@ -20,6 +21,7 @@ export function PrivacyPage() {
                 </div>
 
                 <div className="max-w-5xl mx-auto text-center space-y-8">
+                    {/* Badge */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-[10px] font-black uppercase tracking-[0.3em] text-indigo-700 shadow-sm"
@@ -31,6 +33,7 @@ export function PrivacyPage() {
                         Policy
                     </motion.div>
 
+                    {/* Title */}
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                         className="font-display text-5xl md:text-8xl font-bold tracking-tight text-slate-900 leading-[1.05]"
@@ -38,6 +41,7 @@ export function PrivacyPage() {
                         Privacy & <br /> <span className="text-indigo-600">Data Use.</span>
                     </motion.h1>
 
+                    {/* Description */}
                     <motion.p
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                         className="max-w-2xl mx-auto text-lg md:text-xl text-slate-500 font-medium leading-relaxed"
@@ -48,29 +52,32 @@ export function PrivacyPage() {
                 </div>
             </section>
 
-            {/* --- POLICY GRID (OVERLAP) --- */}
+            {/* --- POLICY GRID --- */}
             <section className="max-w-7xl mx-auto px-6 -mt-24 relative z-20">
                 <div className="grid md:grid-cols-2 gap-8">
-                    {privacyPoints.map((point, i) => (
-                        <motion.article
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                            className="group bg-white p-10 md:p-12 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-500"
-                        >
-                            <div className={`w-14 h-14 ${point.bg} ${point.color} rounded-2xl flex items-center justify-center text-xl mb-8 group-hover:scale-110 transition-transform`}>
-                                <i className={`fas ${point.icon}`}></i>
-                            </div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">{point.title}</h3>
-                            <p className="text-slate-500 font-medium leading-relaxed">{point.desc}</p>
-                        </motion.article>
-                    ))}
+                    {privacyPoints.map((point, i) => {
+                        const PointIcon = point.icon;
+                        return (
+                            <motion.article
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                                className="group bg-white p-10 md:p-12 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-500"
+                            >
+                                <div className={`w-14 h-14 ${point.bg} ${point.color} rounded-2xl flex items-center justify-center text-xl mb-8 group-hover:scale-110 transition-transform`}>
+                                    <PointIcon />
+                                </div>
+                                <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">{point.title}</h3>
+                                <p className="text-slate-500 font-medium leading-relaxed">{point.desc}</p>
+                            </motion.article>
+                        );
+                    })}
                 </div>
             </section>
 
-            {/* --- TRANSPARENCY NOTE --- */}
+            {/* --- COMMITMENT --- */}
             <section className="max-w-4xl mx-auto px-6 mt-32 text-center space-y-8">
-                <div className="inline-block p-4 rounded-full bg-slate-50 border border-slate-100 mb-4">
-                    <i className="fas fa-hand-holding-heart text-indigo-600"></i>
+                <div className="inline-block p-4 rounded-full bg-slate-50 border border-slate-100 mb-4 text-xl">
+                    <FaHandHoldingHeart className="text-indigo-600" />
                 </div>
                 <h2 className="text-3xl font-display font-bold text-slate-900">Our Commitment</h2>
                 <p className="text-slate-500 text-lg leading-relaxed">

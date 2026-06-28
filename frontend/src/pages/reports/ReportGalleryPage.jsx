@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { api } from "../../api";
 import { SkeletonGrid } from "../../components/Skeleton";
 import { useSEO } from "../../hooks/useSEO";
+import { FaSearch, FaChevronDown, FaMapMarkerAlt, FaExternalLinkAlt } from "react-icons/fa";
+import { EmptyState } from "../../components/EmptyState";
 
 const districts = ["", "Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", "Saharsa"];
 const statuses = ["", "verified", "in_progress", "cleaned"];
@@ -83,7 +85,7 @@ export function ReportGalleryPage() {
             <section className="max-w-7xl mx-auto px-6 -mt-24 relative z-20 mb-10">
                 <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl p-6 flex flex-col md:flex-row gap-4">
                     <div className="flex-1 relative">
-                        <i className="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
+                        <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-sm" />
                         <input
                             type="text"
                             placeholder="Search by location, description..."
@@ -101,7 +103,7 @@ export function ReportGalleryPage() {
                             <option value="">All Districts</option>
                             {districts.filter(Boolean).map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
-                        <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                        <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs" />
                     </div>
                     <div className="relative">
                         <select
@@ -114,7 +116,7 @@ export function ReportGalleryPage() {
                                 <option key={s} value={s}>{s.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())}</option>
                             ))}
                         </select>
-                        <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                        <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs" />
                     </div>
                 </div>
             </section>
@@ -168,7 +170,7 @@ export function ReportGalleryPage() {
                                 {/* Content */}
                                 <div className="p-8 space-y-4 flex-grow">
                                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600">
-                                        <i className="fas fa-location-dot"></i>
+                                        <FaMapMarkerAlt />
                                         {report.district}
                                     </div>
                                     <h3 className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
@@ -185,7 +187,7 @@ export function ReportGalleryPage() {
                                         Reported by {report.reporter_name}
                                     </span>
                                     <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-all cursor-pointer">
-                                        <i className="fas fa-arrow-up-right-from-square text-xs"></i>
+                                        <FaExternalLinkAlt className="text-xs" />
                                     </div>
                                 </div>
                             </motion.article>
@@ -194,10 +196,10 @@ export function ReportGalleryPage() {
                 )}
 
                 {!loading && reports.length === 0 && (
-                    <div className="bg-slate-50 rounded-[3rem] p-20 text-center border-2 border-dashed border-slate-200">
-                        <i className="fas fa-folder-open text-4xl text-slate-300 mb-4"></i>
-                        <p className="text-slate-500 font-medium">No reports match your filters.</p>
-                    </div>
+                    <EmptyState
+                        title="No reports match your filters."
+                        description="Try modifying search query or selecting a different district/status."
+                    />
                 )}
             </section>
         </main>

@@ -40,40 +40,20 @@ export function CollegeLayout() {
   ];
 
   const getBreadcrumbs = () => {
-    const trailMap = {
-      "/college/dashboard": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Dashboard", path: "/college/dashboard" },
-      ],
-      "/college/reports": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Reports", path: "/college/reports" },
-      ],
-      "/college/events": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Events", path: "/college/events" },
-      ],
-      "/college/volunteers": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Volunteers", path: "/college/volunteers" },
-      ],
-      "/college/certificates": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Certificates", path: "/college/certificates" },
-      ],
-      "/college/program-officers": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Program Officers", path: "/college/program-officers" },
-      ],
-      "/college/profile": [
-        { label: "College Portal", path: "/college/dashboard" },
-        { label: "Profile", path: "/college/profile" },
-      ],
-    };
-
-    return trailMap[location.pathname] ?? [
-      { label: "College Portal", path: "/college/dashboard" },
-    ];
+    const parts = location.pathname.split("/").filter(Boolean);
+    return parts.map((part, index) => {
+      let label = part.replace(/-/g, " ");
+      if (label.toLowerCase() === "nss") {
+        label = "NSS";
+      } else if (label.toLowerCase() === "nss units") {
+        label = "NSS Units";
+      } else {
+        label = label.replace(/\b\w/g, (char) => char.toUpperCase());
+      }
+      let path = "/" + parts.slice(0, index + 1).join("/");
+      if (path === "/college") path = "/college/dashboard";
+      return { label, path };
+    });
   };
 
   return (
@@ -129,16 +109,17 @@ export function CollegeLayout() {
               <FiMenu size={22} />
             </button>
 
-            <nav className="hidden sm:flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            <nav className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-450 uppercase tracking-wider">
+              <span>College Portal</span>
               {getBreadcrumbs().map((bc, idx, arr) => {
                 const isCurrent = idx === arr.length - 1;
                 return (
                   <div key={`${bc.path}-${bc.label}-${idx}`} className="flex items-center gap-2">
-                    {idx > 0 && <span className="text-slate-300">/</span>}
+                    <span className="text-slate-350">/</span>
                     {isCurrent ? (
-                      <span className="text-slate-900 font-black">{bc.label}</span>
+                      <span className="text-slate-800 font-bold">{bc.label}</span>
                     ) : (
-                      <Link to={bc.path} className="hover:text-slate-600 transition-colors">
+                      <Link to={bc.path} className="hover:text-slate-650 transition-colors">
                         {bc.label}
                       </Link>
                     )}

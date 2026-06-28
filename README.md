@@ -35,11 +35,12 @@ BiharSeva is a **full-stack civic engagement platform** built for Bihar's NSS (N
 |---|---|
 | **Backend** | Django 6.0, Django REST Framework |
 | **Frontend** | React 18, Vite, Tailwind CSS |
-| **Auth** | Custom JWT (access + refresh tokens), Google OAuth |
+| **Auth** | Custom JWT (access + refresh tokens), Google OAuth, TOTP MFA |
 | **PDF** | ReportLab |
 | **Fonts** | Space Grotesk, Manrope (Google Fonts) |
 | **Animations** | Framer Motion |
 | **Icons** | Font Awesome 6 |
+| **API Docs** | drf-spectacular (OpenAPI 3 / Swagger) |
 
 ---
 
@@ -47,50 +48,74 @@ BiharSeva is a **full-stack civic engagement platform** built for Bihar's NSS (N
 
 ```
 BiharSeva/
-├── biharseva/                  # Django backend
-│   ├── biharseva/              # Django project settings
+├── backend/                        # Django backend
+│   ├── config/                     # Django project settings
 │   │   ├── settings.py
 │   │   ├── urls.py
 │   │   └── wsgi.py
-│   ├── core/                   # Main Django app
-│   │   ├── models.py           # Database models (12 models)
-│   │   ├── serializers.py      # DRF serializers
-│   │   ├── api_urls.py         # API route definitions
-│   │   ├── auth_utils.py       # JWT token utilities
-│   │   ├── sanitize.py         # Input sanitization
-│   │   ├── admin.py            # Django admin configuration
-│   │   ├── tests.py            # Test suite (600+ lines)
-│   │   └── views/              # Modular API views
-│   │       ├── public.py       # Unauthenticated endpoints
-│   │       ├── volunteer.py    # Volunteer auth & profile
-│   │       ├── events.py       # Event listing & registration
-│   │       ├── admin_auth.py   # Admin login & OTP flows
-│   │       ├── admin_ops.py    # Admin CRUD operations
-│   │       ├── admin_college.py# College infrastructure
-│   │       ├── admin_export.py # CSV data exports
-│   │       ├── certificates.py # PDF certificate generation
-│   │       ├── notifications.py# In-app notification system
-│   │       └── helpers.py      # Shared utilities & email
-│   ├── .env.example            # Environment variable template
-│   └── requirements.txt        # Python dependencies
+│   │
+│   ├── common/                     # Shared utilities & infrastructure
+│   │   ├── api_urls.py             # Central API route definitions (all apps)
+│   │   ├── auth_utils.py           # JWT token utilities
+│   │   ├── constants.py            # Shared choice tuples (districts, activities)
+│   │   ├── exception_handler.py    # Custom DRF exception handler
+│   │   ├── renderers.py            # Standardized API response envelope
+│   │   ├── sanitize.py             # Input sanitization
+│   │   ├── totp.py                 # TOTP/MFA utilities
+│   │   ├── models.py               # AuditLog model
+│   │   └── views/
+│   │       ├── public.py           # Home stats, about, contact, health check
+│   │       └── helpers.py          # Admin auth, scoped queries, email senders
+│   │
+│   ├── authentication/             # Volunteer & admin auth
+│   │   ├── models.py               # Volunteer, AdminProfile, BlacklistedToken
+│   │   ├── serializers.py          # Auth serializers
+│   │   ├── views.py                # Signup, login, OTP, MFA, profile, volunteer mgmt
+│   │   └── filters.py              # Volunteer filters
+│   │
+│   ├── colleges/                   # Institutional registry
+│   │   ├── models.py               # College, NSSUnit, ProgramOfficer
+│   │   ├── serializers.py          # College serializers
+│   │   └── views.py                # College/unit/officer CRUD + public listing
+│   │
+│   ├── events/                     # Events & certificates
+│   │   ├── models.py               # Event, EventRegistration, Certificate, VolunteerHours, Badge
+│   │   ├── serializers.py          # Event serializers
+│   │   ├── views.py                # Events, attendance, certificates, PDF gen, dashboard, exports
+│   │   └── filters.py              # Event filters
+│   │
+│   ├── reports/                    # Civic issue reporting
+│   │   ├── models.py               # Report
+│   │   ├── serializers.py          # Report serializers
+│   │   ├── views.py                # Report CRUD, assignment, gallery, export
+│   │   └── filters.py              # Report filters
+│   │
+│   ├── notifications/              # In-app notifications
+│   │   ├── models.py               # Notification
+│   │   └── views.py                # List, mark-read, mark-all-read
+│   │
+│   ├── .env                        # Environment variables
+│   ├── requirements.txt            # Python dependencies
+│   ├── manage.py
+│   └── server/                     # Python virtual environment
 │
-├── frontend/                   # React frontend (Vite)
+├── frontend/                       # React frontend (Vite)
 │   ├── src/
-│   │   ├── App.jsx             # Route configuration
-│   │   ├── api.js              # Axios instances & interceptors
-│   │   ├── context/            # React Context providers
-│   │   ├── components/         # Reusable components
-│   │   ├── pages/              # Page components
-│   │   │   ├── public/         # Public pages (Home, About, Contact)
-│   │   │   ├── volunteer/      # Volunteer pages (Register, Login, Dashboard)
-│   │   │   ├── admin/          # Platform admin pages
-│   │   │   ├── college/        # College admin pages
-│   │   │   ├── events/         # Event pages
-│   │   │   ├── reports/        # Report pages
-│   │   │   └── certificates/   # Certificate pages
-│   │   ├── hooks/              # Custom React hooks
-│   │   └── utils/              # Utility functions
-│   ├── public/                 # Static assets
+│   │   ├── App.jsx                 # Route configuration
+│   │   ├── api.js                  # Axios instances & interceptors
+│   │   ├── context/                # React Context providers
+│   │   ├── components/             # Reusable components
+│   │   ├── pages/                  # Page components
+│   │   │   ├── public/             # Public pages (Home, About, Contact)
+│   │   │   ├── volunteer/          # Volunteer pages (Register, Login, Dashboard)
+│   │   │   ├── admin/              # Platform admin pages
+│   │   │   ├── college/            # College admin pages
+│   │   │   ├── events/             # Event pages
+│   │   │   ├── reports/            # Report pages
+│   │   │   └── certificates/       # Certificate pages
+│   │   ├── hooks/                  # Custom React hooks
+│   │   └── utils/                  # Utility functions
+│   ├── public/                     # Static assets
 │   └── package.json
 │
 └── README.md
@@ -116,14 +141,14 @@ cd BiharSeva
 ### 2. Backend Setup
 
 ```bash
-cd biharseva
+cd backend
 
 # Create and activate virtual environment
-python -m venv venv
+python -m venv server
 # Windows
-venv\Scripts\activate
+server\Scripts\activate
 # macOS/Linux
-source venv/bin/activate
+source server/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -160,7 +185,7 @@ The frontend will run at `http://localhost:5173` and the backend API at `http://
 
 ## 🔑 Environment Variables
 
-Copy `biharseva/.env.example` to `biharseva/.env` and configure:
+Copy `backend/.env.example` to `backend/.env` and configure:
 
 | Variable | Description | Required |
 |---|---|---|
@@ -176,22 +201,16 @@ Copy `biharseva/.env.example` to `biharseva/.env` and configure:
 
 ## 🏗️ Data Models
 
-| Model | Purpose |
-|---|---|
-| `College` | Educational institutions |
-| `NSSUnit` | NSS units within colleges |
-| `ProgramOfficer` | NSS program officers |
-| `AdminProfile` | Maps Django users to admin roles |
-| `Volunteer` | Registered volunteers |
-| `Report` | Citizen civic issue reports |
-| `Event` | NSS events and activities |
-| `EventRegistration` | Volunteer event sign-ups |
-| `Certificate` | Issued certificates |
-| `VolunteerHours` | Service hour records |
-| `Badge` | Achievement badges (Bronze–Platinum) |
-| `Notification` | In-app volunteer notifications |
-| `AuditLog` | Admin action audit trail |
-| `ActivityProposal` | Event proposal workflow |
+The backend is organized into **6 domain-specific Django apps**:
+
+| App | Models | Purpose |
+|---|---|---|
+| **common** | `AuditLog` | Admin action audit trail |
+| **authentication** | `Volunteer`, `AdminProfile`, `BlacklistedToken` | User accounts and auth tokens |
+| **colleges** | `College`, `NSSUnit`, `ProgramOfficer` | Institutional hierarchy |
+| **events** | `Event`, `EventRegistration`, `Certificate`, `VolunteerHours`, `Badge` | Event lifecycle & gamification |
+| **reports** | `Report` | Citizen civic issue reports |
+| **notifications** | `Notification` | In-app volunteer notifications |
 
 ---
 
@@ -200,7 +219,7 @@ Copy `biharseva/.env.example` to `biharseva/.env` and configure:
 The platform uses **dual JWT authentication**:
 
 - **Volunteers**: Custom Volunteer model with email/password + Google OAuth
-- **Admins**: Django User model with username/password
+- **Admins**: Django User model with username/password + optional TOTP MFA
 
 Both use access + refresh token pairs with automatic refresh via Axios interceptors.
 
@@ -213,11 +232,23 @@ Both use access + refresh token pairs with automatic refresh via Axios intercept
 
 ---
 
+## 📡 API Documentation
+
+Once the server is running, interactive API docs are available at:
+
+| Format | URL |
+|---|---|
+| **Swagger UI** | `http://localhost:8000/api/schema/swagger-ui/` |
+| **ReDoc** | `http://localhost:8000/api/schema/redoc/` |
+| **OpenAPI JSON** | `http://localhost:8000/api/schema/` |
+
+---
+
 ## 🧪 Running Tests
 
 ```bash
-cd biharseva
-python manage.py test core --verbosity=2
+cd backend
+python manage.py test --verbosity=2
 ```
 
 ---
@@ -230,7 +261,7 @@ cd frontend
 npm run build
 
 # Backend static files
-cd ../biharseva
+cd ../backend
 python manage.py collectstatic --no-input
 ```
 

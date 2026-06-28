@@ -9,6 +9,9 @@ import { useSEO } from "../../hooks/useSEO";
 
 const initialForm = { nss_unit: "", name: "", email: "", phone: "", designation: "NSS Program Officer" };
 
+import { EmptyState } from "../../components/EmptyState";
+import { FiSearch } from "react-icons/fi";
+
 export function AdminProgramOfficersPage({ onLogout }) {
   useSEO({ title: "Program Officers", description: "Manage NSS program officers and coordinators for your college.", keywords: "program officers, NSS coordinators", noIndex: true });
   const navigate = useNavigate();
@@ -23,7 +26,44 @@ export function AdminProgramOfficersPage({ onLogout }) {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterUnit, setFilterUnit] = useState("all");
+  const [sortBy, setSortBy] = useState("name-asc");
   const isPlatform = adminRole === "platform_admin";
+
+  const processedOfficers = rows
+    .filter((r) => {
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch = !q || [
+        r.name,
+        r.email,
+        r.phone,
+        r.designation
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(q));
+
+      const matchesUnit =
+        filterUnit === "all" ||
+        String(r.nss_unit) === String(filterUnit);
+
+      return matchesSearch && matchesUnit;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name-asc") {
+        return (a.name || "").localeCompare(b.name || "");
+      }
+      if (sortBy === "name-desc") {
+        return (b.name || "").localeCompare(a.name || "");
+      }
+      if (sortBy === "designation-asc") {
+        return (a.designation || "").localeCompare(b.designation || "");
+      }
+      if (sortBy === "designation-desc") {
+        return (b.designation || "").localeCompare(a.designation || "");
+      }
+      return 0;
+    });
 
   const clearSession = () => {
     localStorage.removeItem("admin_token");
@@ -241,6 +281,45 @@ export function AdminProgramOfficersPage({ onLogout }) {
 
         {/* Data Table */}
         <div className="bg-white rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
+          {/* Toolbar */}
+          <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row gap-4 md:items-center justify-between">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+              Officer Registry ({processedOfficers.length})
+            </h3>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search name, phone..."
+                  className="pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500 transition-all w-56 shadow-sm"
+                />
+              </div>
+              <select
+                value={filterUnit}
+                onChange={(e) => setFilterUnit(e.target.value)}
+                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+              >
+                <option value="all">All Units</option>
+                {units.map((u) => (
+                  <option key={u.id} value={u.id}>Unit {u.unit_number} ({u.college_name?.substring(0, 15)}...)</option>
+                ))}
+              </select>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+              >
+                <option value="name-asc">Sort: Name (A - Z)</option>
+                <option value="name-desc">Sort: Name (Z - A)</option>
+                <option value="designation-asc">Sort: Designation (A - Z)</option>
+                <option value="designation-desc">Sort: Designation (Z - A)</option>
+              </select>
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -252,7 +331,7 @@ export function AdminProgramOfficersPage({ onLogout }) {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r, index) => (
+                {processedOfficers.map((r, index) => (
                   <motion.tr
                       key={r.id}
                       initial={{ opacity: 0 }}
@@ -283,17 +362,16 @@ export function AdminProgramOfficersPage({ onLogout }) {
                     </td>
                   </motion.tr>
                 ))}
-                
-                {rows.length === 0 && (
-                  <tr>
-                    <td colSpan="4" className="text-center py-14 text-sm font-bold text-slate-400 italic">
-                      No program officers registered yet.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
+
+          {processedOfficers.length === 0 && (
+            <EmptyState
+              title={rows.length === 0 ? "No officers found" : "No officers match"}
+              description={rows.length === 0 ? "No NSS program officers have been registered yet." : "Adjust your filters or search query to find program officers."}
+            />
+          )}
         </div>
 
       </section>

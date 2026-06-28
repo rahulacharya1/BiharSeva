@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { useSEO } from "../../hooks/useSEO";
+import { FaClock, FaCheckCircle, FaSpinner, FaCheckDouble, FaHashtag, FaSearch, FaCheck } from "react-icons/fa";
 
 const statusConfig = {
-    pending: { color: "bg-amber-100 text-amber-700 border-amber-200", icon: "fa-clock", label: "Pending Review" },
-    verified: { color: "bg-violet-100 text-violet-700 border-violet-200", icon: "fa-check-circle", label: "Verified" },
-    in_progress: { color: "bg-blue-100 text-blue-700 border-blue-200", icon: "fa-spinner", label: "In Progress" },
-    cleaned: { color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-check-double", label: "Cleaned ✓" },
+    pending: { color: "bg-amber-100 text-amber-700 border-amber-200", icon: FaClock, label: "Pending Review" },
+    verified: { color: "bg-violet-100 text-violet-700 border-violet-200", icon: FaCheckCircle, label: "Verified" },
+    in_progress: { color: "bg-blue-100 text-blue-700 border-blue-200", icon: FaSpinner, label: "In Progress" },
+    cleaned: { color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: FaCheckDouble, label: "Cleaned ✓" },
 };
 
 export function TrackReportPage() {
@@ -87,7 +88,7 @@ export function TrackReportPage() {
                 >
                     <form onSubmit={handleTrack} className="flex gap-4">
                         <div className="flex-1 relative">
-                            <i className="fas fa-hashtag absolute left-5 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                            <FaHashtag className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" />
                             <input
                                 type="text"
                                 value={tracking}
@@ -99,9 +100,9 @@ export function TrackReportPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-8 py-5 bg-slate-900 hover:bg-indigo-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center gap-2 shrink-0"
+                            className="px-8 py-5 bg-slate-900 hover:bg-indigo-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center gap-2 shrink-0 animate-none"
                         >
-                            {loading ? <i className="fas fa-circle-notch animate-spin"></i> : <i className="fas fa-search"></i>}
+                            {loading ? <FaSpinner className="animate-spin" /> : <FaSearch />}
                             Track
                         </button>
                     </form>
@@ -118,7 +119,10 @@ export function TrackReportPage() {
                                 {/* Status badge */}
                                 <div className="text-center">
                                     <span className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-black uppercase tracking-widest border ${config.color}`}>
-                                        <i className={`fas ${config.icon}`}></i>
+                                        {(() => {
+                                            const StatusIcon = config.icon;
+                                            return <StatusIcon className={result.status === 'in_progress' ? 'animate-spin' : ''} />;
+                                        })()}
                                         {config.label}
                                     </span>
                                 </div>
@@ -133,7 +137,7 @@ export function TrackReportPage() {
                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                                                     isActive ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-300"
                                                 }`}>
-                                                    {isActive ? <i className="fas fa-check text-xs"></i> : idx + 1}
+                                                    {isActive ? <FaCheck className="text-xs" /> : idx + 1}
                                                 </div>
                                                 <span className={`text-[9px] font-black uppercase tracking-widest ${isActive ? "text-indigo-600" : "text-slate-300"}`}>
                                                     {stepLabel}

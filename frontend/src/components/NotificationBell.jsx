@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiBell, FiCheck, FiMail, FiTrash2 } from "react-icons/fi";
+import { FaGraduationCap, FaAward, FaShieldAlt, FaBell } from "react-icons/fa";
 import { api } from "../api";
 
 export function NotificationBell({ volunteer }) {
@@ -138,17 +139,15 @@ export function NotificationBell({ volunteer }) {
                             : "bg-slate-100 text-slate-700"
                         }`}
                       >
-                        <i
-                          className={`fas ${
-                            n.type === "certificate"
-                              ? "fa-graduation-cap"
-                              : n.type === "badge"
-                              ? "fa-award"
-                              : n.type === "verification"
-                              ? "fa-shield-halved"
-                              : "fa-bell"
-                          }`}
-                        />
+                        {n.type === "certificate" ? (
+                          <FaGraduationCap />
+                        ) : n.type === "badge" ? (
+                          <FaAward />
+                        ) : n.type === "verification" ? (
+                          <FaShieldAlt />
+                        ) : (
+                          <FaBell />
+                        )}
                       </div>
                     </div>
 

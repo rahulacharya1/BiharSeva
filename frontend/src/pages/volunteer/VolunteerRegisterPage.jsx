@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { FiArrowRight, FiArrowLeft, FiBriefcase, FiCheckCircle, FiLock, FiMail, FiMapPin, FiPhone, FiUser } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiArrowRight, FiArrowLeft, FiBriefcase, FiCheckCircle, FiLock, FiMail, FiMapPin, FiPhone, FiUser, FiChevronDown } from "react-icons/fi";
 import { api } from "../../api";
 import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
@@ -181,166 +181,186 @@ export function VolunteerRegisterPage() {
             </section>
 
             <section className="max-w-4xl mx-auto px-6 -mt-32 relative z-20">
-                <div className="bg-white rounded-[1.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
+                <div className="bg-white rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
                     
                     {/* Header with Visual Steps */}
-                    <div className="bg-slate-900 px-8 py-6 md:px-10 flex flex-col md:flex-row gap-4 md:items-center justify-between">
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">New Volunteer Profile</span>
-                            <span className="text-xs font-bold text-white mt-1">Step {step} of 3: {steps[step - 1].label}</span>
+                    <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-8 py-8 md:px-12 flex flex-col md:flex-row gap-6 md:items-center justify-between border-b border-slate-800">
+                        <div className="flex flex-col space-y-1">
+                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">New Volunteer Profile</span>
+                            <span className="text-lg font-display font-black text-white">Step {step} of 3: {steps[step - 1].label}</span>
                         </div>
                         
                         {/* Stepper Progress Bar */}
-                        <div className="flex items-center gap-3">
-                            {steps.map((s) => (
-                                <div key={s.num} className="flex items-center gap-2">
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black transition-all ${step === s.num ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/20' : step > s.num ? 'bg-emerald-950 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
-                                        {s.num}
+                        <div className="flex items-center gap-4">
+                            {steps.map((s) => {
+                                const isCompleted = step > s.num;
+                                const isActive = step === s.num;
+                                return (
+                                    <div key={s.num} className="flex items-center gap-2">
+                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black transition-all duration-300 ${
+                                            isActive 
+                                                ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/30 shadow-lg shadow-emerald-500/20 scale-105' 
+                                                : isCompleted 
+                                                ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-500/30' 
+                                                : 'bg-slate-800/80 text-slate-500 border border-slate-700/50'
+                                        }`}>
+                                            {isCompleted ? <FiCheckCircle className="text-sm" /> : s.num}
+                                        </div>
+                                        {s.num < 3 && (
+                                            <div className={`w-10 h-1 rounded-full transition-all duration-500 ${
+                                                step > s.num ? 'bg-emerald-500' : 'bg-slate-800'
+                                            }`} />
+                                        )}
                                     </div>
-                                    {s.num < 3 && <div className={`w-8 h-0.5 rounded-full ${step > s.num ? 'bg-emerald-500' : 'bg-slate-800'}`} />}
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 
                     <form onSubmit={submit} className="p-10 md:p-16 space-y-8">
-                        {step === 1 && (
-                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="grid md:grid-cols-2 gap-6">
-                                <label className="relative block group">
-                                    <FiUser className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />
-                                    <input
-                                        type="text"
-                                        value={form.name}
-                                        onChange={updateField("name")}
-                                        required
-                                        placeholder="Full Name"
-                                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
-                                    />
-                                </label>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={step}
+                                initial={{ opacity: 0, x: 15 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -15 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                            >
+                                {step === 1 && (
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <label className="relative block group">
+                                            <FiUser className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />
+                                            <input
+                                                type="text"
+                                                value={form.name}
+                                                onChange={updateField("name")}
+                                                required
+                                                placeholder="Full Name"
+                                                className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                                            />
+                                        </label>
 
-                                <label className="relative block group">
-                                    <FiMail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />
-                                    <input
-                                        type="email"
-                                        value={form.email}
-                                        onChange={updateField("email")}
-                                        required
-                                        placeholder="Email Address"
-                                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
-                                    />
-                                </label>
+                                        <label className="relative block group">
+                                            <FiMail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />
+                                            <input
+                                                type="email"
+                                                value={form.email}
+                                                onChange={updateField("email")}
+                                                required
+                                                placeholder="Email Address"
+                                                className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                                            />
+                                        </label>
 
-                                <label className="relative block group md:col-span-2">
-                                    <FiPhone className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />
-                                    <input
-                                        type="tel"
-                                        value={form.phone}
-                                        onChange={updateField("phone")}
-                                        required
-                                        placeholder="Phone Number (e.g. 9876543210)"
-                                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
-                                    />
-                                </label>
-                            </motion.div>
-                        )}
-
-                        {step === 2 && (
-                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="grid md:grid-cols-2 gap-6">
-                                <label className="relative block group md:col-span-2">
-                                    <FiBriefcase className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors pointer-events-none z-10" />
-                                    <select
-                                        value={isOtherCollege ? "other" : form.college}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            if (val === "other") {
-                                                setIsOtherCollege(true);
-                                                setForm(prev => ({ ...prev, college: "" }));
-                                            } else {
-                                                setIsOtherCollege(false);
-                                                const matched = colleges.find(c => c.name === val);
-                                                setForm(prev => ({ ...prev, college: val, district: matched?.district || prev.district }));
-                                            }
-                                        }}
-                                        required
-                                        className="w-full pl-12 pr-10 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 appearance-none cursor-pointer"
-                                    >
-                                        <option value="" disabled>Select College / Organization</option>
-                                        {colleges.map((c) => (
-                                            <option key={c.id} value={c.name}>{c.name}</option>
-                                        ))}
-                                        <option value="other">Other (My College is not listed)</option>
-                                    </select>
-                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                        <i className="fas fa-chevron-down text-xs"></i>
+                                        <label className="relative block group md:col-span-2">
+                                            <FiPhone className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />
+                                            <input
+                                                type="tel"
+                                                value={form.phone}
+                                                onChange={updateField("phone")}
+                                                required
+                                                placeholder="Phone Number (e.g. 9876543210)"
+                                                className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                                            />
+                                        </label>
                                     </div>
-                                </label>
-
-                                {isOtherCollege && (
-                                    <motion.label 
-                                        initial={{ opacity: 0, y: -10 }} 
-                                        animate={{ opacity: 1, y: 0 }} 
-                                        className="relative block group md:col-span-2"
-                                    >
-                                        <FiBriefcase className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors pointer-events-none" />
-                                        <input
-                                            type="text"
-                                            value={form.college}
-                                            onChange={updateField("college")}
-                                            required
-                                            placeholder="Type your College Name manually"
-                                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
-                                        />
-                                    </motion.label>
                                 )}
 
-                                <label className="relative block group md:col-span-2">
-                                    <FiMapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors pointer-events-none" />
-                                    <select
-                                        value={form.district}
-                                        onChange={updateField("district")}
-                                        required
-                                        disabled={!isOtherCollege && !!form.college}
-                                        className="w-full pl-12 pr-10 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 appearance-none cursor-pointer disabled:opacity-75 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                                    >
-                                        {districts.map((d) => (
-                                            <option key={d} value={d}>{d}</option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                        <i className="fas fa-chevron-down text-xs"></i>
+                                {step === 2 && (
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <label className="relative block group md:col-span-2">
+                                            <FiBriefcase className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors pointer-events-none z-10" />
+                                            <select
+                                                value={isOtherCollege ? "other" : form.college}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === "other") {
+                                                        setIsOtherCollege(true);
+                                                        setForm(prev => ({ ...prev, college: "" }));
+                                                    } else {
+                                                        setIsOtherCollege(false);
+                                                        const matched = colleges.find(c => c.name === val);
+                                                        setForm(prev => ({ ...prev, college: val, district: matched?.district || prev.district }));
+                                                    }
+                                                }}
+                                                required
+                                                className="w-full pl-12 pr-10 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 appearance-none cursor-pointer"
+                                            >
+                                                <option value="" disabled>Select College / Organization</option>
+                                                {colleges.map((c) => (
+                                                    <option key={c.id} value={c.name}>{c.name}</option>
+                                                ))}
+                                                <option value="other">Other (My College is not listed)</option>
+                                            </select>
+                                            <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <FiChevronDown className="text-sm" />
+                                            </div>
+                                        </label>
+
+                                        {isOtherCollege && (
+                                            <div className="relative block group md:col-span-2">
+                                                <FiBriefcase className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors pointer-events-none" />
+                                                <input
+                                                    type="text"
+                                                    value={form.college}
+                                                    onChange={updateField("college")}
+                                                    required
+                                                    placeholder="Type your College Name manually"
+                                                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                                                />
+                                            </div>
+                                        )}
+
+                                        <label className="relative block group md:col-span-2">
+                                            <FiMapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors pointer-events-none" />
+                                            <select
+                                                value={form.district}
+                                                onChange={updateField("district")}
+                                                required
+                                                disabled={!isOtherCollege && !!form.college}
+                                                className="w-full pl-12 pr-10 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 appearance-none cursor-pointer disabled:opacity-75 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                                            >
+                                                {districts.map((d) => (
+                                                    <option key={d} value={d}>{d}</option>
+                                                ))}
+                                            </select>
+                                            <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <FiChevronDown className="text-sm" />
+                                            </div>
+                                            {!isOtherCollege && !!form.college && (
+                                                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 ml-2 mt-1 block">
+                                                    ✓ Auto-selected based on college location
+                                                </span>
+                                            )}
+                                        </label>
                                     </div>
-                                    {!isOtherCollege && !!form.college && (
-                                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 ml-2 mt-1 block">
-                                            ✓ Auto-selected based on college location
-                                        </span>
-                                    )}
-                                </label>
-                            </motion.div>
-                        )}
+                                )}
 
-                        {step === 3 && (
-                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="grid md:grid-cols-2 gap-6">
-                                <PasswordInput
-                                    leftIcon={<FiLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />}
-                                    value={form.password}
-                                    onChange={updateField("password")}
-                                    required
-                                    placeholder="Password"
-                                    autoComplete="new-password"
-                                    inputClassName="w-full pl-12 pr-16 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
-                                />
+                                {step === 3 && (
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <PasswordInput
+                                            leftIcon={<FiLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />}
+                                            value={form.password}
+                                            onChange={updateField("password")}
+                                            required
+                                            placeholder="Password"
+                                            autoComplete="new-password"
+                                            inputClassName="w-full pl-12 pr-16 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                                        />
 
-                                <PasswordInput
-                                    leftIcon={<FiLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />}
-                                    value={form.password_confirm}
-                                    onChange={updateField("password_confirm")}
-                                    required
-                                    placeholder="Confirm Password"
-                                    autoComplete="new-password"
-                                    inputClassName="w-full pl-12 pr-16 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
-                                />
+                                        <PasswordInput
+                                            leftIcon={<FiLock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-lg group-focus-within:text-emerald-500 transition-colors" />}
+                                            value={form.password_confirm}
+                                            onChange={updateField("password_confirm")}
+                                            required
+                                            placeholder="Confirm Password"
+                                            autoComplete="new-password"
+                                            inputClassName="w-full pl-12 pr-16 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                                        />
+                                    </div>
+                                )}
                             </motion.div>
-                        )}
+                        </AnimatePresence>
 
                         {message && <p className="text-center text-sm font-semibold text-rose-500 mt-2 bg-rose-50 border border-rose-100 rounded-xl py-3 px-4 animate-shake">{message}</p>}
 

@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { FaTrash, FaExclamationTriangle } from "react-icons/fa";
 
 /**
  * ConfirmDialog — Modal confirmation for destructive actions.
@@ -25,19 +26,20 @@ export function ConfirmDialog({
   const colors = {
     danger: {
       bg: "bg-red-600 hover:bg-red-500",
-      icon: "fa-trash-alt",
+      icon: FaTrash,
       iconBg: "bg-red-50 text-red-600",
       ring: "focus:ring-red-200",
     },
     warning: {
       bg: "bg-amber-600 hover:bg-amber-500",
-      icon: "fa-exclamation-triangle",
+      icon: FaExclamationTriangle,
       iconBg: "bg-amber-50 text-amber-600",
       ring: "focus:ring-amber-200",
     },
   };
 
   const style = colors[variant] || colors.danger;
+  const IconComponent = style.icon;
 
   return (
     <AnimatePresence>
@@ -67,7 +69,7 @@ export function ConfirmDialog({
               {/* Icon */}
               <div className="flex justify-center">
                 <div className={`w-16 h-16 ${style.iconBg} rounded-2xl flex items-center justify-center text-2xl`}>
-                  <i className={`fas ${style.icon}`} />
+                  <IconComponent />
                 </div>
               </div>
 

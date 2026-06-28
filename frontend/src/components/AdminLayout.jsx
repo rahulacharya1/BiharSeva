@@ -24,22 +24,20 @@ export function AdminLayout() {
     ];
 
     const getBreadcrumbs = () => {
-        const trailMap = {
-            "/admin/panel": [
-                { label: "Admin Portal", path: "/admin/panel" },
-                { label: "Overview Panel", path: "/admin/panel" },
-            ],
-            "/admin/colleges": [
-                { label: "Admin Portal", path: "/admin/panel" },
-                { label: "View Colleges", path: "/admin/colleges" },
-            ],
-            "/admin/colleges/add": [
-                { label: "Admin Portal", path: "/admin/panel" },
-                { label: "Add College", path: "/admin/colleges/add" },
-            ],
-        };
-
-        return trailMap[location.pathname] ?? [];
+        const parts = location.pathname.split("/").filter(Boolean);
+        return parts.map((part, index) => {
+            let label = part.replace(/-/g, " ");
+            if (label.toLowerCase() === "nss") {
+                label = "NSS";
+            } else if (label.toLowerCase() === "nss units") {
+                label = "NSS Units";
+            } else {
+                label = label.replace(/\b\w/g, (char) => char.toUpperCase());
+            }
+            let path = "/" + parts.slice(0, index + 1).join("/");
+            if (path === "/admin") path = "/admin/panel";
+            return { label, path };
+        });
     };
 
     return (
@@ -98,19 +96,20 @@ export function AdminLayout() {
                             <FiMenu size={22} />
                         </button>
                         
-                        <nav className="hidden sm:flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <nav className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                            <span>Admin Portal</span>
                             {getBreadcrumbs().map((bc, idx, arr) => {
                                 const isCurrent = idx === arr.length - 1;
 
                                 return (
                                     <div key={`${bc.path}-${bc.label}-${idx}`} className="flex items-center gap-2">
-                                        {idx > 0 && <span className="text-slate-300">/</span>}
+                                        <span className="text-slate-350">/</span>
                                         {isCurrent ? (
-                                            <span className="text-slate-900 font-black">{bc.label}</span>
+                                            <span className="text-slate-800 font-bold">{bc.label}</span>
                                         ) : (
                                             <Link
                                                 to={bc.path}
-                                                className="hover:text-slate-600 transition-colors"
+                                                className="hover:text-slate-650 transition-colors"
                                             >
                                                 {bc.label}
                                             </Link>

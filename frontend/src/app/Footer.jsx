@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { FaLeaf, FaFacebookF, FaInstagram, FaTwitter, FaGithub } from "react-icons/fa";
 
 export function Footer() {
     const currentYear = new Date().getFullYear();
@@ -11,8 +12,8 @@ export function Footer() {
                     {/* Brand Identity Section */}
                     <div className="col-span-1 md:col-span-2 space-y-6">
                         <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200">
-                                <i className="fas fa-leaf text-white text-lg"></i>
+                            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200 text-white text-lg">
+                                <FaLeaf />
                             </div>
                             <span className="font-display text-2xl font-bold tracking-tight text-slate-900">
                                 Bihar<span className="text-emerald-600">Seva</span>
@@ -23,16 +24,16 @@ export function Footer() {
                         </p>
                         <div className="flex space-x-4">
                             <a href="https://facebook.com/biharseva" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm" aria-label="Facebook">
-                                <i className="fab fa-facebook-f text-sm"></i>
+                                <FaFacebookF className="text-sm" />
                             </a>
                             <a href="https://instagram.com/biharseva" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm" aria-label="Instagram">
-                                <i className="fab fa-instagram text-sm"></i>
+                                <FaInstagram className="text-sm" />
                             </a>
                             <a href="https://twitter.com/biharseva" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm" aria-label="Twitter">
-                                <i className="fab fa-twitter text-sm"></i>
+                                <FaTwitter className="text-sm" />
                             </a>
                             <a href="https://github.com/rahulacharya1/BiharSeva" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm" aria-label="GitHub">
-                                <i className="fab fa-github text-sm"></i>
+                                <FaGithub className="text-sm" />
                             </a>
                         </div>
                     </div>

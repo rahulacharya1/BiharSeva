@@ -1,0 +1,179 @@
+from django.urls import path
+
+# common app public views
+from common.views.public import (
+    api_home_stats,
+    api_about_stats,
+    api_contact_message,
+    api_health_check,
+    api_token_refresh,
+)
+
+# authentication app views
+from authentication.views import (
+    api_volunteer_register,
+    api_volunteer_login,
+    api_volunteer_google_auth,
+    api_volunteer_logout,
+    api_volunteer_me,
+    api_volunteers_list,
+    api_volunteer_request_otp,
+    api_volunteer_verify_otp,
+    api_volunteer_leaderboard,
+    api_admin_login,
+    api_admin_logout,
+    api_admin_request_otp,
+    api_admin_verify_otp,
+    api_admin_me,
+    api_admin_profile,
+    api_admin_mfa_verify,
+    api_admin_mfa_setup,
+    api_admin_mfa_enable,
+    api_admin_mfa_disable,
+    api_admin_audit_logs,
+    api_admin_volunteers,
+)
+
+# reports app views
+from reports.views import (
+    api_report_create,
+    api_report_status,
+    api_report_gallery,
+    api_admin_reports,
+    api_admin_report_assign,
+    api_admin_export_reports,
+)
+
+# events app views
+from events.views import (
+    api_events_list,
+    api_event_register,
+    api_certificates,
+    api_certificate_download,
+    api_certificate_view,
+    api_admin_dashboard,
+    api_admin_events,
+    api_admin_event_detail,
+    api_admin_event_attendance,
+    api_admin_certificates,
+    api_admin_certificate_detail,
+    api_admin_certificate_view,
+    api_admin_export_volunteers,
+    api_admin_export_events,
+)
+
+# colleges app views
+from colleges.views import (
+    api_public_colleges,
+    api_admin_colleges,
+    api_admin_college_detail,
+    api_admin_nss_units,
+    api_admin_nss_unit_detail,
+    api_admin_program_officers,
+    api_admin_program_officer_detail,
+)
+
+# notifications app views
+from notifications.views import (
+    api_notifications,
+    api_notification_read,
+    api_notifications_read_all,
+)
+
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
+
+urlpatterns = [
+    # Metadata & contact
+    path("meta/home/", api_home_stats, name="api_home_stats"),
+    path("meta/about/", api_about_stats, name="api_about_stats"),
+    path("contact/", api_contact_message, name="api_contact_message"),
+    path("colleges/public/", api_public_colleges, name="api_public_colleges"),
+
+    # Citizen issue reporting
+    path("reports/", api_report_create, name="api_report_create"),
+    path("reports/status/", api_report_status, name="api_report_status"),
+    path("reports/gallery/", api_report_gallery, name="api_report_gallery"),
+
+    # Volunteers auth and directories
+    path("volunteers/register/", api_volunteer_register, name="api_volunteer_register"),
+    path("volunteers/login/", api_volunteer_login, name="api_volunteer_login"),
+    path("volunteers/google-auth/", api_volunteer_google_auth, name="api_volunteer_google_auth"),
+    path("volunteers/logout/", api_volunteer_logout, name="api_volunteer_logout"),
+    path("volunteers/me/", api_volunteer_me, name="api_volunteer_me"),
+    path("volunteers/", api_volunteers_list, name="api_volunteers_list"),
+    path("volunteers/request-otp/", api_volunteer_request_otp, name="api_volunteer_request_otp"),
+    path("volunteers/verify-otp/", api_volunteer_verify_otp, name="api_volunteer_verify_otp"),
+    path("volunteers/leaderboard/", api_volunteer_leaderboard, name="api_volunteer_leaderboard"),
+
+    # Events and certificates (Volunteer scoped)
+    path("events/", api_events_list, name="api_events_list"),
+    path("events/<int:pk>/register/", api_event_register, name="api_event_register"),
+    path("certificates/", api_certificates, name="api_certificates"),
+    path("certificates/<int:certificate_id>/download/", api_certificate_download, name="api_certificate_download"),
+    path("certificates/<int:certificate_id>/view/", api_certificate_view, name="api_certificate_view"),
+
+    # Admin authentication
+    path("admin/auth/login/", api_admin_login, name="api_admin_login"),
+    path("admin/auth/logout/", api_admin_logout, name="api_admin_logout"),
+    path("admin/auth/request-otp/", api_admin_request_otp, name="api_admin_request_otp"),
+    path("admin/auth/verify-otp/", api_admin_verify_otp, name="api_admin_verify_otp"),
+    path("admin/auth/me/", api_admin_me, name="api_admin_me"),
+    path("admin/auth/mfa/verify/", api_admin_mfa_verify, name="api_admin_mfa_verify"),
+    path("admin/auth/mfa/setup/", api_admin_mfa_setup, name="api_admin_mfa_setup"),
+    path("admin/auth/mfa/enable/", api_admin_mfa_enable, name="api_admin_mfa_enable"),
+    path("admin/auth/mfa/disable/", api_admin_mfa_disable, name="api_admin_mfa_disable"),
+    path("admin/profile/me/", api_admin_profile, name="api_admin_profile"),
+
+    # Admin general management
+    path("admin/dashboard/", api_admin_dashboard, name="api_admin_dashboard"),
+    path("admin/reports/", api_admin_reports, name="api_admin_reports"),
+    path("admin/reports/<int:report_id>/", api_admin_reports, name="api_admin_report_update"),
+    path("admin/reports/<int:report_id>/assign/", api_admin_report_assign, name="api_admin_report_assign"),
+    path("admin/volunteers/", api_admin_volunteers, name="api_admin_volunteers"),
+    path("admin/volunteers/<int:volunteer_id>/", api_admin_volunteers, name="api_admin_volunteer_update"),
+    path("admin/events/", api_admin_events, name="api_admin_events"),
+    path("admin/events/<int:event_id>/", api_admin_event_detail, name="api_admin_event_detail"),
+    path("admin/events/<int:event_id>/attendance/", api_admin_event_attendance, name="api_admin_event_attendance"),
+    path(
+        "admin/events/<int:event_id>/attendance/<int:registration_id>/",
+        api_admin_event_attendance,
+        name="api_admin_event_attendance_update",
+    ),
+    path("admin/certificates/", api_admin_certificates, name="api_admin_certificates"),
+    path("admin/certificates/<int:certificate_id>/", api_admin_certificate_detail, name="api_admin_certificate_detail"),
+    path("admin/certificates/<int:certificate_id>/view/", api_admin_certificate_view, name="api_admin_certificate_view"),
+
+    # Institutional structure
+    path("admin/colleges/", api_admin_colleges, name="api_admin_colleges"),
+    path("admin/colleges/<int:college_id>/", api_admin_college_detail, name="api_admin_college_detail"),
+    path("admin/nss-units/", api_admin_nss_units, name="api_admin_nss_units"),
+    path("admin/nss-units/<int:unit_id>/", api_admin_nss_unit_detail, name="api_admin_nss_unit_detail"),
+    path("admin/program-officers/", api_admin_program_officers, name="api_admin_program_officers"),
+    path("admin/program-officers/<int:officer_id>/", api_admin_program_officer_detail, name="api_admin_program_officer_detail"),
+
+    # Data exports
+    path("admin/export/volunteers/", api_admin_export_volunteers, name="api_admin_export_volunteers"),
+    path("admin/export/reports/", api_admin_export_reports, name="api_admin_export_reports"),
+    path("admin/export/events/", api_admin_export_events, name="api_admin_export_events"),
+
+    # Token refresh and health check
+    path("token/refresh/", api_token_refresh, name="api_token_refresh"),
+    path("health/", api_health_check, name="api_health_check"),
+
+    # Volunteer notifications
+    path("notifications/", api_notifications, name="api_notifications"),
+    path("notifications/<int:notification_id>/read/", api_notification_read, name="api_notification_read"),
+    path("notifications/read-all/", api_notifications_read_all, name="api_notifications_read_all"),
+
+    # Admin audit logs
+    path("admin/audit-log/", api_admin_audit_logs, name="api_admin_audit_logs"),
+
+    # OpenAPI Schema & Swagger Views
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+]

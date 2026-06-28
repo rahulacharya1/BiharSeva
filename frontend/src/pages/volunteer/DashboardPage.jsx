@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiUser, FiAward, FiCalendar, FiLogOut, FiEdit3, FiCheckCircle, FiClock, FiArrowRight } from "react-icons/fi";
+import { FiUser, FiAward, FiCalendar, FiLogOut, FiEdit3, FiCheckCircle, FiClock, FiArrowRight, FiChevronRight, FiPlus } from "react-icons/fi";
 import { api } from "../../api";
 import { useSEO } from "../../hooks/useSEO";
 
 export function DashboardPage({ volunteer, onLogout }) {
   useSEO({ title: "Volunteer Dashboard", description: "Your BiharSeva volunteer dashboard — view service hours, badges, upcoming events, and certificates.", keywords: "dashboard, volunteer dashboard, service hours", noIndex: true });
-    const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -255,7 +254,7 @@ export function DashboardPage({ volunteer, onLogout }) {
                                     <p className="text-sm font-bold text-slate-900 mb-1">{r.event.title}</p>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status: Confirmed</p>
                                 </div>
-                                <i className="fas fa-chevron-right text-slate-200 group-hover:text-emerald-500 transition-all"></i>
+                                <FiChevronRight className="text-slate-200 group-hover:text-emerald-500 transition-all" />
                             </div>
                         )) : (
                             <p className="text-sm font-medium text-slate-400 italic py-10 text-center underline decoration-slate-100">No registrations found.</p>
@@ -278,7 +277,7 @@ export function DashboardPage({ volunteer, onLogout }) {
                                     <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{e.date}</p>
                                 </div>
                                 <Link to="/events" className="w-10 h-10 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-emerald-500 transition-all">
-                                    <i className="fas fa-plus text-xs"></i>
+                                    <FiPlus className="text-xs" />
                                 </Link>
                             </div>
                         )) : (

@@ -7,32 +7,57 @@ import { useToast } from "../../context/ToastContext";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { useSEO } from "../../hooks/useSEO";
 
+import { EmptyState } from "../../components/EmptyState";
+
 export function AdminVolunteersPage({ adminUser, onLogout }) {
   useSEO({ title: "Manage Volunteers", description: "Review, verify, and manage registered volunteers at your college.", keywords: "manage volunteers, verify volunteers", noIndex: true });
     const navigate = useNavigate();
     const toast = useToast();
     const [volunteers, setVolunteers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [filterStatus, setFilterStatus] = useState("all");
+    const [sortBy, setSortBy] = useState("name-asc");
     const [loading, setLoading] = useState(true);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [volunteerToDelete, setVolunteerToDelete] = useState(null);
 
-    const filteredVolunteers = volunteers.filter((v) => {
-        const q = searchQuery.trim().toLowerCase();
-        if (!q) return true;
-        return [
-            v.name,
-            v.email,
-            v.phone,
-            v.college,
-            v.district,
-            v.is_verified ? "verified" : "pending",
-            String(v.id ?? ""),
-        ]
-            .filter(Boolean)
-            .some((value) => String(value).toLowerCase().includes(q));
-    });
+    const processedVolunteers = volunteers
+        .filter((v) => {
+            const q = searchQuery.trim().toLowerCase();
+            const matchesSearch = !q || [
+                v.name,
+                v.email,
+                v.phone,
+                v.college,
+                v.district,
+                String(v.id ?? ""),
+            ]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(q));
+
+            const matchesStatus = 
+                filterStatus === "all" ||
+                (filterStatus === "verified" && v.is_verified) ||
+                (filterStatus === "pending" && !v.is_verified);
+
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            if (sortBy === "name-asc") {
+                return (a.name || "").localeCompare(b.name || "");
+            }
+            if (sortBy === "name-desc") {
+                return (b.name || "").localeCompare(a.name || "");
+            }
+            if (sortBy === "id-desc") {
+                return (b.id ?? 0) - (a.id ?? 0);
+            }
+            if (sortBy === "id-asc") {
+                return (a.id ?? 0) - (b.id ?? 0);
+            }
+            return 0;
+        });
 
     const loadVolunteers = async () => {
         try {
@@ -117,19 +142,40 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
 
                 <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
                     {/* Toolbar */}
-                    <div className="px-10 py-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                    <div className="px-10 py-8 border-b border-slate-50 flex flex-col md:flex-row gap-4 md:items-center justify-between bg-slate-50/50">
                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            Registered Volunteers ({filteredVolunteers.length})
+                            Registered Volunteers ({processedVolunteers.length})
                         </h3>
-                        <div className="relative">
-                            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search members..."
-                                className="pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-purple-500 transition-all w-64"
-                            />
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative">
+                                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search name, phone, email..."
+                                    className="pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-purple-500 transition-all w-64 shadow-sm"
+                                />
+                            </div>
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-purple-500 transition-all shadow-sm"
+                            >
+                                <option value="all">All Statuses</option>
+                                <option value="verified">Verified</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-purple-500 transition-all shadow-sm"
+                            >
+                                <option value="name-asc">Sort: Name (A - Z)</option>
+                                <option value="name-desc">Sort: Name (Z - A)</option>
+                                <option value="id-desc">Sort: Newest First</option>
+                                <option value="id-asc">Sort: Oldest First</option>
+                            </select>
                         </div>
                     </div>
 
@@ -145,7 +191,7 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredVolunteers.map((v, idx) => (
+                                {processedVolunteers.map((v, idx) => (
                                     <motion.tr 
                                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.05 }}
                                         key={v.id} className="hover:bg-slate-50/50 transition-colors group"
@@ -194,12 +240,11 @@ export function AdminVolunteersPage({ adminUser, onLogout }) {
                         </table>
                     </div>
 
-                    {filteredVolunteers.length === 0 && (
-                        <div className="py-14 text-center border-t border-slate-50">
-                            <p className="text-sm font-bold text-slate-400 italic">
-                                {volunteers.length === 0 ? "No volunteers found." : "No volunteers match your search."}
-                            </p>
-                        </div>
+                    {processedVolunteers.length === 0 && (
+                        <EmptyState
+                            title={volunteers.length === 0 ? "No volunteers found" : "No volunteers match"}
+                            description={volunteers.length === 0 ? "No volunteers have registered under your college yet." : "Adjust your filters or search query to find volunteers."}
+                        />
                     )}
                 </div>
             </section>
