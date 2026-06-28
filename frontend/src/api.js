@@ -13,8 +13,8 @@ const getApiBase = () => {
     return "http://127.0.0.1:8000/api";
   }
   
-  // For other hostnames, use the current hostname with port 8000
-  return `http://${window.location.hostname}:8000/api`;
+  // For production deployed hostnames, point to the production backend API
+  return "https://api.biharseva.acharyaworks.in/api";
 };
 
 const API_BASE = getApiBase();
