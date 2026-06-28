@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +23,15 @@ def env_list(name, default=''):
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-env')
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
-DEBUG = env_bool('DEBUG', default=False)
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', default='127.0.0.1,localhost')
-
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "api.biharseva.acharyaworks.in"
+]
 
 # Application definition
 
@@ -86,12 +90,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -139,13 +139,31 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Frontend and API settings
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 DEFAULT_FRONTEND_ORIGINS = 'http://localhost:5173,http://127.0.0.1:5173'
-CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', default=DEFAULT_FRONTEND_ORIGINS)
+
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:5173,https://biharseva.acharyaworks.in"
+    ).split(",")
+    if origin.strip()
+]
+
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://localhost:\d+$",
     r"^http://127\.0\.0\.1:\d+$",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', default=DEFAULT_FRONTEND_ORIGINS)
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "CSRF_TRUSTED_ORIGINS",
+        "http://localhost:5173,https://biharseva.acharyaworks.in"
+    ).split(",")
+    if origin.strip()
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
