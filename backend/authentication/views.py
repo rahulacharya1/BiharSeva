@@ -97,8 +97,6 @@ def api_volunteer_login(request):
     tokens = issue_token_pair({"role": "volunteer", "volunteer_id": volunteer.id})
     response = Response({
         "message": "Login successful.",
-        "token": tokens["access_token"],
-        "refresh_token": tokens["refresh_token"],
         "volunteer": VolunteerSerializer(volunteer).data,
     })
     set_auth_cookies(response, tokens)
@@ -138,8 +136,6 @@ def api_volunteer_google_auth(request):
         tokens = issue_token_pair({"role": "volunteer", "volunteer_id": volunteer.id})
         response = Response({
             "message": "Login successful.",
-            "token": tokens["access_token"],
-            "refresh_token": tokens["refresh_token"],
             "volunteer": VolunteerSerializer(volunteer).data,
         })
         set_auth_cookies(response, tokens)
@@ -425,8 +421,6 @@ def api_admin_login(request):
     response = Response(
         {
             "message": "Admin login successful.",
-            "token": tokens["access_token"],
-            "refresh_token": tokens["refresh_token"],
             "username": user.username,
             "admin_role": admin_role,
             "admin_college_id": admin_college_id,
@@ -667,8 +661,6 @@ def api_admin_mfa_verify(request):
         response = Response(
             {
                 "message": "MFA verification successful. Admin login successful.",
-                "token": tokens["access_token"],
-                "refresh_token": tokens["refresh_token"],
                 "username": user.username,
                 "admin_role": admin_role,
                 "admin_college_id": admin_college_id,

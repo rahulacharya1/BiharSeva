@@ -60,7 +60,6 @@ export function AdminReportsPage({ adminUser, onLogout }) {
         });
 
     const clearSession = () => {
-        localStorage.removeItem("admin_token");
         onLogout?.();
         navigate("/admin/login");
     };

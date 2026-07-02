@@ -22,7 +22,6 @@ export function AdminNssUnitsPage({ onLogout }) {
   const isPlatform = adminRole === "platform_admin";
 
   const clearSession = () => {
-    localStorage.removeItem("admin_token");
     onLogout?.();
     navigate("/admin/login");
   };

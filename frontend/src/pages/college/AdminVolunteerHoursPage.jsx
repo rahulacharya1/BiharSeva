@@ -53,7 +53,6 @@ export function AdminVolunteerHoursPage({ onLogout }) {
   }, [query, volunteerFilter, eventFilter, minHours]);
 
   const clearSession = () => {
-    localStorage.removeItem("admin_token");
     onLogout?.();
     navigate("/admin/login");
   };

@@ -21,7 +21,6 @@ export function AdminCollegesPage({ adminUser, onLogout }) {
             setRows(res.data || []);
         } catch (err) {
             if (err?.response?.status === 401) {
-                localStorage.removeItem("admin_token");
                 onLogout?.();
                 navigate("/admin/login");
                 return;

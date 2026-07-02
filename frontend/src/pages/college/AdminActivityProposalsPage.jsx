@@ -59,7 +59,6 @@ export function AdminActivityProposalsPage({ onLogout }) {
   }, [query, statusFilter, activityFilter]);
 
   const clearSession = () => {
-    localStorage.removeItem("admin_token");
     onLogout?.();
     navigate("/admin/login");
   };

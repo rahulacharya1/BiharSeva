@@ -66,7 +66,6 @@ export function AdminProgramOfficersPage({ onLogout }) {
     });
 
   const clearSession = () => {
-    localStorage.removeItem("admin_token");
     onLogout?.();
     navigate("/admin/login");
   };

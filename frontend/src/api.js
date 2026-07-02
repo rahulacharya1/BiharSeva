@@ -29,32 +29,18 @@ export const adminApi = axios.create({
   withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("volunteer_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
-adminApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem("admin_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 // Queue management for refreshing volunteer tokens
 let isRefreshingVolunteer = false;
 let volunteerQueue = [];
 
-const processVolunteerQueue = (error, token = null) => {
+const processVolunteerQueue = (error) => {
   volunteerQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve();
     }
   });
   volunteerQueue = [];
@@ -64,12 +50,12 @@ const processVolunteerQueue = (error, token = null) => {
 let isRefreshingAdmin = false;
 let adminQueue = [];
 
-const processAdminQueue = (error, token = null) => {
+const processAdminQueue = (error) => {
   adminQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve();
     }
   });
   adminQueue = [];
@@ -128,8 +114,7 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
           return new Promise((resolve, reject) => {
             volunteerQueue.push({ resolve, reject });
           })
-            .then((token) => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
+            .then(() => {
               return api(originalRequest);
             })
             .catch((err) => Promise.reject(err));
@@ -138,19 +123,18 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
         isRefreshingVolunteer = true;
 
         try {
-          const res = await axios.post(
+          await axios.post(
             `${API_BASE}/token/refresh/`,
-            { refresh_token: localStorage.getItem("volunteer_refresh_token") },
+            {},
             { withCredentials: true }
           );
-          const newToken = res.data && res.data.status === "success" ? res.data.data.token : res.data.token;
           
-          processVolunteerQueue(null, newToken);
+          processVolunteerQueue(null);
           isRefreshingVolunteer = false;
           
           return api(originalRequest);
         } catch (refreshErr) {
-          processVolunteerQueue(refreshErr, null);
+          processVolunteerQueue(refreshErr);
           isRefreshingVolunteer = false;
           volunteerLogout();
           if (!originalRequest?.skipToast && !originalRequest?.url?.includes("/volunteers/me/")) {
@@ -225,8 +209,7 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
           return new Promise((resolve, reject) => {
             adminQueue.push({ resolve, reject });
           })
-            .then((token) => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
+            .then(() => {
               return adminApi(originalRequest);
             })
             .catch((err) => Promise.reject(err));
@@ -235,19 +218,18 @@ export const setupInterceptors = (toast, volunteerLogout, adminLogout) => {
         isRefreshingAdmin = true;
 
         try {
-          const res = await axios.post(
+          await axios.post(
             `${API_BASE}/token/refresh/`,
-            { refresh_token: localStorage.getItem("admin_refresh_token") },
+            {},
             { withCredentials: true }
           );
-          const newToken = res.data && res.data.status === "success" ? res.data.data.token : res.data.token;
           
-          processAdminQueue(null, newToken);
+          processAdminQueue(null);
           isRefreshingAdmin = false;
           
           return adminApi(originalRequest);
         } catch (refreshErr) {
-          processAdminQueue(refreshErr, null);
+          processAdminQueue(refreshErr);
           isRefreshingAdmin = false;
           adminLogout();
           if (!originalRequest?.skipToast && !originalRequest?.url?.includes("/admin/auth/me/")) {

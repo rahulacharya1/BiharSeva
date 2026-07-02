@@ -19,7 +19,6 @@ export function AdminBadgesPage({ onLogout }) {
   const [badgeToDelete, setBadgeToDelete] = useState(null);
 
   const clearSession = () => {
-    localStorage.removeItem("admin_token");
     onLogout?.();
     navigate("/admin/login");
   };

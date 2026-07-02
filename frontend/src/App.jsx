@@ -111,8 +111,8 @@ export default function App() {
     );
   }
 
-  const isAdminPanelActive = (location.pathname.startsWith("/college/") || location.pathname.startsWith("/admin/")) && 
-                             !["/admin/login", "/admin/request-otp", "/admin/verify-otp"].includes(location.pathname);
+  const isAdminPanelActive = (location.pathname.startsWith("/college/") || location.pathname.startsWith("/admin/")) &&
+    !["/admin/login", "/admin/request-otp", "/admin/verify-otp"].includes(location.pathname);
 
   return (
     <ErrorBoundary>

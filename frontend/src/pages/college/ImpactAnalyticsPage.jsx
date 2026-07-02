@@ -45,7 +45,6 @@ export function ImpactAnalyticsPage({ onLogout }) {
   }, [data]);
 
   const clearSession = () => {
-    localStorage.removeItem("admin_token");
     onLogout?.();
     navigate("/admin/login");
   };

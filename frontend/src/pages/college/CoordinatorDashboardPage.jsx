@@ -39,7 +39,6 @@ export function CoordinatorDashboardPage({ onLogout }) {
   }, [payload]);
 
   const clearSession = () => {
-    localStorage.removeItem("admin_token");
     onLogout?.();
     navigate("/admin/login");
   };

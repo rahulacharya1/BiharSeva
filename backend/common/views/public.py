@@ -86,16 +86,15 @@ def api_token_refresh(request):
     if not new_access_token:
         return Response({"detail": "Invalid or expired refresh token. Please log in again."}, status=401)
 
-    response = Response({"token": new_access_token})
+    response = Response({"message": "Token refreshed successfully."})
 
-    # If using cookie-based auth, set the new access token cookie
-    if request.COOKIES.get("refresh_token"):
-        response.set_cookie(
-            key="access_token",
-            value=new_access_token,
-            max_age=30 * 60,
-            httponly=True,
-            secure=not settings.DEBUG,
-            samesite="Lax",
-        )
+    # Always set the access token cookie
+    response.set_cookie(
+        key="access_token",
+        value=new_access_token,
+        max_age=30 * 60,
+        httponly=True,
+        secure=not settings.DEBUG,
+        samesite="Lax",
+    )
     return response

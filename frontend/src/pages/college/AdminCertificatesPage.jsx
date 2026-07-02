@@ -70,10 +70,9 @@ export function AdminCertificatesPage({ adminUser, onLogout }) {
     }, [certificates, searchQuery, filterEvent, sortBy]);
 
     const clearSession = () => {
-        localStorage.removeItem("admin_token");
         onLogout?.();
         navigate("/admin/login");
-    };
+     };
 
     const loadAll = async () => {
         try {

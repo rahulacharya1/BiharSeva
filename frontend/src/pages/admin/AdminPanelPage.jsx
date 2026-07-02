@@ -4,23 +4,23 @@ import { FiPlusCircle, FiLayers, FiArrowRight } from "react-icons/fi";
 import { useSEO } from "../../hooks/useSEO";
 
 export function AdminPanelPage() {
-  useSEO({ title: "Admin Panel", description: "BiharSeva platform administration panel. Manage colleges, volunteers, and settings.", keywords: "admin panel, administration", noIndex: true });
+    useSEO({ title: "Admin Panel", description: "BiharSeva platform administration panel. Manage colleges, volunteers, and settings.", keywords: "admin panel, administration", noIndex: true });
     const adminModules = [
-        { 
-            title: "Add New College", 
-            path: "/admin/colleges/add", 
+        {
+            title: "Add New College",
+            path: "/admin/colleges/add",
             description: "System mein naye college aur unke master operational credentials onboard karein.",
-            icon: <FiPlusCircle />, 
-            color: "text-emerald-600", 
-            bg: "bg-emerald-50" 
+            icon: <FiPlusCircle />,
+            color: "text-emerald-600",
+            bg: "bg-emerald-50"
         },
-        { 
-            title: "View College Registry", 
-            path: "/admin/colleges", 
+        {
+            title: "View College Registry",
+            path: "/admin/colleges",
             description: "Linked institutions ki registry track karein aur database entities handle karein.",
-            icon: <FiLayers />, 
-            color: "text-blue-600", 
-            bg: "bg-blue-50" 
+            icon: <FiLayers />,
+            color: "text-blue-600",
+            bg: "bg-blue-50"
         },
     ];
 
@@ -65,7 +65,7 @@ export function AdminPanelPage() {
                                     <p className="text-sm text-slate-400 font-medium leading-relaxed">{module.description}</p>
                                 </div>
                             </div>
-                            
+
                             <Link to={module.path} className="pt-6 border-t border-slate-50 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-900 transition-colors">
                                 <span>Proceed to Action</span>
                                 <FiArrowRight className="text-lg group-hover:translate-x-1 transition-transform" />
