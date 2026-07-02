@@ -113,7 +113,7 @@ export function AdminPanelPage() {
                 <span className="text-[10px] text-slate-500 font-semibold">Total verified successes</span>
               </div>
 
-              <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] flex flex-col justify-between min-h-[140px] border-red-100 bg-red-50/10 col-span-2 lg:col-span-1">
+              <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] flex flex-col justify-between min-h-[140px] bg-red-50/10 col-span-2 lg:col-span-1">
                 <span className="text-[10px] font-black uppercase tracking-wider text-red-500 flex items-center gap-1.5 animate-pulse">
                   SLA Overdue
                 </span>
