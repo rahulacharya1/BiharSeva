@@ -14,13 +14,19 @@ class ReportSerializer(serializers.ModelSerializer):
             "photo",
             "after_photo",
             "status",
+            "priority",
+            "assignment_method",
+            "claim_deadline",
+            "is_locked",
+            "is_overdue",
             "assigned_college",
             "assigned_admin",
             "assigned_at",
+            "claimed_at",
             "target_date",
             "created_at",
         ]
-        read_only_fields = ["id", "status", "created_at"]
+        read_only_fields = ["id", "status", "created_at", "assignment_method", "claim_deadline", "is_locked", "is_overdue", "claimed_at", "assigned_at"]
 
     def validate_photo(self, value):
         if value and value.size > 5 * 1024 * 1024:
@@ -55,9 +61,15 @@ class AdminReportManageSerializer(serializers.ModelSerializer):
             "location",
             "description",
             "status",
+            "priority",
+            "assignment_method",
+            "claim_deadline",
+            "is_locked",
+            "is_overdue",
             "after_photo",
             "assigned_college",
             "assigned_admin",
             "assigned_at",
+            "claimed_at",
             "target_date"
         ]

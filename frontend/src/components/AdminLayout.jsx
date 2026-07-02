@@ -1,8 +1,9 @@
 import { useState, Suspense } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
-import { FiCpu, FiPlusCircle, FiLayers, FiLogOut, FiMenu, FiChevronDown, FiX } from "react-icons/fi";
+import { FiCpu, FiPlusCircle, FiLayers, FiLogOut, FiMenu, FiChevronDown, FiX, FiAlertCircle } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import { PageLoader } from "./PageLoader";
+import { AdminNotificationBell } from "./AdminNotificationBell";
 
 export function AdminLayout() {
     const { adminUser, handleAdminLogout } = useAuth();
@@ -20,7 +21,8 @@ export function AdminLayout() {
     const navLinks = [
         { path: "/admin/panel", label: "Overview Panel", icon: <FiCpu /> },
         { path: "/admin/colleges/add", label: "Add College", icon: <FiPlusCircle /> },
-        { path: "/admin/colleges", label: "View Colleges", icon: <FiLayers /> }
+        { path: "/admin/colleges", label: "View Colleges", icon: <FiLayers /> },
+        { path: "/admin/reports", label: "Manage Reports", icon: <FiAlertCircle /> }
     ];
 
     const getBreadcrumbs = () => {
@@ -121,6 +123,7 @@ export function AdminLayout() {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <AdminNotificationBell adminUser={adminUser} />
                         <div className="relative">
                             <button onClick={() => setProfileDropdownOpen(!profileDropdownOpen)} className="flex items-center gap-2 p-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full transition-all">
                                 <div className="w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center font-black text-xs border border-slate-800">

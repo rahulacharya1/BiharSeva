@@ -15,6 +15,7 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import { PageLoader } from "./PageLoader";
+import { AdminNotificationBell } from "./AdminNotificationBell";
 
 export function CollegeLayout() {
   const { adminUser, handleAdminLogout } = useAuth();
@@ -130,6 +131,7 @@ export function CollegeLayout() {
           </div>
 
           <div className="flex items-center gap-4">
+            <AdminNotificationBell adminUser={adminUser} />
             <div className="relative">
               <button onClick={() => setProfileDropdownOpen(!profileDropdownOpen)} className="flex items-center gap-2 p-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full transition-all">
                 <div className="w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center font-black text-xs border border-slate-800">

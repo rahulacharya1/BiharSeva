@@ -46,6 +46,7 @@ const AdminVerifyOtpPage = lazy(() => import("./pages/admin/AdminVerifyOtpPage")
 const AdminPanelPage = lazy(() => import("./pages/admin/AdminPanelPage").then(m => ({ default: m.AdminPanelPage })));
 const AdminAddCollegePage = lazy(() => import("./pages/admin/AdminAddCollegePage").then(m => ({ default: m.AdminAddCollegePage })));
 const AdminCollegesPage = lazy(() => import("./pages/admin/AdminCollegesPage").then(m => ({ default: m.AdminCollegesPage })));
+const PlatformReportsPage = lazy(() => import("./pages/admin/AdminReportsPage").then(m => ({ default: m.AdminReportsPage })));
 
 // College admin pages
 const CollegeDashboardPage = lazy(() => import("./pages/college/CollegeDashboardPage").then(m => ({ default: m.CollegeDashboardPage })));
@@ -124,6 +125,7 @@ export default function App() {
               <Route path="/admin/panel" element={<AdminPanelPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
               <Route path="/admin/colleges/add" element={<AdminAddCollegePage />} />
               <Route path="/admin/colleges" element={<AdminCollegesPage adminUser={adminUser} onLogout={handleAdminLogout} />} />
+              <Route path="/admin/reports" element={<PlatformReportsPage />} />
 
             </Route>
 

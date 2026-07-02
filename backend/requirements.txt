@@ -3,10 +3,12 @@ attrs==26.1.0
 certifi==2026.2.25
 cffi==2.0.0
 charset-normalizer==3.4.7
+cloudinary==1.45.0
 coverage==7.14.2
 cryptography==46.0.6
 dj-database-url==3.1.2
 Django==6.0.3
+django-cloudinary-storage==0.3.0
 django-cors-headers==4.9.0
 django-filter==25.2
 djangorestframework==3.16.1
@@ -31,13 +33,9 @@ referencing==0.37.0
 reportlab==4.4.10
 requests==2.33.1
 rpds-py==2026.5.1
+six==1.17.0
 sqlparse==0.5.5
 tzdata==2025.3
 uritemplate==4.2.0
 urllib3==2.6.3
 whitenoise==6.12.0
-django-storages[s3]==1.14.4
-boto3==1.34.162
-django-cloudinary-storage==0.3.0
-cloudinary==1.41.0
-

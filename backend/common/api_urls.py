@@ -42,6 +42,7 @@ from reports.views import (
     api_admin_reports,
     api_admin_report_assign,
     api_admin_export_reports,
+    api_admin_report_audit_logs,
 )
 
 # events app views
@@ -79,6 +80,12 @@ from notifications.views import (
     api_notification_read,
     api_notifications_read_all,
 )
+from notifications.admin_views import (
+    api_admin_notifications,
+    api_admin_notification_read,
+    api_admin_notifications_read_all,
+)
+from reports.admin_dashboard import api_platform_admin_dashboard
 
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -130,9 +137,11 @@ urlpatterns = [
 
     # Admin general management
     path("admin/dashboard/", api_admin_dashboard, name="api_admin_dashboard"),
+    path("admin/platform-dashboard/", api_platform_admin_dashboard, name="api_platform_admin_dashboard"),
     path("admin/reports/", api_admin_reports, name="api_admin_reports"),
     path("admin/reports/<int:report_id>/", api_admin_reports, name="api_admin_report_update"),
     path("admin/reports/<int:report_id>/assign/", api_admin_report_assign, name="api_admin_report_assign"),
+    path("admin/reports/<int:report_id>/audit-logs/", api_admin_report_audit_logs, name="api_admin_report_audit_logs"),
     path("admin/volunteers/", api_admin_volunteers, name="api_admin_volunteers"),
     path("admin/volunteers/<int:volunteer_id>/", api_admin_volunteers, name="api_admin_volunteer_update"),
     path("admin/events/", api_admin_events, name="api_admin_events"),
@@ -168,6 +177,11 @@ urlpatterns = [
     path("notifications/", api_notifications, name="api_notifications"),
     path("notifications/<int:notification_id>/read/", api_notification_read, name="api_notification_read"),
     path("notifications/read-all/", api_notifications_read_all, name="api_notifications_read_all"),
+
+    # Admin notifications
+    path("admin/notifications/", api_admin_notifications, name="api_admin_notifications"),
+    path("admin/notifications/<int:notification_id>/read/", api_admin_notification_read, name="api_admin_notification_read"),
+    path("admin/notifications/read-all/", api_admin_notifications_read_all, name="api_admin_notifications_read_all"),
 
     # Admin audit logs
     path("admin/audit-log/", api_admin_audit_logs, name="api_admin_audit_logs"),

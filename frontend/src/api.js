@@ -8,9 +8,9 @@ const getApiBase = () => {
     return import.meta.env.VITE_API_BASE;
   }
   
-  // For development: use explicit localhost:8000
+  // For development: use matching host on port 8000
   if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-    return "http://127.0.0.1:8000/api";
+    return `http://${window.location.hostname}:8000/api`;
   }
   
   // For production deployed hostnames, point to the production backend API

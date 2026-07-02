@@ -9,6 +9,7 @@ import { FaChevronDown, FaCompress, FaCamera, FaSpinner, FaPaperPlane } from "re
 const initialFormState = { 
     reporter_name: "", 
     district: "Purnia", 
+    priority: "medium",
     location: "", 
     description: "", 
     photo: null 
@@ -101,13 +102,16 @@ export function ReportIssuePage() {
             const tracking = res.data.tracking_number || "";
             toast.success(`Report submitted! Your tracking number: ${tracking}`, 8000);
             setForm(initialFormState);
-            e.target.reset();
         } catch (err) {
-            const responseData = err.response?.data || {};
-            const validationErrors = responseData.errors || {};
-            const firstFieldError = Object.values(validationErrors).flat()[0];
-            const errMsg = firstFieldError || responseData.detail || "Failed to submit issue. Please try again.";
-            toast.error(errMsg);
+            if (err?.response?.data?.existing_report_id) {
+                const dupId = err.response.data.existing_report_id;
+                const trackingNum = err.response.data.tracking_number;
+                toast.warning(`Duplicate report detected: tracking number ${trackingNum}. Redirecting to tracking...`, 6000);
+                // Redirect user to tracking page
+                window.location.href = `/reports/status?tracking=${trackingNum}`;
+            } else {
+                toast.error(err?.response?.data?.detail || "Something went wrong. Please check fields.");
+            }
         } finally {
             setLoading(false);
         }
@@ -155,7 +159,7 @@ export function ReportIssuePage() {
                 >
                     <form className="p-8 md:p-14 space-y-8" onSubmit={onSubmit}>
                         
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid md:grid-cols-3 gap-6">
                             {/* Reporter Name */}
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Your Name</label>
@@ -179,6 +183,23 @@ export function ReportIssuePage() {
                                         onChange={(e) => setForm({ ...form, district: e.target.value })}
                                     >
                                         {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                                    </select>
+                                    <FaChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs" />
+                                </div>
+                            </div>
+
+                            {/* Priority Selection */}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Priority</label>
+                                <div className="relative">
+                                    <select 
+                                        value={form.priority}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 appearance-none focus:outline-none focus:border-emerald-500/50 transition-all cursor-pointer font-medium"
+                                        onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                                    >
+                                        <option value="low">Low (48 hours)</option>
+                                        <option value="medium">Medium (24 hours)</option>
+                                        <option value="high">High (6 hours)</option>
                                     </select>
                                     <FaChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs" />
                                 </div>
