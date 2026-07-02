@@ -8,7 +8,7 @@ import { useSEO } from "../../hooks/useSEO";
 const initialForm = {
   name: "",
   city: "",
-  district: "Purnea",
+  district: "Purnia",
   code: "",
   email: "",
   phone: "",
@@ -17,7 +17,13 @@ const initialForm = {
   admin_email: "",
 };
 
-const districts = ["Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", "Saharsa"];
+const districts = [
+  "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar",
+  "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", "Kaimur", "Katihar",
+  "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", "Munger", "Muzaffarpur",
+  "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran",
+  "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"
+];
 
 export function AdminAddCollegePage() {
   useSEO({ title: "Add New College", description: "Register a new college and create an admin account on BiharSeva.", keywords: "add college, register college", noIndex: true });

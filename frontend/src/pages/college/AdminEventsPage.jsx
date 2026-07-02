@@ -259,7 +259,7 @@ export function AdminEventsPage({ adminUser, onLogout }) {
                     </div>
 
                     <form onSubmit={submitEvent} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input className={`${inputClasses} md:col-span-2`} placeholder="Event Title (e.g. Clean Purnea Drive)" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} disabled={submitLoading} required />
+                        <input className={`${inputClasses} md:col-span-2`} placeholder="Event Title (e.g. Clean Purnia Drive)" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} disabled={submitLoading} required />
                             <select className={inputClasses} value={form.nss_unit} onChange={(e) => setForm({ ...form, nss_unit: e.target.value })} required={adminRole !== "platform_admin"} disabled={submitLoading}>
                                 <option value="">Select NSS Unit</option>
                                 {units.map((u) => (

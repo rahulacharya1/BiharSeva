@@ -6,7 +6,13 @@ import { useSEO } from "../../hooks/useSEO";
 import { FaSearch, FaChevronDown, FaMapMarkerAlt, FaExternalLinkAlt } from "react-icons/fa";
 import { EmptyState } from "../../components/EmptyState";
 
-const districts = ["", "Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", "Saharsa"];
+const districts = [
+    "", "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar",
+    "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", "Kaimur", "Katihar",
+    "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", "Munger", "Muzaffarpur",
+    "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran",
+    "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"
+];
 const statuses = ["", "verified", "in_progress", "cleaned"];
 
 export function ReportGalleryPage() {

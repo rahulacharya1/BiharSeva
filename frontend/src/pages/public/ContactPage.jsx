@@ -121,7 +121,7 @@ export function ContactPage() {
                             {[
                                 { label: "Email", val: "noreply.biharseva@gmail.com", icon: FaEnvelope },
                                 { label: "Phone", val: "+91 7061638189", icon: FaPhone },
-                                { label: "Location", val: "Purnea, Bihar, India", icon: FaMapMarkerAlt }
+                                { label: "Location", val: "Purnia, Bihar, India", icon: FaMapMarkerAlt }
                             ].map((item, i) => {
                                 const ItemIcon = item.icon;
                                 return (

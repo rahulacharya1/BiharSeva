@@ -8,15 +8,18 @@ import { FaChevronDown, FaCompress, FaCamera, FaSpinner, FaPaperPlane } from "re
 
 const initialFormState = { 
     reporter_name: "", 
-    district: "Purnea", 
+    district: "Purnia", 
     location: "", 
     description: "", 
     photo: null 
 };
 
 const districts = [
-    "Purnea", "Katihar", "Araria", "Kishanganj", "Madhepura", 
-    "Saharsa"
+    "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar",
+    "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", "Kaimur", "Katihar",
+    "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", "Munger", "Muzaffarpur",
+    "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran",
+    "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"
 ];
 
 export function ReportIssuePage() {

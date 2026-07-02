@@ -7,10 +7,18 @@ import { useAutoDismissMessage } from "../../hooks/useAutoDismissMessage";
 import { PasswordInput } from "../../components/PasswordInput";
 import { useSEO } from "../../hooks/useSEO";
 
+const districts = [
+    "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar",
+    "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", "Kaimur", "Katihar",
+    "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", "Munger", "Muzaffarpur",
+    "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran",
+    "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"
+];
+
 export function VolunteerProfilePage() {
   useSEO({ title: "My Profile", description: "Manage your BiharSeva volunteer profile, update contact info, and change your password.", keywords: "profile, account settings", noIndex: true });
     const navigate = useNavigate();
-    const [form, setForm] = useState({ name: "", college: "", phone: "", district: "Purnea", new_password: "" });
+    const [form, setForm] = useState({ name: "", college: "", phone: "", district: "Purnia", new_password: "" });
     const [message, setMessage] = useState({ type: "", text: "" });
     const [loading, setLoading] = useState(false);
     const [avatarFile, setAvatarFile] = useState(null);
@@ -202,7 +210,9 @@ export function VolunteerProfilePage() {
                             <div className="relative group">
                                 <FiMapPin className={iconClasses} />
                                 <select value={form.district} className={`${inputClasses} appearance-none cursor-pointer`} onChange={(e) => setForm({ ...form, district: e.target.value })}>
-                                    <option>Purnea</option><option>Katihar</option><option>Araria</option><option>Kishanganj</option><option>Madhepura</option><option>Saharsa</option>
+                                    {districts.map((d) => (
+                                        <option key={d} value={d}>{d}</option>
+                                    ))}
                                 </select>
                                 <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none text-slate-300">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
